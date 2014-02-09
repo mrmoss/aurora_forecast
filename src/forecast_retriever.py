@@ -73,7 +73,7 @@ def write_config(filename):
 		config_parser.set("Data Resources","d28_forecast",d28_forecast_link);
 
 		with open(filename,"wb") as config_file:
-			config_parser.write(config_file)
+			config_parser.write(config_file);
 
 		return True;
 
