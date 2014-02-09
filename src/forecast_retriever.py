@@ -43,41 +43,55 @@ d28_forecast_link="";
 #Read Configuration File Function
 def read_config(filename):
 	try:
+		#Create Parser
 		config_parser=ConfigParser.RawConfigParser();
+
+		#Open File for Parsing
 		config_parser.read(filename);
 
+		#Read Data Values
 		now_forecast_link_temp=config_parser.get("Data Resources","now_forecast");
 		d3_forecast_link_temp=config_parser.get("Data Resources","d3_forecast");
 		d28_forecast_link_temp=config_parser.get("Data Resources","d28_forecast");
 
+		#Get Global Variables
 		global now_forecast_link;
 		global d3_forecast_link;
 		global d28_forecast_link;
 
+		#Assign Global Variables
 		now_forecast_link=now_forecast_link_temp;
 		d3_forecast_link=d3_forecast_link_temp;
 		d28_forecast_link=d28_forecast_link_temp;
 
+		#Success
 		return True;
 
 	except:
+		#Failure
 		return False;
 
 #Write Configuration File Function
 def write_config(filename):
 	try:
+		#Create Parser
 		config_parser=ConfigParser.RawConfigParser();
+
+		#Add Section and Write Data Values
 		config_parser.add_section("Data Resources");
 		config_parser.set("Data Resources","now_forecast",now_forecast_link);
 		config_parser.set("Data Resources","d3_forecast",d3_forecast_link);
 		config_parser.set("Data Resources","d28_forecast",d28_forecast_link);
 
+		#Write File With Parser
 		with open(filename,"wb") as config_file:
 			config_parser.write(config_file);
 
+		#Success
 		return True;
 
 	except:
+		#Failure
 		return False;
 
 #Get Resources...For Forever...
