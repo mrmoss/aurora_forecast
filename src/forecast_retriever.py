@@ -95,13 +95,14 @@ def write_config(filename):
 		return False;
 
 #Get Resources...For Forever...
-#while True:
+while True:
 
-	#Read Configuration File (If failure, write a default one.)
-	if read_config("forecast_retriever.cfg")==False:
+	#Read Configuration File (On failure, write a default configuration file.)
+	if(read_config("forecast_retriever.cfg")==False):
 		write_config("forecast_retriever.cfg");
 
 	#TESTING
 	print(get_url(now_forecast_link));
 	print(get_url(d3_forecast_link));
 	print(get_url(d28_forecast_link));
+	break;
