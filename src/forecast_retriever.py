@@ -24,7 +24,7 @@ def abort_signal_handler(signal,frame):
 	sys.exit(0);
 
 #Assign Abort Signal Handler
-signal.signal(signal.SIGINT,abort_signal_handler)
+signal.signal(signal.SIGINT,abort_signal_handler);
 
 #Get URL Function (Makes a GET request, returns bytes on success, returns "" on failure.)
 def get_url(link):
