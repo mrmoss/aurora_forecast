@@ -10,6 +10,9 @@ import ConfigParser;
 #Signal Library
 import signal;
 
+#SMTP Library
+import smtplib;
+
 #System Library
 import sys;
 
@@ -94,6 +97,34 @@ def write_config(filename):
 		#Failure
 		return False;
 
+#Send Email Function
+def send_email(subject,message):
+	try:
+		#Setup Addresses
+		address_from="Aurora Forecast <cs472.aurora@gmail.com>";
+		address_to="Mike Moss <mrmoss@alaska.edu>";
+
+		#Connect to Gmail
+		smtp_server=smtplib.SMTP("smtp.gmail.com:587");
+		smtp_server.ehlo();
+		smtp_server.starttls();
+		smtp_server.ehlo();
+		smtp_server.login("cs472.aurora","You think I'd leave this in the git?");
+
+		#Send Message
+		header="From: "+address_from+"\r\nTo: "+address_to+"\r\nSubject: "+subject+"\r\n";
+		smtp_server.sendmail(address_from,address_to,header+message);
+
+		#All Done
+		smtp_server.quit();
+
+		#Success
+		return True;
+
+	except:
+		#Failure
+		return False;
+
 #Get Resources...For Forever...
 while True:
 
@@ -102,7 +133,31 @@ while True:
 		write_config("forecast_retriever.cfg");
 
 	#TESTING
-	print(get_url(now_forecast_link));
-	print(get_url(d3_forecast_link));
-	print(get_url(d28_forecast_link));
+	#print(get_url(now_forecast_link));
+	#print(get_url(d3_forecast_link));
+	#print(get_url(d28_forecast_link));
+
+	#send_email("Aurora Forecaster Error!","The now forecast failed to download!\r\n\r\nAurora Forecaster");
+	#send_email("Aurora Forecaster Error!","The 3 day forecast failed to download!\r\n\r\nAurora Forecaster");
+	#send_email("Aurora Forecaster Error!","The 28 day forecast failed to download!\r\n\r\nAurora Forecaster");
+
+	#send_email("Aurora Forecaster Error!","The now forecast conversion script failed to parse the download data!\r\n\r\nAurora Forecaster");
+	#send_email("Aurora Forecaster Error!","The 3 day forecast conversion script failed to parse the download data!\r\n\r\nAurora Forecaster");
+	#send_email("Aurora Forecaster Error!","The 28 day forecast conversion script failed to parse the download data!\r\n\r\nAurora Forecaster");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	break;
