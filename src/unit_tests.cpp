@@ -6,7 +6,7 @@ int main()
 {
 	bool passed=true;
 
-	std::string test_get_header="GET /test.html HTTP/1.1\nUser-Agent: Forecast-Retriever\nAccept: */*\nHost: www.google.com\nConnection: Keep-Alive\r\n\n\r";
+	std::string test_get_header="GET /test.html HTTP/1.1\r\nUser-Agent: Forecast-Retriever\r\nAccept: */*\r\nHost: www.google.com\r\nConnection: Keep-Alive\r\n\r\n\n\r";
 
 	passed=(make_get_request_header("Forecast-Retriever","www.google.com/test.html")==test_get_header);
 
