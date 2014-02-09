@@ -8,7 +8,7 @@
 import ConfigParser;
 
 #Signal Library
-import signal
+import signal;
 
 #System Library
 import sys;
