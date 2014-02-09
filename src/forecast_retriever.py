@@ -1,50 +1,43 @@
 #!/usr/bin/python
 
-import signal
-import sys
-def signal_handler(signal,frame):
-	sys.exit(0)
-signal.signal(signal.SIGINT,signal_handler)
+#Glut Input Header
+#	Created By:		Mike Moss and Ignacio Saez Lahidalga
+#	Modified On:	02/08/2014
 
+#URL Library
 import urllib2;
 
-forecast_url=[];
-forecast_url.append("http://www.swpc.noaa.gov/ftpdir/lists/geomag/AK.txt");
-forecast_url.append("http://www.swpc.noaa.gov/ftpdir/lists/geomag/AK.txt");
-forecast_url.append("http://www.swpc.noaa.gov/ftpdir/forecasts/geomag_forecast/0120geomag_forecast.txt");
-forecast_url.append("http://www.swpc.noaa.gov/ftpdir/weekly/27DO.txt");
+#Signal Library
+import signal
 
-forecast_data=["","","",""];
+#System Library
+import sys;
 
-
-
-
-
-
-
-
-
-
-
-
-import threading;
-
-def get_url(forecast):
-	while True:
-		try:
-			request=urllib2.urlopen(forecast_url[forecast]);
-			forecast_data[forecast]=request.read();
-			result[forecast]=True;
-			print "worked";
-		except:
-			print "error";
-
-for ii in range(0,4):
-	t = threading.Thread(target=get_url,args=[ii])
-	t.daemon = True
-	t.start()
-
+#Time Library
 import time;
 
+#Abort Signal Handler Function (Kills program.)
+def abort_signal_handler(signal,frame):
+	sys.exit(0);
+
+#Assign Abort Signal Handler
+signal.signal(signal.SIGINT,abort_signal_handler)
+
+#Get URL Function (Makes a GET request, returns bytes on success, returns "" on failure.)
+def get_url(link):
+	try:
+		request=urllib2.urlopen(link);
+		return request.read();
+	except:
+		return "";
+
+#Get Resources...For Forever...
 while True:
-	time.sleep(0);
+
+	#Data Source Links
+	now_forecast_link="http://www.swpc.noaa.gov/ftpdir/lists/geomag/AK.txt";
+	d3_forecast_link="http://www.swpc.noaa.gov/ftpdir/forecasts/geomag_forecast/"+time.strftime("%m%d")+"geomag_forecast.txt";
+	d28_forecast_link="http://www.swpc.noaa.gov/ftpdir/weekly/27DO.txt";
+
+	#Main program.
+	print(get_url(d3_forecast_link));
