@@ -2,7 +2,7 @@
 
 #Glut Input Header
 #	Created By:		Mike Moss and Ignacio Saez Lahidalga
-#	Modified On:	02/08/2014
+#	Modified On:	02/10/2014
 
 #Configuration Parser Library
 import ConfigParser;
@@ -19,6 +19,9 @@ import smtplib;
 #System Library
 import sys;
 
+#Thread Library
+import thread;
+
 #Time Library
 import time;
 
@@ -29,8 +32,22 @@ import urllib2;
 def abort_signal_handler(signal,frame):
 	sys.exit(0);
 
-#Assign Abort Signal Handler
-signal.signal(signal.SIGINT,abort_signal_handler);
+#Globals
+password="";
+sender_email="Aurora Forecast <aurora.forecast@gmail.com>";
+sender_account="aurora.forecast";
+receiver_email="Administrator Bob <admin.bob@gmail.com>";
+now_forecast_link="http://www.example.com/now.txt";
+d3_forecast_link="http://www.example.com/3day.txt";
+d28_forecast_link="http://www.example.com/28day.txt";
+
+#File to String Function
+def file_to_string(filename):
+	try:
+		with open(filename,"r") as opened_file:
+			return opened_file.read();
+	except:
+		return "";
 
 #Get URL Function (Makes a GET request, returns bytes on success, returns "" on failure.)
 def get_url(link):
@@ -40,15 +57,6 @@ def get_url(link):
 
 	except:
 		return "";
-
-#Globals
-password="";
-sender_email="Aurora Forecast <aurora.forecast@gmail.com>";
-sender_account="aurora.forecast";
-receiver_email="Administrator Bob <admin.bob@gmail.com>";
-now_forecast_link="http://www.example.com/now.txt";
-d3_forecast_link="http://www.example.com/3day.txt";
-d28_forecast_link="http://www.example.com/28day.txt";
 
 #Read Configuration File Function
 def read_config(filename):
@@ -117,7 +125,7 @@ def write_config(filename):
 		#Failure
 		return False;
 
-#Send Email Function
+#Send Email Function (Sends an email through Gmail.)
 def send_email(subject,message,address_from,address_to,username,password):
 	try:
 		#Connect to Gmail
@@ -141,21 +149,33 @@ def send_email(subject,message,address_from,address_to,username,password):
 		#Failure
 		return False;
 
+#Send Email Threaded Function (Spawns off a new thread that sends an email, non-blocking for main thread.)
+def send_email_threaded(subject,message,address_from,address_to,username,password):
+	thread.start_new(send_email_thread_function,([subject,message,address_from,address_to,username,password],));
+
+#Send Email Thread Function (Thread function spawned off by the send_email_threaded function.)
+def send_email_thread_function(data):
+	send_email(data[0],data[1],data[2],data[3],data[4],data[5]);
+
 #Get Resources...For Forever...
 while True:
+
+	#Assign Abort Signal Handler
+	signal.signal(signal.SIGINT,abort_signal_handler);
 
 	#Read Configuration File (On failure, write a default configuration file.)
 	if(read_config("forecast_retriever.cfg")==False):
 		write_config("forecast_retriever.cfg");
 
-	#Get Password for Email
-	password=getpass.getpass("password for forecast retriever: ");
+	#Get Password for Email via command line.
+	#password=getpass.getpass("password for forecast retriever: ");
 
-	#TESTING
-	if(send_email("Aurora Forecaster Error!","The now forecast failed to download!\r\n\r\nAurora Forecaster",
-		sender_email,receiver_email,sender_account,password)):
-		print(":)");
-	else:
-		print(":(");
+	#Get Password for Email via local file.
+	#password=file_to_string("private_key");
 
+	#Send Email Test
+	#send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nAurora Forecaster",
+		#sender_email,receiver_email,sender_account,password);
+
+	#Exit Main Thread
 	break;
