@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 #Forecast Retriever Source
-#	Created By:		Mike Moss and Ignacio Saez Lahidalga
+#	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
 #	Modified On:	02/11/2014
 
 #Configuration Parser Library
@@ -22,7 +22,7 @@ import sys;
 #URL Utility Library
 import url_util;
 
-#JSON
+#JSON Library
 import json;
 
 #Abort Signal Handler Function (Kills program.)
@@ -123,9 +123,9 @@ while True:
 		sender_email,receiver_email,sender_account,password);
 
 	#JSON Test
-	tmpstr = '{"2014_Feb_03":{"Kp":[3,5,4]}}'
+	tmpstr = "{'2014_Feb_03':{'Kp':[3,5,4]}}"
 	jsoncode = json.loads(tmpstr)
-	print jsoncode	
+	print jsoncode
 
 	while True:
 		x=1;
