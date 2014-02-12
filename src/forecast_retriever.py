@@ -105,10 +105,10 @@ def write_config(filename):
 		#Failure
 		return False;
 
+#Fake Functions...
 def now_converter(fake):
 	print("converting data!");
 	return "";
-
 def update_database(fake):
 	print("updating database!");
 
@@ -137,23 +137,19 @@ while True:
 
 		#Failed Data Download
 		if(data_download==""):
-			print("failed to download data");
 			emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
 
 		#Successful Data Download
 		else:
-			print("downloaded data");
 			#Convert Downloaded Data
 			data_converted=now_converter(data_download);
 
 			#Failed Conversion
 			if(data_converted==""):
-				print("failed to convert data");
 				emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
 
 			#Successful Conversion
 			else:
-				print("converted data");
 				#Parse Converted Data
 				data_json={'error':True};
 
