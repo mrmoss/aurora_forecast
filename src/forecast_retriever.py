@@ -105,6 +105,13 @@ def write_config(filename):
 		#Failure
 		return False;
 
+def now_converter(fake):
+	print("converting data!");
+	return "";
+
+def update_database(fake):
+	print("updating database!");
+
 #Get Resources...For Forever...
 while True:
 
@@ -118,17 +125,49 @@ while True:
 	#Get Password for Email via local file.
 	password=file_util.file_to_string("private_key");
 
-	#Send Email Test
-	emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nAurora Forecaster",
-		sender_email,receiver_email,sender_account,password);
-
 	#JSON Test
-	json_test_string="{'02032014':{'kp':[3,5,4]}}";
-	json_test_object=json.loads(json_test_string);
-	print(json_test_object);
+	#json_test_string="{'02032014':{'kp':[3,5,4]}}";
+	#json_test_object=json.loads(json_test_string);
+	#print(json_test_object);
 
+	#Be A Server (Forever...)
 	while True:
-		x=1;
+		#Try to Download Data
+		data_download=url_util.get_url(now_forecast_link);
+
+		#Failed Data Download
+		if(data_download==""):
+			print("failed to download data");
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
+
+		#Successful Data Download
+		else:
+			print("downloaded data");
+			#Convert Downloaded Data
+			data_converted=now_converter(data_download);
+
+			#Failed Conversion
+			if(data_converted==""):
+				print("failed to convert data");
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
+
+			#Successful Conversion
+			else:
+				print("converted data");
+				#Parse Converted Data
+				data_json={'error':True};
+
+				#Failed Parse
+				if(data_json.get('error')==True):
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
+
+				#Successful Parse
+				else:
+					update_database(data_json);
+
+		#Hang here...Testing point...
+		while True:
+			x=1;
 
 	#Exit Main Thread
 	break;
