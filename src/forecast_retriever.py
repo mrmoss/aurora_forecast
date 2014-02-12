@@ -2,31 +2,28 @@
 
 #Glut Input Header
 #	Created By:		Mike Moss and Ignacio Saez Lahidalga
-#	Modified On:	02/10/2014
+#	Modified On:	02/11/2014
 
 #Configuration Parser Library
 import ConfigParser;
 
+#Emailer Module
+import emailer;
+
+#File Utility Library
+import file_util;
+
 #Password Module
-import getpass;
+#import getpass;
 
 #Signal Library
 import signal;
 
-#SMTP Library
-import smtplib;
-
 #System Library
 import sys;
 
-#Thread Library
-import thread;
-
-#Time Library
-import time;
-
-#URL Library
-import urllib2;
+#URL Utility Library
+import url_util;
 
 #Abort Signal Handler Function (Kills program.)
 def abort_signal_handler(signal,frame):
@@ -40,23 +37,6 @@ receiver_email="Administrator Bob <admin.bob@gmail.com>";
 now_forecast_link="http://www.example.com/now.txt";
 d3_forecast_link="http://www.example.com/3day.txt";
 d28_forecast_link="http://www.example.com/28day.txt";
-
-#File to String Function
-def file_to_string(filename):
-	try:
-		with open(filename,"r") as opened_file:
-			return opened_file.read();
-	except:
-		return "";
-
-#Get URL Function (Makes a GET request, returns bytes on success, returns "" on failure.)
-def get_url(link):
-	try:
-		request=urllib2.urlopen(time.strftime(link));
-		return request.read();
-
-	except:
-		return "";
 
 #Read Configuration File Function
 def read_config(filename):
@@ -125,38 +105,6 @@ def write_config(filename):
 		#Failure
 		return False;
 
-#Send Email Function (Sends an email through Gmail.)
-def send_email(subject,message,address_from,address_to,username,password):
-	try:
-		#Connect to Gmail
-		smtp_server=smtplib.SMTP("smtp.gmail.com:587");
-		smtp_server.ehlo();
-		smtp_server.starttls();
-		smtp_server.ehlo();
-		smtp_server.login(username,password);
-
-		#Send Message
-		header="From: "+address_from+"\r\nTo: "+address_to+"\r\nSubject: "+subject+"\r\n";
-		smtp_server.sendmail(address_from,address_to,header+message);
-
-		#All Done
-		smtp_server.quit();
-
-		#Success
-		return True;
-
-	except:
-		#Failure
-		return False;
-
-#Send Email Threaded Function (Spawns off a new thread that sends an email, non-blocking for main thread.)
-def send_email_threaded(subject,message,address_from,address_to,username,password):
-	thread.start_new(send_email_thread_function,([subject,message,address_from,address_to,username,password],));
-
-#Send Email Thread Function (Thread function spawned off by the send_email_threaded function.)
-def send_email_thread_function(data):
-	send_email(data[0],data[1],data[2],data[3],data[4],data[5]);
-
 #Get Resources...For Forever...
 while True:
 
@@ -171,11 +119,14 @@ while True:
 	#password=getpass.getpass("password for forecast retriever: ");
 
 	#Get Password for Email via local file.
-	#password=file_to_string("private_key");
+	password=file_util.file_to_string("private_key");
 
 	#Send Email Test
-	#send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nAurora Forecaster",
-		#sender_email,receiver_email,sender_account,password);
+	emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nAurora Forecaster",
+		sender_email,receiver_email,sender_account,password);
+
+	while True:
+		x=1;
 
 	#Exit Main Thread
 	break;
