@@ -123,9 +123,9 @@ while True:
 		sender_email,receiver_email,sender_account,password);
 
 	#JSON Test
-	tmpstr = "{'2014_Feb_03':{'Kp':[3,5,4]}}"
-	jsoncode = json.loads(tmpstr)
-	print jsoncode
+	json_test_string="{'02032014':{'kp':[3,5,4]}}";
+	json_test_object=json.loads(json_test_string);
+	print(json_test_object);
 
 	while True:
 		x=1;
