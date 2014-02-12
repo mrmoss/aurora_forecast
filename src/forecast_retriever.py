@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Glut Input Header
+#Forecast Retriever Source
 #	Created By:		Mike Moss and Ignacio Saez Lahidalga
 #	Modified On:	02/11/2014
 

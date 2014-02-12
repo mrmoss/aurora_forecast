@@ -1,3 +1,9 @@
+#!/usr/bin/python
+
+#Emailer Library Source
+#	Created By:		Mike Moss
+#	Modified On:	02/11/2014
+
 #Thread Library
 import thread;
 
@@ -34,7 +40,4 @@ def send_email_threaded(subject,message,address_from,address_to,username,passwor
 
 #Send Email Thread Function (Thread function spawned off by the send_email_threaded function.)
 def send_email_thread_function(data):
-	if(send_email(data[0],data[1],data[2],data[3],data[4],data[5])):
-		print ":)";
-	else:
-		print":(";
+	send_email(data[0],data[1],data[2],data[3],data[4],data[5]);

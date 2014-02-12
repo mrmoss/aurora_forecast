@@ -1,3 +1,9 @@
+#!/usr/bin/python
+
+#URL Utility Library Source
+#	Created By:		Mike Moss
+#	Modified On:	02/11/2014
+
 #Time Library
 import time;
 
