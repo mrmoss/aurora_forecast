@@ -13,9 +13,6 @@ import emailer;
 #File Utility Library
 import file_util;
 
-#Password Module
-#import getpass;
-
 #Signal Library
 import signal;
 
@@ -114,9 +111,6 @@ while True:
 	#Read Configuration File (On failure, write a default configuration file.)
 	if(read_config("forecast_retriever.cfg")==False):
 		write_config("forecast_retriever.cfg");
-
-	#Get Password for Email via command line.
-	#password=getpass.getpass("password for forecast retriever: ");
 
 	#Get Password for Email via local file.
 	password=file_util.file_to_string("private_key");
