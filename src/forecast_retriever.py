@@ -22,6 +22,9 @@ import sys;
 #URL Utility Library
 import url_util;
 
+#JSON
+import json;
+
 #Abort Signal Handler Function (Kills program.)
 def abort_signal_handler(signal,frame):
 	sys.exit(0);
@@ -118,6 +121,11 @@ while True:
 	#Send Email Test
 	emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nAurora Forecaster",
 		sender_email,receiver_email,sender_account,password);
+
+	#JSON Test
+	tmpstr = '{"2014_Feb_03":{"Kp":[3,5,4]}}'
+	jsoncode = json.loads(tmpstr)
+	print jsoncode	
 
 	while True:
 		x=1;
