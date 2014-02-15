@@ -2,7 +2,7 @@
 
 #Emailer Library Source
 #	Created By:		Mike Moss
-#	Modified On:	02/11/2014
+#	Modified On:	02/15/2014
 
 #Thread Library
 import thread;
