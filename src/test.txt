@@ -1,6 +1,0 @@
-[ { "time_predicted" : { "year" : 2014, "month" : 2, "day" : 11, "hour" : -1, "minute" : -1}, "forecast" : "28day", "kp" : 3}, { "time_predicted" : { "year" : 2014, "month" : 2, "day" : 12, "hour" : -1, "minute" : -1}, "forecast" : "28day", "kp" : 2} ]
-{u'time_predicted': {u'month': 2, u'minute': -1, u'day': 11, u'hour': -1, u'year': 2014}, u'kp': 3, u'forecast': u'28day'}
-{u'time_predicted': {u'month': 2, u'minute': -1, u'day': 12, u'hour': -1, u'year': 2014}, u'kp': 2, u'forecast': u'28day'}
-----------------------------------------------------------------
-FAILED
-----------------------------------------------------------------
