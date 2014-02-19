@@ -36,17 +36,21 @@ def check_range(key, value, min_range, max_range, func_name):
 
 # Check if value of the given key is valid
 def check_value(key, min_range, max_range, func_name, dictionary):
-	if 'Time_stamp' in dictionary:
-		json_temp = dictionary['Time_stamp'];
+	if 'time_stamp' in dictionary:
+		json_temp = dictionary['time_stamp'];
 
 		# Check if year is within range
 		check_range(key, json_temp[key], min_range, max_range, func_name);
 
-	if 'Time_predicted' in dictionary:
-		json_temp = dictionary['Time_predicted'];
+	elif 'time_predicted' in dictionary:
+		json_temp = dictionary['time_predicted'];
 
 		# Check if year is within range
 		check_range(key, json_temp[key], min_range, max_range, func_name);
+	else:
+		global all_tests_passed;
+		all_tests_passed = False;
+
 	return;
 
 
@@ -94,14 +98,14 @@ def test_minutes(json_object):
 def test_forecast(json_object):
 	global all_tests_passed;
 	for dictionary in json_object:
-		if 'Time_predicted' in dictionary:
+		if 'time_predicted' in dictionary:
 			if 'forecast' not in dictionary:
 				print "----------------------------------------------------------------";
 				print "FAILED (forecast not found): in function test_forecast";
 				all_tests_passed = False;
 				return;
 			forecast = dictionary['forecast'];
-			if(forecast != 'now' and forecast != 'd28' and forecast != 'd3' and forecast != 'h1'):
+			if(forecast != 'now' and forecast != '28day' and forecast != '3day' and forecast != '1hour'):
 				print "----------------------------------------------------------------";
 				print "FAILED (", forecast, "is not a valid forecast): in function test_forecast";
 				all_tests_passed = False;
@@ -114,7 +118,7 @@ def test_kp(json_object):
 	min_kp = -1;
 	max_kp = 9;
 	for dictionary in json_object:
-		if 'Time_predicted' in dictionary:
+		if 'time_predicted' in dictionary:
 			if 'kp' not in dictionary:
 				print "----------------------------------------------------------------";
 				print "FAILED (kp not found): in function test_kp";
@@ -145,6 +149,10 @@ def main():
 	if(all_tests_passed):
 		print "----------------------------------------------------------------";
 		print "PASSED all tests"
+	else:
+		print "----------------------------------------------------------------";
+		print "FAILED" 
+
 
 	print "----------------------------------------------------------------";
 
