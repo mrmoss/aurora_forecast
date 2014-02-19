@@ -21,8 +21,9 @@ def parse28(text):
 	    month = strptime(line[5:8], '%b').tm_mon
 	    day = line[9:11]
 	    kp_value = line[-1]
-	    json = '{ "Time_predicted" : { ' + date_to_json(year, month, day)
-	    json += time_to_json(-1, -1) + '} , "Kp" : ' + str(kp_value) + '}, '
+	    json = '{ "time_predicted" : { ' + date_to_json(year, month, day)
+	    json += time_to_json(-1, -1) + '}'
+	    json += ' "forecast" : "28day", "kp" : ' + str(kp_value) + '}, '
 
 	    output_text += json
     # Remove the off-by-1 comma from the loop
