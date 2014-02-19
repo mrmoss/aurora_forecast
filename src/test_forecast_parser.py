@@ -7,6 +7,7 @@
 import unittest
 import json
 import datetime
+from forecast_parser_28_day import parse28
 
 all_tests_passed = True;
 
@@ -123,7 +124,8 @@ def test_kp(json_object):
 		
 
 def main():
-	json_string = '[{"Time_stamp":{"year":2000,"month":1,"day":1,"hour":-1,"min":-1}},{"Time_predicted":{"year":2009,"month":12,"day":30,"hour":10,"min":11},"forecast":"d28","kp":7}]';
+	#json_string = '[{"Time_stamp":{"year":2000,"month":1,"day":1,"hour":-1,"min":-1}},{"Time_predicted":{"year":2009,"month":12,"day":30,"hour":10,"min":11},"forecast":"d28","kp":7}]';
+	json_string = parse28(
 	test_json_format(json_string);
 	json_object = json.loads(json_string);
 
