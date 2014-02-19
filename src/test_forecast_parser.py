@@ -20,7 +20,10 @@ def test_json_format(json_string):
 		# Invalid JSON
 		print "----------------------------------------------------------------";
 		print "FAILED (Invalid Jason): in function test_json_object";
-	return;
+		global all_tests_passed;
+		all_tests_passed = False;
+		return False;
+	return True;
 
 # Check if given value is within range. Print error if it's not within range.
 def check_range(key, value, min_range, max_range, func_name):
@@ -124,18 +127,19 @@ def test_kp(json_object):
 		
 
 def main():
-	#json_string = '[{"Time_stamp":{"year":2000,"month":1,"day":1,"hour":-1,"min":-1}},{"Time_predicted":{"year":2009,"month":12,"day":30,"hour":10,"min":11},"forecast":"d28","kp":7}]';
-	json_string = parse28(
-	test_json_format(json_string);
-	json_object = json.loads(json_string);
+    	json_string = parse28("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2");
+	print json_string;
 
-	test_year(json_object);
-	test_month(json_object);
-	test_day(json_object);
-	test_hour(json_object);
-	test_minutes(json_string);
-	test_forecast(json_object);
-	test_kp(json_object);
+	if test_json_format(json_string):
+	 	json_object = json.loads(json_string);
+
+		test_year(json_object);
+		test_month(json_object);
+		test_day(json_object);
+		test_hour(json_object);
+		test_minutes(json_string);
+		test_forecast(json_object);
+		test_kp(json_object);
 	
 	global all_tests_passed;
 	if(all_tests_passed):
