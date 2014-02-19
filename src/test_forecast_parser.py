@@ -26,11 +26,17 @@ def test_json_format(json_string):
 	return True;
 
 # Check if given value is within range. Print error if it's not within range.
-def check_range(key, value, min_range, max_range, func_name):
-	if(value < min_range or value > max_range):
+def check_range(key, dictionary, min_range, max_range, func_name):
+	global all_tests_passed;
+
+	if key not in dictionary:
+		print "FAILED (could not find variable", key, ") in function", func_name;
+		all_tests_passed = False;
+		return;
+		 
+	if(dictionary[key] < min_range or dictionary[key] > max_range):
 		print "----------------------------------------------------------------";
 		print "FAILED (", key, value, "out of range ): in function", func_name;
-		global all_tests_passed;
 		all_tests_passed = False;
 	return;
 
@@ -40,17 +46,18 @@ def check_value(key, min_range, max_range, func_name, dictionary):
 		json_temp = dictionary['time_stamp'];
 
 		# Check if year is within range
-		check_range(key, json_temp[key], min_range, max_range, func_name);
+		check_range(key, json_temp, min_range, max_range, func_name);
+		return;
 
-	elif 'time_predicted' in dictionary:
+	if 'time_predicted' in dictionary:
 		json_temp = dictionary['time_predicted'];
-
+		
 		# Check if year is within range
-		check_range(key, json_temp[key], min_range, max_range, func_name);
-	else:
-		global all_tests_passed;
-		all_tests_passed = False;
+		check_range(key, json_temp, min_range, max_range, func_name);
+		return;
 
+	global all_tests_passed;
+	all_tests_passed = False;
 	return;
 
 
@@ -91,7 +98,7 @@ def test_minutes(json_object):
 	min_minutes = -1;
 	max_minutes = 60;
 	for dictionary in json_object:
-		check_value('min', min_minutes, max_minutes, 'test_minutes', dictionary);
+		check_value('minute', min_minutes, max_minutes, 'test_minutes', dictionary);
 	return;
 
 # Test if specified forecast is valid
@@ -124,7 +131,7 @@ def test_kp(json_object):
 				print "FAILED (kp not found): in function test_kp";
 				all_tests_passed = False;
 				return;
-			check_range('kp', dictionary['kp'], min_kp, max_kp, 'test_kp');  
+			check_range('kp', dictionary, min_kp, max_kp, 'test_kp');  
 	return;
 
 
@@ -141,7 +148,7 @@ def main():
 		test_month(json_object);
 		test_day(json_object);
 		test_hour(json_object);
-		test_minutes(json_string);
+		test_minutes(json_object);
 		test_forecast(json_object);
 		test_kp(json_object);
 	

@@ -1,0 +1,6 @@
+[ { "time_predicted" : { "year" : 2014, "month" : 2, "day" : 11, "hour" : -1, "minute" : -1} "forecast" : "28day", "kp" : 3}, { "time_predicted" : { "year" : 2014, "month" : 2, "day" : 12, "hour" : -1, "minute" : -1} "forecast" : "28day", "kp" : 2} ]
+----------------------------------------------------------------
+FAILED (Invalid Jason): in function test_json_object
+----------------------------------------------------------------
+FAILED
+----------------------------------------------------------------

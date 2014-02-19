@@ -1,5 +1,8 @@
 from time import strptime
 
+def get_current_date():
+
+
 def date_to_json(year, month, day):
     formatted =  '"year" : ' + str(year) 
     formatted += ', "month" : ' + str(month)
