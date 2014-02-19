@@ -11,18 +11,26 @@ def time_to_json(hour, minute):
     formatted += ', "minute" : ' + str(minute)
     return formatted
 
-def parse28(text):
-    document = text.split("\n")
+def time_predicted(date):
+    year = date[0:4]
+    month = strptime(date[5:8], '%b').tm_mon # convert month to number
+    day = date[9:11]
+    json = '{ "time_predicted" : { ' + date_to_json(year, month, day)
+    json += time_to_json(-1, -1) + '}'
+    return json
+
+def parse28(input_text):
+    document = input_text.split("\n")
     # Set up array of json objects
     output_text = '[ '
     for line in document:
+	# As of the project creation, all lines in the file are either comments,
+	# or they start with the year. So testing for isdigit() is sufficient
 	if line[0:4].isdigit():
-	    year = line[0:4]
-	    month = strptime(line[5:8], '%b').tm_mon
-	    day = line[9:11]
-	    kp_value = line[-1]
-	    json = '{ "time_predicted" : { ' + date_to_json(year, month, day)
-	    json += time_to_json(-1, -1) + '}'
+	    json = time_predicted(line[0:11])
+	    kp_value = line[-1]	# kp is all we need, and it is at the end of line.
+
+	    # Create output text
 	    json += ' "forecast" : "28day", "kp" : ' + str(kp_value) + '}, '
 
 	    output_text += json
