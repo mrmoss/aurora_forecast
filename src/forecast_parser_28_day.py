@@ -4,7 +4,7 @@ def month_name_to_num(month):
     return time.strptime(month, '%b').tm_mon
 
 def get_current_date():
-    return time.strftime("%Y %m %d")
+    return time.strftime("%Y %b %d")
 
 def date_to_json(year, month, day):
     format_text =  '"year" : ' + str(year) 
@@ -17,17 +17,17 @@ def time_to_json(hour, minute):
     format_text += ', "minute" : ' + str(minute)
     return format_text
 
-def time_predicted(date):
+def time_split(date, split):
     year = date[0:4]
     month = month_name_to_num(date[5:8])
     day = date[9:11]
-    json = '{ "time_predicted" : { ' + date_to_json(year, month, day)
+    json = '{ "' + split + '" : { ' + date_to_json(year, month, day)
     json += time_to_json(-1, -1) + '}'
     return json
 
 def parse28(input_text):
     now = get_current_date()
-    print now
+    now = time_split(now, 'time_stamp')
     document = input_text.split("\n")
     # Set up array of json objects
     output_text = '[ '
@@ -35,7 +35,8 @@ def parse28(input_text):
 	# As of the project creation, all lines in the file are either comments,
 	# or they start with the year. So testing for isdigit() is sufficient
 	if line[0:4].isdigit():
-	    json = time_predicted(line[0:11])
+	    json = now
+	    json += time_split(line[0:11], 'time_predicted')
 	    kp_value = line[-1]	# kp is all we need, and it is at the end of line.
 	    json += ', "forecast" : "28day", "kp" : ' + str(kp_value) + '}, '
 
