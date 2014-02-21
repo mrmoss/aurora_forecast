@@ -1,28 +1,34 @@
-from time import strptime
+import time	# for strptime and strftime
+import datetime
+
+def month_name_to_num(month):
+     return time.strptime(month, '%b').tm_mon
 
 def get_current_date():
-
+    return time.strftime("%Y %m %d")
 
 def date_to_json(year, month, day):
-    formatted =  '"year" : ' + str(year) 
-    formatted += ', "month" : ' + str(month)
-    formatted += ', "day" : ' + str(day)
-    return formatted
+    format_text =  '"year" : ' + str(year) 
+    format_text += ', "month" : ' + str(month)
+    format_text += ', "day" : ' + str(day)
+    return format_text
 
 def time_to_json(hour, minute):
-    formatted =  ', "hour" : ' + str(hour)
-    formatted += ', "minute" : ' + str(minute)
-    return formatted
+    format_text =  ', "hour" : ' + str(hour)
+    format_text += ', "minute" : ' + str(minute)
+    return format_text
 
 def time_predicted(date):
     year = date[0:4]
-    month = strptime(date[5:8], '%b').tm_mon # convert month to number
+    month = month_name_to_num(date[5:8])
     day = date[9:11]
     json = '{ "time_predicted" : { ' + date_to_json(year, month, day)
     json += time_to_json(-1, -1) + '}'
     return json
 
 def parse28(input_text):
+    now = get_current_date()
+    print now
     document = input_text.split("\n")
     # Set up array of json objects
     output_text = '[ '
