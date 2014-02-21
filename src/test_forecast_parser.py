@@ -7,7 +7,7 @@
 import unittest
 import json
 import datetime
-from forecast_parser_28_day import parse28
+from forecast_parser_28_day import parse
 
 
 
@@ -31,7 +31,7 @@ class Test:
 		self.json_string = json_string;
 
 	def print_error (self, error_msg):
-		print "----------------------------------------------------------------"
+		print 65 * '-'
 		print error_msg;
 		Test.failed_tests += 1;
 
@@ -80,7 +80,7 @@ class Test:
 
 
 def main():
-	json_string = parse28("2014 Feb 11    150		5	3\n");
+	json_string = parse("2014 Feb 11    150		5	3\n", "28d");
 	print json_string;
 	
 	test = Test(json_string);
