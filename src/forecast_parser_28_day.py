@@ -8,43 +8,42 @@ def get_current_date():
     return time.strftime("%Y %b %d %H %M")
 
 def date_to_json(year, month, day):
-    output_text =  '"year" : ' + str(year) + ', '
-    output_text += '"month" : ' + str(month) + ', '
-    output_text += '"day" : ' + str(day) + ', '
+    output_text =  '"year":' + str(year) + ','
+    output_text += '"month":' + str(month) + ','
+    output_text += '"day":' + str(day) + ','
     return output_text
 
 def time_to_json(hour, minute):
-    output_text =  '"hour" : ' + str(hour) + ', '
-    output_text += '"minute" : ' + str(minute)
+    output_text =  '"hour":' + str(hour) + ','
+    output_text += '"minute":' + str(minute)
     return output_text
 
-def time_split(date, time_obj_name):
+def datetime_to_json(date, time_obj_name):
     year = date[0:4]
     month = month_name_to_num(date[5:8])
     day = date[9:11]
+    json = '"' + time_obj_name + '":{' + date_to_json(year, month, day)
+
     hour = date[12:14]
     minute = date[15:17]
-    json = '"' + time_obj_name + '" : { ' + date_to_json(year, month, day)
     json += time_to_json(hour, minute) + '}'
     return json
 
-def parse28(input_text):
-    d = datetime.date.today()
-    #print d.strftime('%m'), d.strftime('%d')
-    timestamp = time_split(get_current_date(), 'time_stamp')
-    time = " -1 -1"
+def parse_28_day(input_text):
+    timestamp = datetime_to_json(get_current_date(), 'time_stamp')
+    time = " -1 -1" # to indicate all hours and minutes of the day.
 
     document = input_text.split("\n")
-    # Set up array of json objects
+    # Build array of json objects
     output_text = '[ '
     for line in document:
 	# As of the project creation, all lines in the file are either comments,
 	# or they start with the year. So testing for isdigit() is sufficient
 	if line[0:4].isdigit():
-	    json = '{' + timestamp + ', '
-	    json += time_split(line[0:11] + time, 'time_predicted')
+	    json = '{' + timestamp + ','
+	    json += datetime_to_json(line[0:11] + time, 'time_predicted')
 	    kp_value = line[-1]	# kp is all we need, and it is at the end of line.
-	    json += ', "forecast" : "28day", "kp" : ' + str(kp_value) + '}, '
+	    json += ',"forecast":"28day","kp":' + str(kp_value) + '}, '
 
 	    output_text += json
     # Remove the off-by-1 comma made by the loop.
