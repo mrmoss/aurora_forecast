@@ -1,4 +1,7 @@
-from time import strptime
+import time
+
+def month_name_to_num(month):
+    return time.strptime(month, '%b').tm_mon
 
 def get_current_date():
     return time.strftime("%Y %m %d")
