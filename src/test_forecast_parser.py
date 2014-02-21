@@ -55,8 +55,7 @@ class Test:
 	#		self.print_error ("FAILED (Second and second to last characters of json string must be '{' and '}' respectively");
 
 	def test_json_format (self):
-		dic1 = {"time_stamp" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}};
-		dic2 = {"time_predicted" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "forecast" : "now", "kp" : 7};
+		dic1 = {"time_stamp" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "time_predicted" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "forecast" : "now", "kp" : 7};
 		within_dic = {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1};
 		
 		counter = 0;
@@ -64,19 +63,17 @@ class Test:
 			counter += 1;
 			
 			# Check if dictionary has the correct keys
-			if dictionary.keys() != dic1.keys() and dictionary.keys() != dic2.keys():
-				self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect key)");
+			if dictionary.keys() != dic1.keys():
+				self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key)");
 				continue;
 
 			# Check if dictionary keys within time_stamp dictionary match
-			if dictionary.has_key('time_stamp'):
-				if dictionary['time_stamp'].keys() != within_dic.keys():
-					self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect key)");
+			if dictionary['time_stamp'].keys() != within_dic.keys():
+				self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key with time_stamp object)");
 
 			# Check if dictionary keys within time_predicted dictionary match
-			if dictionary.has_key('time_predicted'):
-				if dictionary['time_predicted'].keys() != within_dic.keys():
-					self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect key)");
+			if dictionary['time_predicted'].keys() != within_dic.keys():
+				self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key within time predicted object)");
 
 
 			
