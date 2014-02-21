@@ -21,13 +21,14 @@ def time_split(date, split):
     year = date[0:4]
     month = month_name_to_num(date[5:8])
     day = date[9:11]
-    json = '{ "' + split + '" : { ' + date_to_json(year, month, day)
+    json = '"' + split + '" : { ' + date_to_json(year, month, day)
     json += time_to_json(-1, -1) + '}'
     return json
 
 def parse28(input_text):
     now = get_current_date()
-    now = time_split(now, 'time_stamp')
+    timestamp = time_split(now, 'time_stamp')
+
     document = input_text.split("\n")
     # Set up array of json objects
     output_text = '[ '
@@ -35,7 +36,7 @@ def parse28(input_text):
 	# As of the project creation, all lines in the file are either comments,
 	# or they start with the year. So testing for isdigit() is sufficient
 	if line[0:4].isdigit():
-	    json = now
+	    json = '{' + timestamp + ', '
 	    json += time_split(line[0:11], 'time_predicted')
 	    kp_value = line[-1]	# kp is all we need, and it is at the end of line.
 	    json += ', "forecast" : "28day", "kp" : ' + str(kp_value) + '}, '
@@ -45,6 +46,17 @@ def parse28(input_text):
     output_text = output_text[:-2]
     return output_text + ' ]'
 	    
+def parse_3_day(input_text):
+    return
+
+def parse_1_hour(input_text):
+    return
+
+def parse_15_min(input_text):
+    return
+
+def parse(input_text):
+    return
 
 def main():
     print parse28("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2")
