@@ -80,7 +80,7 @@ class Test:
 
 
 def main():
-	json_string = parse28("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2");
+	json_string = parse28("2014 Feb 11    150		5	3\n");
 	print json_string;
 	
 	test = Test(json_string);
@@ -93,10 +93,10 @@ def main():
 
 	if Test.failed_tests == 0:
 		print "----------------------------------------------------------------";
-		print "PASSED all tests"
+		print "\033[1;32mPASSED all tests\033[1;m"
 	else:
 		print "----------------------------------------------------------------";
-		print "FAILED", Test.failed_tests, "tests"
+		print "\033[1;31mFAILED", Test.failed_tests, "tests\033[1;m"
 
 
 	print "----------------------------------------------------------------";	

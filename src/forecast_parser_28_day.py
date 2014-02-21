@@ -1,33 +1,38 @@
+import datetime
 import time
 
 def month_name_to_num(month):
     return time.strptime(month, '%b').tm_mon
 
 def get_current_date():
-    return time.strftime("%Y %b %d")
+    return time.strftime("%Y %b %d %H %M")
 
 def date_to_json(year, month, day):
-    format_text =  '"year" : ' + str(year) 
-    format_text += ', "month" : ' + str(month)
-    format_text += ', "day" : ' + str(day)
-    return format_text
+    output_text =  '"year" : ' + str(year) + ', '
+    output_text += '"month" : ' + str(month) + ', '
+    output_text += '"day" : ' + str(day) + ', '
+    return output_text
 
 def time_to_json(hour, minute):
-    format_text =  ', "hour" : ' + str(hour)
-    format_text += ', "minute" : ' + str(minute)
-    return format_text
+    output_text =  '"hour" : ' + str(hour) + ', '
+    output_text += '"minute" : ' + str(minute)
+    return output_text
 
-def time_split(date, split):
+def time_split(date, time_obj_name):
     year = date[0:4]
     month = month_name_to_num(date[5:8])
     day = date[9:11]
-    json = '"' + split + '" : { ' + date_to_json(year, month, day)
-    json += time_to_json(-1, -1) + '}'
+    hour = date[12:14]
+    minute = date[15:17]
+    json = '"' + time_obj_name + '" : { ' + date_to_json(year, month, day)
+    json += time_to_json(hour, minute) + '}'
     return json
 
 def parse28(input_text):
-    now = get_current_date()
-    timestamp = time_split(now, 'time_stamp')
+    d = datetime.date.today()
+    #print d.strftime('%m'), d.strftime('%d')
+    timestamp = time_split(get_current_date(), 'time_stamp')
+    time = " -1 -1"
 
     document = input_text.split("\n")
     # Set up array of json objects
@@ -37,7 +42,7 @@ def parse28(input_text):
 	# or they start with the year. So testing for isdigit() is sufficient
 	if line[0:4].isdigit():
 	    json = '{' + timestamp + ', '
-	    json += time_split(line[0:11], 'time_predicted')
+	    json += time_split(line[0:11] + time, 'time_predicted')
 	    kp_value = line[-1]	# kp is all we need, and it is at the end of line.
 	    json += ', "forecast" : "28day", "kp" : ' + str(kp_value) + '}, '
 
@@ -53,13 +58,28 @@ def parse_1_hour(input_text):
     return
 
 def parse_15_min(input_text):
+
     return
 
-def parse(input_text):
+def parse(input_text, which):
+    now = get_current_date()
+    timestamp = '{' + time_split(now, 'time_stamp') + ', '
+
+    if which == "28d":
+	parse28(input_text)
+    elif which == "3d":
+	parse_3_day(input_text)
+    elif which == "1h":
+	parse_1_hour(input_text)
+    elif which == "15m":
+	parse_15_min(input_text)
+    else:
+	return "Cannot determine which prediction page"
+
     return
 
 def main():
-    print parse28("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2")
+    print parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2")
 
 
 if __name__ == "__main__":
