@@ -61,11 +61,8 @@ def parse_15_min(input_text):
     return
 
 def parse(input_text, which):
-    now = get_current_date()
-    timestamp = '{' + time_split(now, 'time_stamp') + ', '
-
     if which == "28d":
-	parse28(input_text)
+	return parse_28_day(input_text)
     elif which == "3d":
 	parse_3_day(input_text)
     elif which == "1h":
