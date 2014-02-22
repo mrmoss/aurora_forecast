@@ -38,7 +38,7 @@ class Test:
 	# Test if square brackets are used correctly in json string
 	def test_brackets (self):
 		if self.json_string[0] != '[' or self.json_string[-1] != ']':
-			print_error ("\033[1;31mFAILED (First and last characters of the json string must be '[' and ']' respectively");
+			self.print_error ("\033[1;31mFAILED (First and last characters of the json string must be '[' and ']' respectively");
 
 		number_of_sbrackets = 0; 
 		for char in self.json_string:
@@ -105,7 +105,7 @@ class Test:
 				schema(dictionary);
 			except MultipleInvalid as e:
 				exc = e;
-				self.print_error("FAILED (Object " + str(counter) + " in json string " + str(exc) + ")");
+				self.print_error("FAILED (Object " + str(counter) + " in json string) " + str(exc));
 
 			
 
@@ -119,10 +119,9 @@ def test_parser (json_string):
 
 	
 	test = Test(json_string);
-	
+	test.test_brackets();
 	# Invalid json string can't run other tests because other tests are dependent on this one
 	if(Test.failed_tests == 0):
-		test.test_brackets();
 		test.test_json_format();
 		test.test_with_schema();
 	
@@ -139,6 +138,7 @@ def test_parser (json_string):
 	
 def main():
 	json_string = parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2", "28d");
+	json_string = '[{"time_stamp" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "time_predicted" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "forecast" : "now", "kp" : 7}]';
 	test_parser (json_string);
 	
 
