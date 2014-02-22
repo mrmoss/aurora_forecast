@@ -17,6 +17,8 @@ class Test:
 	failed_tests = 0;
 
 	def __init__ (self, json_string):
+		self.json_string = json_string;
+
 		# Test if the given string is valid json
 		try:
 			json.loads(json_string);
@@ -28,8 +30,7 @@ class Test:
 		# Parse json string
 		self.json_object = json.loads (json_string);
 
-		self.json_string = json_string;
-
+	
 	def print_error (self, error_msg):
 		print 60 * "-";
 		print "\033[1;31m" + error_msg + "\033[1;m";
@@ -61,7 +62,7 @@ class Test:
 			if dictionary.keys() != match.keys():
 				self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key)");
 				continue;
-			
+		
 			if type(dictionary['time_stamp']) is not dict:
 				self.print_error ("FAILED (Object " + str(counter) + " in json string must contain time_stamp as an object)"); 
 			else:
@@ -75,6 +76,7 @@ class Test:
 				# Check if dictionary keys within time_predicted dictionary match
 				if dictionary['time_predicted'].keys() != within_dic.keys():
 					self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key within time predicted object)");
+
 
 	# Test json string using schema
 	def test_with_schema (self):
@@ -138,7 +140,6 @@ def test_parser (json_string):
 	
 def main():
 	json_string = parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2", "28d");
-	json_string = '[{"time_stamp" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "time_predicted" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "forecast" : "now", "kp" : 7}]';
 	test_parser (json_string);
 	
 
