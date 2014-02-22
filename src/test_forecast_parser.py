@@ -20,9 +20,9 @@ class Test:
 		# Test if the given string is valid json
 		try:
 			json.loads(json_string);
-		except:
+		except ValueError as err:
 			# Invalid JSON
-			self.print_error("FAILED (Invalid json string)");
+			self.print_error("FAILED (Invalid json string) " + str(err));
 			return;
 
 		# Parse json string
@@ -78,8 +78,9 @@ class Test:
 
 	# Test json string using schema
 	def test_with_schema (self):
+		
 		time = {
-			Required("year") : All(int, Range(min=1970, max=2014)),
+			Required("year") : All(int, Range(min=1970, max=datetime.datetime.now().year)),
 			Required("month") : All(int, Range(min=1, max=12)),
 			Required("day") : All(int, Range(min=1, max=31)),
 			Required("hour") : All(int, Range(min=-1, max=24)),
