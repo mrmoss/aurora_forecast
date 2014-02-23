@@ -33,13 +33,13 @@ class Test:
 	
 	def print_error (self, error_msg):
 		print 60 * "-";
-		print "\033[1;31m" + error_msg + "\033[1;m";
+		print error_msg;
 		Test.failed_tests += 1;
 
 	# Test if square brackets are used correctly in json string
 	def test_brackets (self):
 		if self.json_string[0] != '[' or self.json_string[-1] != ']':
-			self.print_error ("\033[1;31mFAILED (First and last characters of the json string must be '[' and ']' respectively");
+			self.print_error ("FAILED (First and last characters of the json string must be '[' and ']' respectively");
 
 		number_of_sbrackets = 0; 
 		for char in self.json_string:
@@ -48,36 +48,7 @@ class Test:
 		if number_of_sbrackets > 2:
 			self.print_error ("FAILED (Too many square brackets in json sring");
 
-
-	# Test if json format matches the decided format
-	def test_json_format (self):
-		match = {"time_stamp" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "time_predicted" : {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1}, "forecast" : "now", "kp" : 7};
-		within_dic = {"year" : 2000, "month" : 1, "day" : 1, "hour" : 1, "minute" : 1};
 		
-		counter = 0;
-		for dictionary in self.json_object:
-			counter += 1;
-			
-			# Check if dictionary has the correct keys
-			if dictionary.keys() != match.keys():
-				self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key)");
-				continue;
-		
-			if type(dictionary['time_stamp']) is not dict:
-				self.print_error ("FAILED (Object " + str(counter) + " in json string must contain time_stamp as an object)"); 
-			else:
-				# Check if dictionary keys within time_stamp dictionary match
-				if dictionary['time_stamp'].keys() != within_dic.keys():
-					self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key with time_stamp object)");
-
-			if type(dictionary['time_predicted']) is not dict:
-				self.print_error ("FAILED (Object " + str(counter) + " in json string must contain time_predicted as an object)");
-			else:	
-				# Check if dictionary keys within time_predicted dictionary match
-				if dictionary['time_predicted'].keys() != within_dic.keys():
-					self.print_error ("FAILED (Object " + str(counter) + " in json string has incorrect or missing key within time predicted object)");
-
-
 	# Test json string using schema
 	def test_with_schema (self):
 		
@@ -115,7 +86,7 @@ def test_parser (json_string):
 	print json_string;
 	if json_string == "Cannot determine which prediction page":
 		print 60 * "-";
-		print "\033[1;31mFAILED (Cannot determine which prediction page)\033[1;m"
+		print "FAILED (Cannot determine which prediction page)"
 		print 60 * "-";
 		return;
 
@@ -124,22 +95,21 @@ def test_parser (json_string):
 	test.test_brackets();
 	# Invalid json string can't run other tests because other tests are dependent on this one
 	if(Test.failed_tests == 0):
-		test.test_json_format();
 		test.test_with_schema();
 	
 	
 	if Test.failed_tests == 0:
 		print 60 * "-";
-		print "\033[1;32mPASSED all tests\033[1;m"
+		print "PASSED all tests"
 	else:
 		print 60 * "-";
-		print "\033[1;31mFAILED", Test.failed_tests, "tests\033[1;m"
+		print "FAILED", Test.failed_tests, "tests"
 
 
 	print 60 * "-";
 	
 def main():
-	json_string = parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2", "28d");
+	json_string = parse("2014 Feb 11    150		5	3\n2015 Feb 12	    111		5	2", "28d");
 	test_parser (json_string);
 	
 
