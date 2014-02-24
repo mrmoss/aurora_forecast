@@ -33,9 +33,7 @@ def abort_signal_handler(signal,frame):
 	sys.exit(0);
 
 #Globals
-password="";
-sender_email="Aurora Forecast <aurora.forecast@gmail.com>";
-sender_account="aurora.forecast";
+server_email="Soothsayer <soothsayer@soothsayer.com>";
 receiver_email="Administrator Bob <admin.bob@gmail.com>";
 now_forecast_link="http://www.example.com/now.txt";
 h1_forecast_link="http://www.example.com/1hour.txt";
@@ -57,8 +55,6 @@ def read_config(filename):
 		config_parser.read(filename);
 
 		#Read Data Values
-		sender_email_temp=config_parser.get("Contact Info","sender_email");
-		sender_account_temp=config_parser.get("Contact Info","sender_account");
 		receiver_email_temp=config_parser.get("Contact Info","receiver_email");
 		now_forecast_link_temp=config_parser.get("Data Resources","now_forecast_link");
 		h1_forecast_link_temp=config_parser.get("Data Resources","h1_forecast_link");
@@ -71,8 +67,6 @@ def read_config(filename):
 		retry_timer_temp=config_parser.get("Time Settings","retry_timer");
 
 		#Get Global Variables
-		global sender_email;
-		global sender_account;
 		global receiver_email;
 		global now_forecast_link;
 		global h1_forecast_link;
@@ -84,8 +78,6 @@ def read_config(filename):
 		global d28_forecast_timer;
 
 		#Assign Global Variables
-		sender_email=sender_email_temp;
-		sender_account=sender_account_temp;
 		receiver_email=receiver_email_temp;
 		now_forecast_link=now_forecast_link_temp;
 		h1_forecast_link=h1_forecast_link_temp;
@@ -112,8 +104,6 @@ def write_config(filename):
 
 		#Add Section and Write Data Values
 		config_parser.add_section("Contact Info");
-		config_parser.set("Contact Info","sender_email",sender_email);
-		config_parser.set("Contact Info","sender_account",sender_account);
 		config_parser.set("Contact Info","receiver_email",receiver_email);
 		config_parser.add_section("Data Resources");
 		config_parser.set("Data Resources","now_forecast_link",now_forecast_link);
@@ -184,23 +174,23 @@ while True:
 		error_message_end(True);
 
 	#Get Password for Email via local file.
-	error_message_start("\tloading private key...");
-	password=file_util.file_to_string("private_key");
+	#error_message_start("\tloading private key...");
+	#password=file_util.file_to_string("private_key");
 
 	#Bad Password Load, Exit
-	if(password==""):
-		error_message_end(False);
-		error_message_fatal_error();
+	#if(password==""):
+	#	error_message_end(False);
+	#	error_message_fatal_error();
 
 	#Good Password Load, Continue
-	else:
-		error_message_end(True);
+	#else:
+	#	error_message_end(True);
 
 	#Test Email Login
 	error_message_start("\tsigning into email...");
 
 	#Good Email Signin
-	if(emailer.send_email("Aurora Forecaster","Server started!",sender_email,receiver_email,sender_account,password)):
+	if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
 		error_message_end(True);
 
 	#Bad Email Signin
@@ -223,7 +213,7 @@ while True:
 
 		#Failed Data Download
 		if(data_download==""):
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Data Download
 		else:
@@ -232,7 +222,7 @@ while True:
 
 			#Failed Conversion
 			if(data_converted==""):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Conversion
 			else:
@@ -241,7 +231,7 @@ while True:
 
 				#Failed Parse
 				if(data_json.get('error')==True):
-					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",sender_email,receiver_email,sender_account,password);
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 				#Successful Parse
 				else:
