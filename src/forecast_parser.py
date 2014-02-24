@@ -77,6 +77,5 @@ def parse(input_text, which):
 def main():
     print parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2")
 
-
 if __name__ == "__main__":
     main()
