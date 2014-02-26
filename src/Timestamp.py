@@ -7,7 +7,7 @@ class Timestamp:
 
     def __init__(self, date):
 	self.year = int(date[0:4])
-    	self.month = int(self.month_name_to_num(date[5:8]))
+        self.month = int(self.month_name_to_num(date[5:8]))
     	self.day = int(date[9:11])
 	try:
 	    self.hour = int(date[12:14])
