@@ -53,14 +53,26 @@ def parse_3_day(input_text, time_now):
 
 def parse_1_hour(input_text, time_now):
     output_text = ''
-
+    important_line = "Planetary"
+    forecast = ',"forecast:"3day","kp":'
+    prediction_times = []
+    
     for line in input_text:
         if len(line) == 0:
             continue
-        if line[0].isdigit():
+        elif line[0].isdigit():
             json = '{' + time_now + ', "time_predicted":'
-            json += Timestamp(line[0:11]).json()
-    return
+            for hour in range(24):
+                all_day = Timestamp(line + ' ' + str(hour)).json()
+                prediction_times.append(json + all_day + forecast)
+        elif important_line in line:
+            kps = line.split()[-8:]
+            index = 0
+            for hour in range(24):
+                prediction_times[hour] += str(kps[hour / 3]) + ' }'
+    print prediction_times 
+                #output_text += prediction_times[hour]
+    return '' #output_text
 
 def parse_15_min(input_text, timestamp):
     return
@@ -100,12 +112,12 @@ def parse(input_text, which_one):
     return json_array + ' ]'
 
 def main():
-    test_page = "2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2\n" 
+    #test_page = "2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2\n" 
     # test_page = ":Issued: 2013 Dec 31 2205 UTC\n\n00-03UT        5         6         9", "3d"
-    #test_page = "2014 Feb 27\n\n Planetary(estimated Ap)     24     1     1     1     1     3     4     6     5"
-    print parse(test_page, "28d")
+    test_page = "2014 Feb 27\n\n Planetary(estimated Ap)     24     1     1     1     1     3     4     6     5"
+    #print parse(test_page, "28d")
     #print parse(test_page, "3d")
-    #print parse(test_page, "1d")
+    print parse(test_page, "1h")
     
 
 
