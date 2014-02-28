@@ -173,21 +173,8 @@ while True:
 	else:
 		error_message_end(True);
 
-	#Get Password for Email via local file.
-	#error_message_start("\tloading private key...");
-	#password=file_util.file_to_string("private_key");
-
-	#Bad Password Load, Exit
-	#if(password==""):
-	#	error_message_end(False);
-	#	error_message_fatal_error();
-
-	#Good Password Load, Continue
-	#else:
-	#	error_message_end(True);
-
 	#Test Email Login
-	#error_message_start("\tsigning into email...");
+	error_message_start("\tsigning into email...");
 
 	#Good Email Signin
 	#if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
@@ -213,7 +200,6 @@ while True:
 		#Successful Data Download
 		else:
 			#Convert Downloaded Data
-			print(data_download);
 			data_converted=forecast_parser.parse(data_download,"28d");
 
 			#Failed Conversion
@@ -225,9 +211,11 @@ while True:
 				#Parse Converted Data
 				data_json=test_json.test_json_string(data_converted);
 
+				print(data_json[1]);
+
 				#Failed Parse
 				if(data_json[0]==False):
-					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_converted)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 				#Successful Parse
 				else:
