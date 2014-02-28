@@ -2,7 +2,7 @@
 
 #Forecast Retriever Source
 #	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-#	Modified On:	02/15/2014
+#	Modified On:	02/27/2014
 
 #Configuration Parser Library
 import ConfigParser;
@@ -13,8 +13,11 @@ import emailer;
 #File Utility Library
 import file_util;
 
-#JSON Library
-import json;
+#Forecast Parser Library
+import forecast_parser;
+
+#JSON Test Library
+import test_json;
 
 #Signal Library
 import signal;
@@ -129,9 +132,6 @@ def write_config(filename):
 		return False;
 
 #Fake Functions...
-def now_converter(fake):
-	print("converting data!");
-	return "";
 def update_database(fake):
 	print("updating database!");
 
@@ -146,6 +146,37 @@ def error_message_end(success):
 def error_message_fatal_error():
 	print "fatal error - exiting"
 	exit();
+
+#Forecast Update Function
+def get_forecast(link,parser,email_text):
+	#Try to Download Data
+	data_download=url_util.get_url(link);
+
+	#Failed Data Download
+	if(data_download==""):
+		emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast failed to download!\r\n\r\nDownload Link:\r\n"+link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+
+	#Successful Data Download
+	else:
+		#Convert Downloaded Data
+		data_converted=forecast_parser.parse(data_download,parser);
+
+		#Failed Conversion
+		if(data_converted==""):
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+
+		#Successful Conversion
+		else:
+			#Parse Converted Data
+			data_json=test_json.test_json_string(data_converted);
+
+			#Failed Parse
+			if(data_json[0]==False):
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_converted)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+
+			#Successful Parse
+			else:
+				update_database(data_json[1]);
 
 #Get Resources...For Forever...
 while True:
@@ -173,19 +204,6 @@ while True:
 	else:
 		error_message_end(True);
 
-	#Get Password for Email via local file.
-	#error_message_start("\tloading private key...");
-	#password=file_util.file_to_string("private_key");
-
-	#Bad Password Load, Exit
-	#if(password==""):
-	#	error_message_end(False);
-	#	error_message_fatal_error();
-
-	#Good Password Load, Continue
-	#else:
-	#	error_message_end(True);
-
 	#Test Email Login
 	error_message_start("\tsigning into email...");
 
@@ -201,45 +219,13 @@ while True:
 	#Server Started
 	print("server started");
 
-	#JSON Test
-	#json_test_string="{'02032014':{'kp':[3,5,4]}}";
-	#json_test_object=json.loads(json_test_string);
-	#print(json_test_object);
-
 	#Be A Server (Forever...)
 	while True:
-		#Try to Download Data
-		data_download=url_util.get_url(now_forecast_link);
 
-		#Failed Data Download
-		if(data_download==""):
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+		#TEST
+		get_forecast(d28_forecast_link,"28d","28 day");
 
-		#Successful Data Download
-		else:
-			#Convert Downloaded Data
-			data_converted=now_converter(data_download);
-
-			#Failed Conversion
-			if(data_converted==""):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
-
-			#Successful Conversion
-			else:
-				#Parse Converted Data
-				data_json={'error':True};
-
-				#Failed Parse
-				if(data_json.get('error')==True):
-					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
-
-				#Successful Parse
-				else:
-					update_database(data_json);
-
-		#Hang here...Testing point...
 		while True:
-			x=1;
 			time.sleep(0);
 
 	#Exit Main Thread
