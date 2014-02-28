@@ -117,6 +117,8 @@ def main():
 	test_json_string (json_string);
 	print Test_json.error_string;
 
+        json_string = parse(":Issued: 2013 Dec 31 2205 UTC\n\n00-03UT        5         6         9", "3d")
+        test_json_string (json_string);
 	
 if __name__ == "__main__":
 	main();
