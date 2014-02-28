@@ -15,6 +15,7 @@ from voluptuous import Schema, Required, All, Length, Range, MultipleInvalid, In
 class Test_json:
 	# Keeps track of number of failed tests
 	failed_tests = 0;
+	error_string = "";
 
 	def __init__ (self, json_string):
 		self.json_string = json_string;
@@ -32,9 +33,10 @@ class Test_json:
 
 	
 	def print_error (self, error_msg):
-		print 60 * "-";
-		print error_msg;
+		Test_json.error_string += 60 * "-" + "\n";
+		Test_json.error_string += error_msg + "\n";
 		Test_json.failed_tests += 1;
+
 
 	# Test if square brackets are used correctly in json string
 	def test_brackets (self):
@@ -83,12 +85,11 @@ class Test_json:
 			
 
 def test_json_string (json_string):
-	print json_string;
 	if json_string == "Cannot determine which prediction page":
-		print 60 * "-";
-		print "FAILED (Cannot determine which prediction page)"
-		print 60 * "-";
-		return;
+		Test_json.error_string += 60 * "-" + "\n";
+		Test_json.error_string +=  "FAILED (Cannot determine which prediction page)" + "\n";
+		Test_json.error_string += 60 * "-" + "\n";
+		return (False, Test_json.error_string);
 
 	
 	test = Test_json(json_string);
@@ -99,18 +100,22 @@ def test_json_string (json_string):
 	
 	
 	if Test_json.failed_tests == 0:
-		print 60 * "-";
-		print "PASSED all tests"
+		Test_json.error_string += 60 * "-" + "\n";
+		Test_json.error_string += "PASSED all tests\n"
 	else:
-		print 60 * "-";
-		print "FAILED", Test_json.failed_tests, "tests"
+		Test_json.error_string += 60 * "-" + "\n";
+		Test_json.error_string += "FAILED " + str(Test_json.failed_tests) + " tests\n"
 
 
-	print 60 * "-";
+	Test_json.error_string += 60 * "-" + "\n";
+	return (False, Test_json.error_string);
+
 	
+
 def main():
-	json_string = parse("2014 Feb 11    150		5	3\n2015 Feb 12	    111		5	2", "28d");
+	json_string = parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2", "28d");
 	test_json_string (json_string);
+	print Test_json.error_string;
 
 	
 if __name__ == "__main__":
