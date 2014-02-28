@@ -204,33 +204,33 @@ while True:
 	#Be A Server (Forever...)
 	while True:
 		#Try to Download Data
-		data_download=url_util.get_url(now_forecast_link);
+		data_download=url_util.get_url(d28_forecast_link);
 
 		#Failed Data Download
 		if(data_download==""):
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The 28 day forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Data Download
 		else:
 			#Convert Downloaded Data
-			data_converted=now_converter(data_download);
+			data_converted=parse(data_download,"28d");
 
 			#Failed Conversion
 			if(data_converted==""):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The 28 day forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Conversion
 			else:
 				#Parse Converted Data
-				data_json={'error':True};
+				data_json=test_json_string(data_converted);
 
 				#Failed Parse
-				if(data_json.get('error')==True):
-					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				if(data_json[0]==False):
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 				#Successful Parse
 				else:
-					update_database(data_json);
+					update_database(data_json[1]);
 
 		#Hang here...Testing point...
 		while True:
