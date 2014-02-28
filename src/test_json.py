@@ -109,9 +109,11 @@ def test_json_string (json_string):
 	print 60 * "-";
 	
 def main():
-	json_string = parse("2014 Feb 11    150		5	3\n2015 Feb 12	    111		5	2", "28d");
+	json_string = parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2", "28d");
 	test_json_string (json_string);
 
+        json_string = parse(":Issued: 2013 Dec 31 2205 UTC\n\n00-03UT        5         6         9", "3d")
+        test_json_string (json_string);
 	
 if __name__ == "__main__":
 	main();
