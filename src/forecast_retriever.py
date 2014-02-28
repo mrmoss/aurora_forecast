@@ -2,7 +2,7 @@
 
 #Forecast Retriever Source
 #	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-#	Modified On:	02/15/2014
+#	Modified On:	02/27/2014
 
 #Configuration Parser Library
 import ConfigParser;
@@ -210,11 +210,6 @@ while True:
 
 	#Server Started
 	print("server started");
-
-	#JSON Test
-	#json_test_string="{'02032014':{'kp':[3,5,4]}}";
-	#json_test_object=json.loads(json_test_string);
-	#print(json_test_object);
 
 	#Be A Server (Forever...)
 	while True:
