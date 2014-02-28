@@ -4,11 +4,19 @@
 #	Created By:	Ruslan Kolesnik, Caleb Hellickson, Ignacio Saez Lahildalga, Mike Moss
 #	Modified On:	02/27/2014
 
-import json
+#Date and Time Library
 import datetime
+
+#Forecast Parser Library
 from forecast_parser import parse
+
+#JSON Library
+import json
+
+#Schema Library
 from voluptuous import Schema, Required, All, Length, Range, MultipleInvalid, Invalid
 
+#Tests Starting and Ending Brackets, returns tuple (success,error_message).
 def test_square_brackets(json_string):
 	return_value=(True,"");
 
@@ -18,6 +26,7 @@ def test_square_brackets(json_string):
 
 	return return_value;
 
+#Tests Json Syntax, returns tuple (success,error_message).
 def test_json_syntax(json_string):
 	return_value=(True,"");
 
@@ -28,6 +37,7 @@ def test_json_syntax(json_string):
 
 	return return_value;
 
+#Tests Aurora Syntax (for database entries), returns tuple (success,error_message).
 def test_aurora_syntax(json_string):
 	return_value=(True,"");
 	json_object="";
@@ -71,6 +81,7 @@ def test_aurora_syntax(json_string):
 
 	return return_value;
 
+#JSON Tester (tests all other tests), returns tuple (success,error_message).
 def test_json_string (json_string):
 	return_value=(True,"");
 
