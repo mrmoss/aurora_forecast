@@ -70,9 +70,8 @@ def parse_1_hour(input_text, time_now):
             index = 0
             for hour in range(24):
                 prediction_times[hour] += str(kps[hour / 3]) + ' }'
-    print prediction_times 
-                #output_text += prediction_times[hour]
-    return '' #output_text
+                output_text += prediction_times[hour]
+    return output_text
 
 def parse_15_min(input_text, timestamp):
     return
