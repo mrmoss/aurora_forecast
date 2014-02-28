@@ -208,8 +208,7 @@ while True:
 
 		#Failed Data Download
 		if(data_download==""):
-			print("The 28 day forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n");
-			#emailer.send_email_threaded("Aurora Forecaster Error!!!","The 28 day forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The 28 day forecast failed to download!\r\n\r\nDownload Link:\r\n"+now_forecast_link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Data Download
 		else:
@@ -219,8 +218,7 @@ while True:
 
 			#Failed Conversion
 			if(data_converted==""):
-				print("The 28 day forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n");
-				#emailer.send_email_threaded("Aurora Forecaster Error!!!","The 28 day forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The 28 day forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Conversion
 			else:
@@ -229,8 +227,7 @@ while True:
 
 				#Failed Parse
 				if(data_json[0]==False):
-					print("The now forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n");
-					#emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The now forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_json)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 				#Successful Parse
 				else:
@@ -238,7 +235,6 @@ while True:
 
 		#Hang here...Testing point...
 		while True:
-			x=1;
 			time.sleep(0);
 
 	#Exit Main Thread
