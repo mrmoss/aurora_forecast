@@ -30,8 +30,8 @@ def get_next_three_days(issue_date):
     return upcoming_dates[1:]
 
 # Issue date is the best way to get date. Lines that start with digits are times.
-def parse_3_day(input_text, timestamp):
-    output_text = '[ '
+def parse_3_day(input_text, time_now):
+    output_text = ''
     issued = ':Issued:' 
     for line in input_text:
         if issued in line:
@@ -40,7 +40,7 @@ def parse_3_day(input_text, timestamp):
         elif line[0:2].isdigit():
             kps = line[7:].split()
             for day in next_three_days:
-                json = '{' + timestamp + ', "time_predicted":'
+                json = '{' + time_now + ', "time_predicted":'
                 json += Timestamp(day + line[0:2]).json() 
                 kp_value = kps[0]
                 kps = kps[1:]
@@ -48,10 +48,18 @@ def parse_3_day(input_text, timestamp):
                 output_text += json
     # Remove the off-by-1 comma made by the loop.
     output_text = output_text[:-1]
-    return output_text + ' ]'
+    return output_text 
 
 
-def parse_1_hour(input_text, timestamp):
+def parse_1_hour(input_text, time_now):
+    output_text = ''
+
+    for line in input_text:
+        if len(line) == 0:
+            continue
+        if line[0].isdigit():
+            json = '{' + time_now + ', "time_predicted":'
+            json += Timestamp(line[0:11]).json()
     return
 
 def parse_15_min(input_text, timestamp):
@@ -59,8 +67,10 @@ def parse_15_min(input_text, timestamp):
 
 # String currently starts with digit, so that's what we test for.
 def parse_28_day(input_text, time_now):
-    output_text = '[ '
+    output_text = ''
     for line in input_text:
+        if len(line) == 0:
+            continue
 	if line[0].isdigit():
             json = '{' + time_now + ', "time_predicted":'
             json += Timestamp(line[0:11]).json() 
@@ -69,28 +79,35 @@ def parse_28_day(input_text, time_now):
 	    output_text += json
     # Remove the off-by-1 comma made by the loop.
     output_text = output_text[:-1]
-    return output_text + ' ]'
+    return output_text 
 
 def parse(input_text, which_one):
     timestamp = '"time_stamp":' + Timestamp(get_current_date()).json()
     text = input_text.split('\n')
+    json_array = '[ '
 
     if which_one == "28d":
-	return parse_28_day(text, timestamp)
+	json_array += parse_28_day(text, timestamp)
     elif which_one == "3d":
-	return parse_3_day(text, timestamp)
+	json_array += parse_3_day(text, timestamp)
     elif which_one == "1h":
-	return parse_1_hour(text, timestamp)
+	json_array += parse_1_hour(text, timestamp)
     elif which_one == "15m":
-	return parse_15_min(text, timestamp)
+	json_array += parse_15_min(text, timestamp)
     else:
 	return "Cannot determine which prediction page"
 
-    return
+    return json_array + ' ]'
 
 def main():
-    #print parse("2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2", "28d")
-    print parse(":Issued: 2013 Dec 31 2205 UTC\n\n00-03UT        5         6         9", "3d")
+    test_page = "2014 Feb 11    150		5	3\n2014 Feb 12	    111		5	2\n" 
+    # test_page = ":Issued: 2013 Dec 31 2205 UTC\n\n00-03UT        5         6         9", "3d"
+    #test_page = "2014 Feb 27\n\n Planetary(estimated Ap)     24     1     1     1     1     3     4     6     5"
+    print parse(test_page, "28d")
+    #print parse(test_page, "3d")
+    #print parse(test_page, "1d")
+    
+
 
 if __name__ == "__main__":
     main()
