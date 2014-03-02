@@ -234,7 +234,7 @@ for ii in range(1,len(sys.argv)):
 	elif(sys.argv[ii]=="--28-day"):
 		retreive_d28_cast=True;
 	else:
-		if(len(sys.argv[ii])<=0):
+		if(len(sys.argv[ii])<=1):
 			error=True;
 
 		if(error==False and sys.argv[ii].startswith("-")):
