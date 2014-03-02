@@ -4,31 +4,31 @@
 #	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
 #	Modified On:	03/01/2014
 
-#Configuration Parser Library
+#Configuration Parser Module
 import ConfigParser;
 
 #Emailer Module
 import emailer;
 
-#File Utility Library
+#File Utility Module
 import file_util;
 
-#Forecast Parser Library
+#Forecast Parser Module
 import forecast_parser;
 
-#JSON Test Library
-import test_json;
+#JSON Utility Module
+import json_util;
 
-#Signal Library
+#Signal Module
 import signal;
 
-#System Library
+#System Module
 import sys;
 
-#Time Library
+#Time Module
 import time;
 
-#URL Utility Library
+#URL Utility Module
 import url_util;
 
 #Abort Signal Handler Function (Kills program.)
@@ -149,6 +149,7 @@ def error_message_fatal_error():
 
 #Forecast Update Function
 def get_forecast(link,parser,email_text):
+
 	#Try to Download Data
 	data_download=url_util.get_url(link);
 
@@ -159,20 +160,31 @@ def get_forecast(link,parser,email_text):
 	#Successful Data Download
 	else:
 		#Convert Downloaded Data
-		data_converted=forecast_parser.parse(data_download,parser);
+		data_conversion=(False,"Invalid parser \""+parser+"\".";
+
+		if(parser=="now"):
+			data_conversion=forecast_parser.parse_now(data_download);
+		elif(parser=="now"):
+			data_conversion=forecast_parser.parse_h1(data_download);
+		elif(parser=="now"):
+			data_conversion=forecast_parser.parse_d3(data_download);
+		elif(parser=="now"):
+			data_conversion=forecast_parser.parse_d28(data_download);
+		else:
+			return data_conversion;
 
 		#Failed Conversion
-		if(data_converted==""):
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast conversion script is not working!\r\n\r\nDownloaded Data:\r\n<<<start>>>\r\n"+data_download+"<<end>>>\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+		if(data_conversion[0]==False):
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_converted[1]+"\r\n\r\nDownload Data:\r\n"+download_data+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Conversion
 		else:
 			#Parse Converted Data
-			data_json=test_json.test_json_string(data_converted);
+			data_json=json_util.test_all(data_converted[1]);
 
 			#Failed Parse
 			if(data_json[0]==False):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+str(data_converted)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+data_converted[1]+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Parse
 			else:
@@ -223,7 +235,7 @@ while True:
 	while True:
 
 		#TEST
-		get_forecast(d28_forecast_link,"28d","28 day");
+		get_forecast(d28_forecast_link,"d28","28 day");
 
 		while True:
 			time.sleep(0);

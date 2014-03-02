@@ -20,7 +20,7 @@ import json;
 import kp_util;
 
 #Tests starting and Eending brackets, returns tuple [0](bool)success and [1](string)error_message.
-def square_brackets(json_string):
+def test_square_brackets(json_string):
 
 	if(len(json_string)>0 and (json_string[0]!='[' or json_string[-1]!=']')):
 		return (False,"First and last characters of the json string must be '[' and ']' respectively.");
@@ -28,7 +28,7 @@ def square_brackets(json_string):
 	return (True,"");
 
 #Tests JSON syntax, returns tuple [0](bool)success and [1](string)error_message.
-def syntax(json_string):
+def test_syntax(json_string):
 
 	#Bad JSON Test
 	try:
@@ -42,7 +42,7 @@ def syntax(json_string):
 	return (True,"");
 
 #Tests Aurora Syntax (for database entries), returns tuple [0](bool)success and [1](string)error_message.
-def aurora_syntax(json_string):
+def test_aurora_syntax(json_string):
 
 	try:
 
@@ -89,7 +89,7 @@ def aurora_syntax(json_string):
 	return (True,"");
 
 #Tests all tests, returns tuple [0](bool)success and [1](string)error_message.
-def all(json_string):
+def test_all(json_string):
 	return_value=(True,"");
 
 	if(return_value[0]==True):
