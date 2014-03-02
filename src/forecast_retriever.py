@@ -220,8 +220,8 @@ retrieve_d3_cast=False;
 retrieve_d28_cast=False;
 
 #No Arguemnts, Show Help
-if(len(sys.argv)==0):
-	show_help=true;
+if(len(sys.argv)<=1):
+	show_help=True;
 
 #Go Through Arguments
 for ii in range(1,len(sys.argv)):
