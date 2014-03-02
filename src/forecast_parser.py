@@ -1,63 +1,26 @@
 #!/usr/bin/python
 
+#Forecast Retriever Source
+#	Created By:		Paul Gentemann and Mike Moss
+#	Modified On:	03/01/2014
+
 #Date/Time Module
 import datetime;
 
-import time
-from Timestamp import *
+#Date Utility Module
+import date_util;
 
-#JSON Module
-import json;
+#Kp Utility Module
+import kp_util;
 
-# For parse
-def get_current_date():
-	return time.strftime("%Y %b %d %H %M")
+#Is Integer Function (Tests if a string is an integer).
+def is_int(string):
+	try:
+		int(string);
+		return True;
 
-# For 3-day forecast
-# String currently is ":Issued: YYYY MMM DD HHMM UTC"
-# CHANGE ABOVE LINE IF THE LOGIC CHANGES
-def get_issue_date(issue_date_string):
-	return issue_date_string[9:20]
-
-# For 3-day forecast
-def get_next_date(current_day):
-	time = Timestamp(current_day)
-	now = datetime.date(time.year, time.month, time.day)
-	delta = datetime.timedelta(days=1)
-	next_date = now + delta
-	return next_date.strftime('%Y %b %d')
-
-# for 3-day forecast
-def get_next_three_days(issue_date):
-	upcoming_dates = [issue_date]
-	for day in range(3):
-		next_day = get_next_date(upcoming_dates[day])
-		upcoming_dates.append(next_day)
-	return upcoming_dates[1:]
-
-#Takes first three letters of a month, returns an integer (1-12) on success, -1 on error.
-def month_to_int(month):
-	months=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
-
-	for ii in range(0,11):
-		if(month.lower()==months[ii]):
-			return ii+1;
-
-	return -1;
-
-#Takes HHMM formated string, return an integer of HH on success, -1 on error.
-def hhmm_to_hour(hhmm):
-	if(len(hhmm)==4):
-		return int(hhmm[:2]);
-	else:
-		return -1;
-
-#Takes HHMM formated string, return an integer of MM on success, -1 on error.
-def hhmm_to_min(hhmm):
-	if(len(hhmm)==4):
-		return int(hhmm[-2:]);
-	else:
-		return -1;
+	except ValueError:
+		return False;
 
 #Whitespace Lexer (Returns lexemes that are separated by whitespace).
 def lexer_whitespace(raw_data):
@@ -75,213 +38,438 @@ def lexer_whitespace(raw_data):
 	return lexemes;
 
 #Now Parser (Parses the now forecast).
-def parser_now(lexemes):
+def parse_now(lexemes):
 
-	#Array of valid dates (current and future).
-	return_json="[\n";
+	try:
+		#JSON Return String
+		return_json="";
 
-	#Retrieve Downloaded Time
-	downloaded_year=datetime.datetime.today().year;
-	downloaded_month=datetime.datetime.today().month;
-	downloaded_day=datetime.datetime.today().day;
-	downloaded_hour=datetime.datetime.today().hour;
-	downloaded_min=datetime.datetime.today().minute;
+		#Retrieve Downloaded Time
+		downloaded_year=datetime.datetime.today().year;
+		downloaded_month=datetime.datetime.today().month;
+		downloaded_day=datetime.datetime.today().day;
+		downloaded_hour=datetime.datetime.today().hour;
+		downloaded_minute=datetime.datetime.today().minute;
+		found_data=False;
 
-	#Parse Lexemes
-	for ii in range(0,len(lexemes)):
+		#Parse Lexemes
+		for ii in range(0,len(lexemes)):
 
-		#Valid Column Width
-		if(len(lexemes[ii])==18):
+			#Ignore Comments
+			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
 
-			#Default Values
-			predicted_year=1970;
-			predicted_month=1;
-			predicted_day=1;
-			predicted_hour=1;
-			predicted_min=1;
-			downloaded_year=1970;
-			downloaded_month=1;
-			downloaded_day=1;
-			downloaded_hour=1;
-			downloaded_min=1;
-			kp=-1;
+				#Valid Time Row
+				if(len(lexemes[ii])==18):
 
-			#Extract Predicted Time
-			predicted_year=int(lexemes[ii][0]);
-			predicted_month=int(lexemes[ii][1]);
-			predicted_day=int(lexemes[ii][2]);
-			predicted_hour=hhmm_to_hour(lexemes[ii][3]);
-			predicted_min=hhmm_to_min(lexemes[ii][3]);
+					#Default Values
+					predicted_year=1970;
+					predicted_month=1;
+					predicted_day=1;
+					predicted_hour=1;
+					predicted_min=1;
+					kp=-1;
 
-			#Extract Predicted Kp
-			kp=float(lexemes[ii][17]);
+					#Extract Predicted Time
+					predicted_year=int(lexemes[ii][0]);
+					predicted_month=int(lexemes[ii][1]);
+					predicted_day=int(lexemes[ii][2]);
+					predicted_hour=date_util.hhmm_to_hour(lexemes[ii][3]);
+					predicted_minute=date_util.hhmm_to_min(lexemes[ii][3]);
 
-			#Invalid Year
-			if(predicted_year<1970):
-				return (False,
-					"Invalid year on line "+str(ii+1)+
-					" (expected a value greater than or equal to 1970 and got "+str(predicted_year)+").");
+					#Extract Predicted Kp
+					kp=float(lexemes[ii][17]);
 
-			#Invalid Month
-			if(predicted_month<1 or predicted_month>12):
-				return (False,
-					"Invalid month on line "+str(ii+1)+
-					" (expected a value between 1 and 12 and got "+str(predicted_month)+").");
+					#Test Predicted Date
+					date_test=date_util.date_util.valid_date(predicted_year,predicted_month,predicted_day,
+						predicted_hour,predicted_minute,ii+1);
 
-			#Invalid Day
-			if(predicted_day<1 or predicted_day>31):
-				return (False,
-					"Invalid day on line "+str(ii+1)+
-					" (expected a value between 1 and 31 and got "+str(predicted_day)+").");
+					if(date_test[0]==False):
+						return date_test;
 
-			#Invalid Hour
-			if(predicted_hour<0 or predicted_hour>23):
-				return (False,
-					"Invalid hour on line "+str(ii+1)+
-					" (expected a value between 0 and 23 and got "+str(predicted_hour)+").");
+					#Invalid Kp
+					kp_test=kp_util.valid_kp(kp,ii+1);
 
-			#Invalid Minute
-			if(predicted_min<0 or predicted_min>59):
-				return (False,
-					"Invalid minute on line "+str(ii+1)+
-					" (expected a value between 0 and 59 and got "+str(predicted_min)+").");
+					if(kp_test[0]==False):
+						return kp_test;
 
-			#Invalid Kp
-			if(kp<-1 or kp>9):
-				return (False,
-					"Invalid Kp on line "+str(ii+1)+
-					" (expected a value between -1.0 to 9.0 and got "+str(kp)+").");
+					#Only Add Good Data
+					if(kp>=0):
 
-			#Add JSON String
-			return_json+="\t{\n";
+						#Add JSON String
+						return_json+="\t{\n";
 
-			return_json+="\t\t\"time_predicted\":"
-			return_json+="{";
-			return_json+=	"\"year\":"+str(predicted_year)+",";
-			return_json+=	"\"month\":"+str(predicted_month)+",";
-			return_json+=	"\"day\":"+str(predicted_day)+",";
-			return_json+=	"\"hour\":"+str(predicted_hour)+",";
-			return_json+=	"\"minute\":"+str(predicted_min);
-			return_json+="}";
-			return_json+=",\n";
-			return_json+="\t\t\"time_stamp\":"
-			return_json+="{";
-			return_json+=	"\"year\":"+str(downloaded_year)+",";
-			return_json+=	"\"month\":"+str(downloaded_month)+",";
-			return_json+=	"\"day\":"+str(downloaded_day)+",";
-			return_json+=	"\"hour\":"+str(downloaded_hour)+",";
-			return_json+=	"\"minute\":"+str(downloaded_min);
-			return_json+="}";
-			return_json+=",\n";
-			return_json+="\t\t\"forecast\":\"now\",\n";
-			return_json+="\t\t\"kp\":"+str(kp)+"\n";
+						return_json+="\t\t\"time_predicted\":"
+						return_json+="{";
+						return_json+=	"\"year\":"+str(predicted_year)+",";
+						return_json+=	"\"month\":"+str(predicted_month)+",";
+						return_json+=	"\"day\":"+str(predicted_day)+",";
+						return_json+=	"\"hour\":"+str(predicted_hour)+",";
+						return_json+=	"\"minute\":"+str(predicted_minute);
+						return_json+="}";
+						return_json+=",\n";
+						return_json+="\t\t\"time_stamp\":"
+						return_json+="{";
+						return_json+=	"\"year\":"+str(downloaded_year)+",";
+						return_json+=	"\"month\":"+str(downloaded_month)+",";
+						return_json+=	"\"day\":"+str(downloaded_day)+",";
+						return_json+=	"\"hour\":"+str(downloaded_hour)+",";
+						return_json+=	"\"minute\":"+str(downloaded_minute);
+						return_json+="}";
+						return_json+=",\n";
+						return_json+="\t\t\"forecast\":\"now\",\n";
+						return_json+="\t\t\"kp\":"+str(kp)+"\n";
 
-			return_json+="\t}\n";
+						return_json+="\t}\n";
 
-			if(ii<len(lexemes)-1):
-				return_json+="\t,\n";
+						if(ii<len(lexemes)-1):
+							return_json+="\t,\n";
 
-		#Non-Comment, Error
-		elif(len(lexemes[ii])>0 and not(lexemes[ii][0].startswith("#") or lexemes[ii][0].startswith(":"))):
-				return (False,
-					"Invalid number of elements on line "+str(ii+1)+
-					" (expected 18 and got "+str(len(lexemes[ii]))+").");
+						#Data Found
+						found_data=True;
 
-	return_json+="]";
+					#Unknown Symbol
+					else:
+						return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".");
 
-	#Return Passed and the JSON Object
-	return (True,return_json);
+		#No Data Means Error
+		if(found_data==False):
+			return (False,"Did not find any data.");
 
-# Issue date is the best way to get date. Lines that start with digits are times.
-def parse_3_day(input_text, time_now):
-	output_text = ''
-	issued = ':Issued:'
+		#Return Passed and the JSON Object
+		return (True,return_json);
 
-	for line in input_text:
-		if issued in line:
-			starting_from_today = get_issue_date(line)
-			next_three_days =  get_next_three_days(starting_from_today)
-		elif line[0:2].isdigit():
-			kps = line[7:].split()
-			for day in next_three_days:
-				json = '{' + time_now + ', "time_predicted":'
-				json += Timestamp(day + line[0:2]).json()
-				kp_value = kps[0]
-				kps = kps[1:]
-				json += ',"forecast":"3day","kp":' + str(kp_value) + '},'
-				output_text += json
-	# Remove the off-by-1 comma made by the loop.
-	output_text = output_text[:-1]
-	return output_text
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".");
+
+#1 Hour Parser (Parses the 1 hour forecast).
+def parse_h1(lexemes):
+
+	try:
+		#JSON Return String
+		return_json="";
+
+		#Retrieve Downloaded Time
+		downloaded_year=datetime.datetime.today().year;
+		downloaded_month=datetime.datetime.today().month;
+		downloaded_day=datetime.datetime.today().day;
+		downloaded_hour=datetime.datetime.today().hour;
+		downloaded_minute=datetime.datetime.today().minute;
+
+		#Default Predicted Time
+		found_date=False;
+		predicted_year=1970;
+		predicted_month=1;
+		predicted_day=1;
+		found_data=False;
+
+		#Parse Lexemes
+		for ii in range(0,len(lexemes)):
+
+			#Ignore Comments
+			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
+
+				#Valid YMD Row
+				if(len(lexemes[ii])==3 and is_int(lexemes[ii][0])):
+
+					#Found a Date
+					found_date=True;
+
+					#Extract Predicted YMD
+					predicted_year=int(lexemes[ii][0]);
+					predicted_month=date_util.month_to_int(lexemes[ii][1]);
+					predicted_day=int(lexemes[ii][2]);
+
+				#Valid Planetary Estimated Ap Row
+				elif(found_date==True and len(lexemes[ii])==11 and lexemes[ii][0].startswith("Planetary")):
+
+					#Go Through The 8 Three Hour Segments
+					for jj in range(0,8):
+
+						#Create 3 Entries Per Three Hour Segment
+						for kk in range(0,3):
+
+							#Data Found
+							found_data=True;
+
+							#Extract Predicted Hour, Minute is -1
+							predicted_hour=jj*3+kk;
+							predicted_minute=-1;
+
+							#Extract Predicted Kp
+							kp=float(lexemes[ii][3+jj]);
+
+							#Test Predicted Date
+							date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
+								predicted_hour,predicted_minute,ii+1);
+
+							if(date_test[0]==False):
+								return date_test;
+
+							#Invalid Kp
+							kp_test=kp_util.valid_kp(kp,ii+1);
+
+							if(kp_test[0]==False):
+								return kp_test;
+
+							#Only Add Good Data
+							if(kp>=0):
+
+								#Add JSON String
+								return_json+="\t{\n";
+
+								return_json+="\t\t\"time_predicted\":"
+								return_json+="{";
+								return_json+=	"\"year\":"+str(predicted_year)+",";
+								return_json+=	"\"month\":"+str(predicted_month)+",";
+								return_json+=	"\"day\":"+str(predicted_day)+",";
+								return_json+=	"\"hour\":"+str(predicted_hour)+",";
+								return_json+=	"\"minute\":"+str(predicted_minute);
+								return_json+="}";
+								return_json+=",\n";
+								return_json+="\t\t\"time_stamp\":"
+								return_json+="{";
+								return_json+=	"\"year\":"+str(downloaded_year)+",";
+								return_json+=	"\"month\":"+str(downloaded_month)+",";
+								return_json+=	"\"day\":"+str(downloaded_day)+",";
+								return_json+=	"\"hour\":"+str(downloaded_hour)+",";
+								return_json+=	"\"minute\":"+str(downloaded_minute);
+								return_json+="}";
+								return_json+=",\n";
+								return_json+="\t\t\"forecast\":\"h1\",\n";
+								return_json+="\t\t\"kp\":"+str(kp)+"\n";
+
+								return_json+="\t}\n";
+
+								if(predicted_hour<23):
+									return_json+="\t,\n";
+
+		#No Data Means Error
+		if(found_data==False):
+			return (False,"Did not find any data.");
+
+		#Return Passed and the JSON Object
+		return (True,return_json);
+
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".");
+
+#3 Day Parser (Parses the 3 day forecast).
+def parse_d3(lexemes):
+
+	try:
+		#JSON Return String
+		return_json="";
+
+		#Retrieve Downloaded Time
+		downloaded_year=datetime.datetime.today().year;
+		downloaded_month=datetime.datetime.today().month;
+		downloaded_day=datetime.datetime.today().day;
+		downloaded_hour=datetime.datetime.today().hour;
+		downloaded_minute=datetime.datetime.today().minute;
+
+		#Default Predicted Time
+		found_date=False;
+		date=[];
+		predicted_year=downloaded_year;
+		predicted_month=1;
+		found_data=False;
+
+		#Parse Lexemes
+		for ii in range(0,len(lexemes)):
+
+			#Ignore Comments
+			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
+
+				#Valid MD Row
+				if(len(lexemes[ii])==6 and date_util.month_to_int(lexemes[ii][0])>0 and is_int(lexemes[ii][1])):
+
+					#Found a Date
+					found_date=True;
+					date=lexemes[ii];
+
+				#Valid Time Row
+				elif(len(lexemes[ii])==4 and found_date==True):
+
+					#Convert Hours
+					hours=date_util.hhdashhhut_to_hours(lexemes[ii][0]);
+
+					#Extract Data
+					if(hours[0]>=0 and hours[1]>=0):
+
+						#3 Days Per Row
+						for jj in range(0,3):
 
 
-def parse_1_hour(input_text, time_now):
-	output_text = ''
-	important_line = "Planetary"
-	forecast = ',"forecast:"3day","kp":'
-	prediction_times = []
+							#3 Hours Per Segment
+							for kk in range(0,3):
 
-	for line in input_text:
-		if len(line) == 0:
-			continue
-		elif line[0].isdigit():
-			json = '{' + time_now + ', "time_predicted":'
-			for hour in range(24):
-				all_day = Timestamp(line + ' ' + str(hour)).json()
-				prediction_times.append(json + all_day + forecast)
-		elif important_line in line:
-			kps = line.split()[-8:]
-			index = 0
-			for hour in range(24):
-				prediction_times[hour] += str(kps[hour / 3]) + ' }'
-				output_text += prediction_times[hour]
-	return output_text
+								#Found Data
+								found_data=True;
 
-def parse_15_min(input_text, timestamp):
-	return
+								#Extract Predicted Time, Minute is -1
+								predicted_month=date_util.month_to_int(date[jj*2]);
+								predicted_day=int(date[jj*2+1]);
+								predicted_hour=hours[0]+kk;
+								predicted_minute=-1;
 
-# String currently starts with digit, so that's what we test for.
-def parse_28_day(input_text, time_now):
-	output_text = ''
-	for line in input_text:
-		if len(line) == 0:
-			continue
-		if line[0].isdigit():
-			json = '{' + time_now + ', "time_predicted":'
-			json += Timestamp(line[0:11]).json()
-			kp_value = line[-1]	# kp is all we need, and it is at the end of line.
-			json += ',"forecast":"28day","kp":' + str(kp_value) + '},'
-			output_text += json
-	# Remove the off-by-1 comma made by the loop.
-	output_text = output_text[:-1]
-	return output_text
+								#Extract Predicted Kp
+								kp=float(lexemes[ii][1+jj]);
 
-def parse(input_text, which_one):
-	timestamp = '"time_stamp":' + Timestamp(get_current_date()).json()
-	text = input_text.split('\n')
-	json_array = '[ '
+								#Test Predicted Date
+								date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
+									predicted_hour,predicted_minute,ii+1);
 
-	if which_one == "28d":
-		json_array += parse_28_day(text, timestamp)
-	elif which_one == "3d":
-		json_array += parse_3_day(text, timestamp)
-	elif which_one == "1h":
-		json_array += parse_1_hour(text, timestamp)
-	elif which_one == "15m":
-		json_array += parse_15_min(text, timestamp)
-	else:
-		return "Cannot determine which prediction page"
+								if(date_test[0]==False):
+									return date_test;
 
-	return json_array + ' ]'
+								#Invalid Kp
+								kp_test=kp_util.valid_kp(kp,ii+1);
 
-#Main Test (Remove for production code).
-import file_util;
+								if(kp_test[0]==False):
+									return kp_test;
 
-data=file_util.file_to_string("now_cast.dat");
-lexemes=lexer_whitespace(data);
-ret=parser_now(lexemes);
+								#Only Add Good Data
+								if(kp>=0):
 
-if(ret[0]==False):
-	print("Error:  "+ret[1]);
-else:
-	print(ret[1]);
+									#Add JSON String
+									return_json+="\t{\n";
+
+									return_json+="\t\t\"time_predicted\":"
+									return_json+="{";
+									return_json+=	"\"year\":"+str(downloaded_year)+",";
+									return_json+=	"\"month\":"+str(predicted_month)+",";
+									return_json+=	"\"day\":"+str(predicted_day)+",";
+									return_json+=	"\"hour\":"+str(predicted_hour)+",";
+									return_json+=	"\"minute\":"+str(predicted_minute);
+									return_json+="}";
+									return_json+=",\n";
+									return_json+="\t\t\"time_stamp\":"
+									return_json+="{";
+									return_json+=	"\"year\":"+str(downloaded_year)+",";
+									return_json+=	"\"month\":"+str(downloaded_month)+",";
+									return_json+=	"\"day\":"+str(downloaded_day)+",";
+									return_json+=	"\"hour\":"+str(downloaded_hour)+",";
+									return_json+=	"\"minute\":"+str(downloaded_minute);
+									return_json+="}";
+									return_json+=",\n";
+									return_json+="\t\t\"forecast\":\"d3\",\n";
+									return_json+="\t\t\"kp\":"+str(kp)+"\n";
+
+									return_json+="\t}\n";
+
+									if(predicted_day<int(date[5]) or predicted_hour<23):
+										return_json+="\t,\n";
+
+		#No Data Means Error
+		if(found_data==False):
+			return (False,"Did not find any data.");
+
+		#Return Passed and the JSON Object
+		return (True,return_json);
+
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".");
+
+#28 Day Parser (Parses the 28 day forecast).
+def parse_d28(lexemes):
+
+	try:
+		#JSON Return String
+		return_json="";
+
+		#Retrieve Downloaded Time
+		downloaded_year=datetime.datetime.today().year;
+		downloaded_month=datetime.datetime.today().month;
+		downloaded_day=datetime.datetime.today().day;
+		downloaded_hour=datetime.datetime.today().hour;
+		downloaded_minute=datetime.datetime.today().minute;
+		found_data=False;
+
+		#Parse Lexemes
+		for ii in range(0,len(lexemes)):
+
+			#Ignore Comments
+			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
+
+				#Valid Time Row
+				if(len(lexemes[ii])==6):
+
+					#Default Values
+					predicted_year=1970;
+					predicted_month=1;
+					predicted_day=1;
+					predicted_hour=1;
+					predicted_min=1;
+					kp=-1;
+
+					#Extract Predicted Time
+					predicted_year=int(lexemes[ii][0]);
+					predicted_month=date_util.month_to_int(lexemes[ii][1]);
+					predicted_day=int(lexemes[ii][2]);
+					predicted_hour=-1;
+					predicted_minute=-1;
+
+					#Extract Predicted Kp
+					kp=float(lexemes[ii][5]);
+
+					#Test Predicted Date
+					date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
+						predicted_hour,predicted_minute,ii+1);
+
+					if(date_test[0]==False):
+						return date_test;
+
+					#Invalid Kp
+					kp_test=kp_util.valid_kp(kp,ii+1);
+
+					if(kp_test[0]==False):
+						return kp_test;
+
+					#Only Add Good Data
+					if(kp>=0):
+
+						#Add JSON String
+						return_json+="\t{\n";
+
+						return_json+="\t\t\"time_predicted\":"
+						return_json+="{";
+						return_json+=	"\"year\":"+str(predicted_year)+",";
+						return_json+=	"\"month\":"+str(predicted_month)+",";
+						return_json+=	"\"day\":"+str(predicted_day)+",";
+						return_json+=	"\"hour\":"+str(predicted_hour)+",";
+						return_json+=	"\"minute\":"+str(predicted_minute);
+						return_json+="}";
+						return_json+=",\n";
+						return_json+="\t\t\"time_stamp\":"
+						return_json+="{";
+						return_json+=	"\"year\":"+str(downloaded_year)+",";
+						return_json+=	"\"month\":"+str(downloaded_month)+",";
+						return_json+=	"\"day\":"+str(downloaded_day)+",";
+						return_json+=	"\"hour\":"+str(downloaded_hour)+",";
+						return_json+=	"\"minute\":"+str(downloaded_minute);
+						return_json+="}";
+						return_json+=",\n";
+						return_json+="\t\t\"forecast\":\"now\",\n";
+						return_json+="\t\t\"kp\":"+str(kp)+"\n";
+
+						return_json+="\t}\n";
+
+						if(ii<len(lexemes)-1):
+							return_json+="\t,\n";
+
+						#Data Found
+						found_data=True;
+
+					#Unknown Symbol
+					else:
+						return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".");
+
+		#No Data Means Error
+		if(found_data==False):
+			return (False,"Did not find any data.");
+
+		#Return Passed and the JSON Object
+		return (True,return_json);
+
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".");

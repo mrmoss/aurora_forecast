@@ -1,88 +1,95 @@
 #!/usr/bin/python
 
-# Forecast Parser Test
-#	Created By:	Ruslan Kolesnik, Caleb Hellickson, Ignacio Saez Lahildalga, Mike Moss
-#	Modified On:	02/27/2014
+#Forecast Retriever Source
+#	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
+#	Modified On:	03/01/2014
 
-#Date and Time Library
-import datetime
+#Date/Time Module
+import datetime;
 
-#Forecast Parser Library
-from forecast_parser import parse
+#Date Utility Modile
+import date_util;
 
-#JSON Library
-import json
+#Forecast Parser Module
+import forecast_parser;
 
-#Schema Library
-from voluptuous import Schema, Required, All, Length, Range, MultipleInvalid, Invalid
+#JSON Module
+import json;
 
-#Tests Starting and Ending Brackets, returns tuple (success,error_message).
-def test_square_brackets(json_string):
-	return_value=(True,"");
+#Kp Utility Module
+import kp_util;
 
-	if(len(json_string)>0):
-		if(json_string[0] != '[' or json_string[-1] != ']'):
-			return_value=(False,"First and last characters of the json string must be '[' and ']' respectively.");
+#Tests starting and Eending brackets, returns tuple [0](bool)success and [1](string)error_message.
+def square_brackets(json_string):
 
-	return return_value;
+	if(len(json_string)>0 and (json_string[0]!='[' or json_string[-1]!=']')):
+		return (False,"First and last characters of the json string must be '[' and ']' respectively.");
 
-#Tests Json Syntax, returns tuple (success,error_message).
-def test_json_syntax(json_string):
-	return_value=(True,"");
+	return (True,"");
 
+#Tests JSON syntax, returns tuple [0](bool)success and [1](string)error_message.
+def syntax(json_string):
+
+	#Bad JSON Test
 	try:
 		json.loads(json_string);
-	except ValueError as err:
-		return_value=(False,str(err)+".");
 
-	return return_value;
+	#Bad JSON
+	except ValueError as v:
+		 return (False,str(v)+".");
 
-#Tests Aurora Syntax (for database entries), returns tuple (success,error_message).
-def test_aurora_syntax(json_string):
-	return_value=(True,"");
-	json_object="";
+	#Good JSON
+	return (True,"");
+
+#Tests Aurora Syntax (for database entries), returns tuple [0](bool)success and [1](string)error_message.
+def aurora_syntax(json_string):
 
 	try:
+
+		#Create JSON Object
 		json_object=json.loads(json_string);
-	except ValueError as err:
-		return_value=(False,str(err)+".");
 
-	if(return_value[0]==True):
-		time = {
-				Required("year") : All(int, Range(min=1970, max=datetime.datetime.now().year)),
-				Required("month") : All(int, Range(min=1, max=12)),
-				Required("day") : All(int, Range(min=1, max=31)),
-				Required("hour") : All(int, Range(min=-1, max=24)),
-				Required("minute") : All(int, Range(min=-1, max=60))
-			};
+		#Go Through JSON Object
+		for ii in range(0,len(json_object)):
 
-		forecast = All(unicode, Length(min=3, max=5));
+			#Test Predicted Date
+			predicated_date=json_object[ii]["time_predicted"];
 
-		kp = All(int, Range(min=0, max=9));
+			predicted_date_test=date_util.valid_date(predicated_date["year"],predicated_date["month"],predicated_date["day"],
+				predicated_date["hour"],predicated_date["minute"],-1);
 
-		schema = Schema({
-			Required("time_stamp") : time,
-			Required("time_predicted") : time,
-			Required("forecast") : forecast,
-			Required("kp") : kp
-		});
+			if(predicted_date_test[0]==False):
+				return predicted_date_test;
 
-		counter = 0;
-		for dictionary in json_object:
-			counter += 1;
-			try:
-				schema(dictionary);
-			except MultipleInvalid as e:
-				exc = e;
-				return_value=(False,"Invalid object at position "+str(counter)+":  "+str(exc)+".");
+			#Test Download Date
+			predicated_date=json_object[ii]["time_stamp"];
 
-			if(return_value[0]==False):
-				break;
+			download_date_test=date_util.valid_date(predicated_date["year"],predicated_date["month"],predicated_date["day"],
+				predicated_date["hour"],predicated_date["minute"],-1);
 
-	return return_value;
+			if(download_date_test[0]==False):
+				return download_date_test;
 
-#JSON Tester (tests all other tests), returns tuple (success,error_message).
-def test_json_string (json_string):
+			#Test Kp
+			kp_test=kp_util.valid_kp(json_object[ii]["kp"],-1);
+
+			if(kp_test[0]==False):
+				return kp_test;
+
+			#Test Forecast
+			forecast=json_object[ii]["forecast"];
+
+			if(forecast!="now" and forecast!="h1" and forecast!="d3" and forecast!="d28"):
+				return (False,"Invalid forecast \""+forecast+"\" (expected \"now\", \"h1\", \"d3\", or \"d28\").");
+
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".");
+
+	#Good String
+	return (True,"");
+
+#Tests all tests, returns tuple [0](bool)success and [1](string)error_message.
+def all(json_string):
 	return_value=(True,"");
 
 	if(return_value[0]==True):
@@ -95,7 +102,3 @@ def test_json_string (json_string):
 		return_value=test_aurora_syntax(json_string);
 
 	return return_value;
-
-
-
-

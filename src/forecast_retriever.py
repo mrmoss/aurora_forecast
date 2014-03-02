@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 #Forecast Retriever Source
-#	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-#	Modified On:	02/27/2014
+#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
+#	Modified On:	03/01/2014
 
 #Configuration Parser Library
 import ConfigParser;
