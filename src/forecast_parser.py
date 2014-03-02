@@ -98,7 +98,7 @@ def parse_now(lexemes):
 						#Add JSON String
 						return_json+="\t{\n";
 
-						return_json+="\t\t\"time_predicted\":"
+						return_json+="\t\t\"predicted_time\":"
 						return_json+="{";
 						return_json+=	"\"year\":"+str(predicted_year)+",";
 						return_json+=	"\"month\":"+str(predicted_month)+",";
@@ -107,7 +107,7 @@ def parse_now(lexemes):
 						return_json+=	"\"minute\":"+str(predicted_minute);
 						return_json+="}";
 						return_json+=",\n";
-						return_json+="\t\t\"time_stamp\":"
+						return_json+="\t\t\"download_time\":"
 						return_json+="{";
 						return_json+=	"\"year\":"+str(downloaded_year)+",";
 						return_json+=	"\"month\":"+str(downloaded_month)+",";
@@ -217,7 +217,7 @@ def parse_h1(lexemes):
 								#Add JSON String
 								return_json+="\t{\n";
 
-								return_json+="\t\t\"time_predicted\":"
+								return_json+="\t\t\"predicted_time\":"
 								return_json+="{";
 								return_json+=	"\"year\":"+str(predicted_year)+",";
 								return_json+=	"\"month\":"+str(predicted_month)+",";
@@ -226,7 +226,7 @@ def parse_h1(lexemes):
 								return_json+=	"\"minute\":"+str(predicted_minute);
 								return_json+="}";
 								return_json+=",\n";
-								return_json+="\t\t\"time_stamp\":"
+								return_json+="\t\t\"download_time\":"
 								return_json+="{";
 								return_json+=	"\"year\":"+str(downloaded_year)+",";
 								return_json+=	"\"month\":"+str(downloaded_month)+",";
@@ -334,7 +334,7 @@ def parse_d3(lexemes):
 									#Add JSON String
 									return_json+="\t{\n";
 
-									return_json+="\t\t\"time_predicted\":"
+									return_json+="\t\t\"predicted_time\":"
 									return_json+="{";
 									return_json+=	"\"year\":"+str(downloaded_year)+",";
 									return_json+=	"\"month\":"+str(predicted_month)+",";
@@ -343,7 +343,7 @@ def parse_d3(lexemes):
 									return_json+=	"\"minute\":"+str(predicted_minute);
 									return_json+="}";
 									return_json+=",\n";
-									return_json+="\t\t\"time_stamp\":"
+									return_json+="\t\t\"download_time\":"
 									return_json+="{";
 									return_json+=	"\"year\":"+str(downloaded_year)+",";
 									return_json+=	"\"month\":"+str(downloaded_month)+",";
@@ -431,7 +431,7 @@ def parse_d28(lexemes):
 						#Add JSON String
 						return_json+="\t{\n";
 
-						return_json+="\t\t\"time_predicted\":"
+						return_json+="\t\t\"predicted_time\":"
 						return_json+="{";
 						return_json+=	"\"year\":"+str(predicted_year)+",";
 						return_json+=	"\"month\":"+str(predicted_month)+",";
@@ -440,7 +440,7 @@ def parse_d28(lexemes):
 						return_json+=	"\"minute\":"+str(predicted_minute);
 						return_json+="}";
 						return_json+=",\n";
-						return_json+="\t\t\"time_stamp\":"
+						return_json+="\t\t\"download_time\":"
 						return_json+="{";
 						return_json+=	"\"year\":"+str(downloaded_year)+",";
 						return_json+=	"\"month\":"+str(downloaded_month)+",";

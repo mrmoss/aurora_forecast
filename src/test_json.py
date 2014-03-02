@@ -53,7 +53,7 @@ def aurora_syntax(json_string):
 		for ii in range(0,len(json_object)):
 
 			#Test Predicted Date
-			predicated_date=json_object[ii]["time_predicted"];
+			predicated_date=json_object[ii]["predicted_time"];
 
 			predicted_date_test=date_util.valid_date(predicated_date["year"],predicated_date["month"],predicated_date["day"],
 				predicated_date["hour"],predicated_date["minute"],-1);
@@ -62,7 +62,7 @@ def aurora_syntax(json_string):
 				return predicted_date_test;
 
 			#Test Download Date
-			predicated_date=json_object[ii]["time_stamp"];
+			predicated_date=json_object[ii]["download_time"];
 
 			download_date_test=date_util.valid_date(predicated_date["year"],predicated_date["month"],predicated_date["day"],
 				predicated_date["hour"],predicated_date["minute"],-1);
