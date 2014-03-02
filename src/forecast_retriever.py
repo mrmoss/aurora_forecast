@@ -273,11 +273,11 @@ if(show_help==True):
 print("Forecast Retriever");
 
 #Read Configuration File (On failure, write a default configuration file.)
-error_message_start("\tLoading configuration file...\t");
+error_message_start("\tLoading Configuration File\t");
 
 if(read_config("forecast_retriever.cfg")==False):
 	error_message_end(False);
-	error_message_start("\tCreating configuration file...\t");
+	error_message_start("\tCreating Configuration File\t");
 
 	#Write Configuration on Read Fail
 	if(write_config("forecast_retriever.cfg")):
