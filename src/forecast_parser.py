@@ -2,7 +2,7 @@
 
 #Forecast Parser Source
 #	Created By:		Paul Gentemann and Mike Moss
-#	Modified On:	03/01/2014
+#	Modified On:	03/02/2014
 
 #Date/Time Module
 import datetime;
@@ -121,8 +121,7 @@ def parse_now(lexemes):
 
 						return_json+="\t}\n";
 
-						if(ii<len(lexemes)-1):
-							return_json+="\t,\n";
+						return_json+="\t,\n";
 
 						#Data Found
 						found_data=True;
@@ -136,7 +135,7 @@ def parse_now(lexemes):
 			return (False,"Did not find any data.");
 
 		#Return Passed and the JSON Object
-		return (True,return_json);
+		return (True,return_json[:-2]+"\n");
 
 	except Exception as e:
 		return (False,str(e)[0:].capitalize()+".");
@@ -240,15 +239,14 @@ def parse_h1(lexemes):
 
 								return_json+="\t}\n";
 
-								if(predicted_hour<23):
-									return_json+="\t,\n";
+								return_json+="\t,\n";
 
 		#No Data Means Error
 		if(found_data==False):
 			return (False,"Did not find any data.");
 
 		#Return Passed and the JSON Object
-		return (True,return_json);
+		return (True,return_json[:-2]+"\n");
 
 	except Exception as e:
 		return (False,str(e)[0:].capitalize()+".");
@@ -357,15 +355,14 @@ def parse_d3(lexemes):
 
 									return_json+="\t}\n";
 
-									if(predicted_day<int(date[5]) or predicted_hour<23):
-										return_json+="\t,\n";
+									return_json+="\t,\n";
 
 		#No Data Means Error
 		if(found_data==False):
 			return (False,"Did not find any data.");
 
 		#Return Passed and the JSON Object
-		return (True,return_json);
+		return (True,return_json[:-2]+"\n");
 
 	except Exception as e:
 		return (False,str(e)[0:].capitalize()+".");
@@ -454,8 +451,7 @@ def parse_d28(lexemes):
 
 						return_json+="\t}\n";
 
-						if(ii<len(lexemes)-1):
-							return_json+="\t,\n";
+						return_json+="\t,\n";
 
 						#Data Found
 						found_data=True;
@@ -469,7 +465,7 @@ def parse_d28(lexemes):
 			return (False,"Did not find any data.");
 
 		#Return Passed and the JSON Object
-		return (True,return_json);
+		return (True,return_json[:-2]+"\n");
 
 	except Exception as e:
 		return (False,str(e)[0:].capitalize()+".");

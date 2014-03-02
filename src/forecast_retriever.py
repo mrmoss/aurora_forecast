@@ -2,7 +2,7 @@
 
 #Forecast Retriever Source
 #	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-#	Modified On:	03/01/2014
+#	Modified On:	03/02/2014
 
 #Configuration Parser Module
 import ConfigParser;
@@ -138,7 +138,7 @@ def write_config(filename):
 
 #Fake Functions...
 def update_database(fake):
-	print("updating database!");
+	x=1;
 
 #Error Check Prompt Functions
 def error_message_start(message):
@@ -153,15 +153,18 @@ def error_message_fatal_error():
 	exit();
 import file_util;
 
-#Forecast Update Function
+#Forecast Update Function (Downloads, converts, parses, and updates database; returns success).
 def get_forecast(link,parser,email_text):
+
+	#Success Variable
+	success=False;
 
 	#Try to Download Data
 	data_download=url_util.get_url(link);
 
 	#Failed Data Download
 	if(data_download==""):
-		emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast failed to download!\r\n\r\nDownload Link:\r\n"+link+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+		emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast failed to download!\r\n\r\nDownload Link:\r\n"+time.strftime(link)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 	#Successful Data Download
 	else:
@@ -192,61 +195,110 @@ def get_forecast(link,parser,email_text):
 
 			#Failed Parse
 			if(data_json[0]==False):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+string_util.line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Parse
 			else:
 				update_database(data_json[1]);
+				success=True;
 
-#Get Resources...For Forever...
-while True:
+	return success;
 
-	#Assign Abort Signal Handler
-	signal.signal(signal.SIGINT,abort_signal_handler);
+#Assign Abort Signal Handler
+signal.signal(signal.SIGINT,abort_signal_handler);
 
-	#Start Server
-	print("forecast retriever startup routine");
+error=False;
+error_text="";
+show_help=False;
+link="";
+forecast="";
+email_text="";
+retrieve_now_cast=False;
+retrieve_h1_cast=False;
+retrieve_d3_cast=False;
+retrieve_d28_cast=False;
 
-	#Read Configuration File (On failure, write a default configuration file.)
-	error_message_start("\tloading configuration file...");
+if(len(sys.argv)==0):
+	show_help=true;
 
-	if(read_config("forecast_retriever.cfg")==False):
-		error_message_end(False);
-		error_message_start("\t\tcreating configuration file...");
-
-		#Write Configuration on Read Fail
-		if(write_config("forecast_retriever.cfg")):
-			error_message_end(True);
-		else:
-			error_message_end(False);
-			error_message_fatal_error();
-
+for ii in range(1,len(sys.argv)):
+	if(sys.argv[ii]=="--help"):
+		show_help=True;
+		break;
+	elif(sys.argv[ii]=="--now"):
+		retreive_now_cast=True;
+	elif(sys.argv[ii]=="--1-hour"):
+		retreive_h1_cast=True;
+	elif(sys.argv[ii]=="--3-day"):
+		retreive_d3_cast=True;
+	elif(sys.argv[ii]=="--28-day"):
+		retreive_d28_cast=True;
 	else:
+		if(len(sys.argv[ii])<=0):
+			error=True;
+
+		if(error==False and sys.argv[ii].startswith("-")):
+			for jj in range(1,len(sys.argv[ii])):
+				if(sys.argv[ii][jj]=="n"):
+					retrieve_now_cast=True;
+				elif(sys.argv[ii][jj]=="h"):
+					retrieve_h1_cast=True;
+				elif(sys.argv[ii][jj]=="d"):
+					retrieve_d3_cast=True;
+				elif(sys.argv[ii][jj]=="m"):
+					retrieve_d28_cast=True;
+				else:
+					error=True;
+					break;
+
+		if(error==True):
+			error_text=sys.argv[ii];
+			break;
+
+if(error==True):
+	print("Invalid argument \""+error_text+"\".  Use -h or --help for more information.");
+	exit(0);
+
+if(show_help==True):
+	print("Forecast Retreiver usage:");
+	print("\t--help\t\t\t\tShow this dialog.");
+	print("\t-n, --now\t\t\tSpecify now cast retrieval.");
+	print("\t-h, --1-hour\t\t\tSpecify 1 hour cast retrieval.");
+	print("\t-d, --3-day\t\t\tSpecify 3 day cast retrieval.");
+	print("\t-m, --28-day\t\t\tSpecify 28 day cast retrieval.");
+	exit(0);
+
+
+#Start Server
+print("Forecast Retriever");
+
+#Read Configuration File (On failure, write a default configuration file.)
+error_message_start("\tLoading configuration file...\t");
+
+if(read_config("forecast_retriever.cfg")==False):
+	error_message_end(False);
+	error_message_start("\tCreating configuration file...\t");
+
+	#Write Configuration on Read Fail
+	if(write_config("forecast_retriever.cfg")):
 		error_message_end(True);
-
-	#Test Email Login
-	error_message_start("\tsigning into email...");
-
-	#Good Email Signin
-	if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
-		error_message_end(True);
-
-	#Bad Email Signin
 	else:
 		error_message_end(False);
 		error_message_fatal_error();
 
-	#Server Started
-	print("server started");
+else:
+	error_message_end(True);
 
-	#Be A Server (Forever...)
-	while True:
-
-		#TEST
-		get_forecast(now_forecast_link,"now","now");
-
-		while True:
-			time.sleep(0);
-
-	#Exit Main Thread
-	break;
+#Get Forecasts
+if(retrieve_now_cast==True):
+	error_message_start("\tRetrieving Now Cast\t\t");
+	error_message_end(get_forecast(now_forecast_link,"now","now"));
+if(retrieve_h1_cast==True):
+	error_message_start("\tRetrieving 1 Hour Cast\t\t");
+	error_message_end(get_forecast(h1_forecast_link,"h1","1 hour"));
+if(retrieve_d3_cast==True):
+	error_message_start("\tRetrieving 3 Day Cast\t\t");
+	error_message_end(get_forecast(d3_forecast_link,"d3","3 day"));
+if(retrieve_d28_cast==True):
+	error_message_start("\tRetrieving 28 Day Cast\t\t");
+	error_message_end(get_forecast(d28_forecast_link,"d28","28 day"));
