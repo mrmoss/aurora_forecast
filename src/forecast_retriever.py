@@ -157,9 +157,7 @@ import file_util;
 def get_forecast(link,parser,email_text):
 
 	#Try to Download Data
-	data_download=file_util.file_to_string("now_cast.dat");
-	#url_util.get_url(link);
-	print("start");
+	data_download=url_util.get_url(link);
 
 	#Failed Data Download
 	if(data_download==""):
@@ -178,13 +176,11 @@ def get_forecast(link,parser,email_text):
 			data_conversion=forecast_parser.parse_d3(forecast_parser.lexer_whitespace(data_download));
 		elif(parser=="d28"):
 			data_conversion=forecast_parser.parse_d28(forecast_parser.lexer_whitespace(data_download));
-			print("d28");
 		else:
 			return data_conversion;
 
 		#Failed Conversion
 		if(data_conversion[0]==False):
-			print("conversion error - "+data_conversion[1]);
 			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+string_util.line_numbered(data_download)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Conversion
@@ -196,7 +192,6 @@ def get_forecast(link,parser,email_text):
 
 			#Failed Parse
 			if(data_json[0]==False):
-				print("parse error - "+data_json[1]);
 				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Parse
@@ -233,13 +228,13 @@ while True:
 	error_message_start("\tsigning into email...");
 
 	#Good Email Signin
-	#if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
-	#	error_message_end(True);
+	if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
+		error_message_end(True);
 
 	#Bad Email Signin
-	#else:
-	#	error_message_end(False);
-	#	error_message_fatal_error();
+	else:
+		error_message_end(False);
+		error_message_fatal_error();
 
 	#Server Started
 	print("server started");
