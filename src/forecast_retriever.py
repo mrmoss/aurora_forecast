@@ -22,6 +22,9 @@ import json_util;
 #Signal Module
 import signal;
 
+#String Utility Module
+import string_util;
+
 #System Module
 import sys;
 
@@ -182,7 +185,7 @@ def get_forecast(link,parser,email_text):
 		#Failed Conversion
 		if(data_conversion[0]==False):
 			print("conversion error - "+data_conversion[1]);
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+data_download+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+string_util.line_numbered(data_download)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Conversion
 		else:
@@ -194,7 +197,7 @@ def get_forecast(link,parser,email_text):
 			#Failed Parse
 			if(data_json[0]==False):
 				print("parse error - "+data_json[1]);
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+json_string+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Parse
 			else:

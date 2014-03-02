@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#File Utility Library Source
+#File Utility Source
 #	Created By:		Mike Moss
 #	Modified On:	02/15/2014
 

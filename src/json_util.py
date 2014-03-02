@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Forecast Retriever Source
+#JSON Utility Source
 #	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
 #	Modified On:	03/01/2014
 

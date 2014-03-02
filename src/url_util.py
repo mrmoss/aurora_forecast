@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-#URL Utility Library Source
+#URL Utility Source
 #	Created By:		Mike Moss
 #	Modified On:	02/15/2014
 
-#Time Library
+#Time Module
 import time;
 
-#URL Library
+#URL Module
 import urllib2;
 
 #Get URL Function (Makes a GET request, returns bytes on success, returns "" on failure.)

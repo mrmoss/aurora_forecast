@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#Forecast Retriever Source
+#Forecast Parser Source
 #	Created By:		Paul Gentemann and Mike Moss
 #	Modified On:	03/01/2014
 
@@ -25,10 +25,10 @@ def is_int(string):
 #Whitespace Lexer (Returns lexemes that are separated by whitespace).
 def lexer_whitespace(raw_data):
 
-	#Separate Whitespace
+	#Separate Lines
 	lines=raw_data.splitlines(True);
 
-	#Split Data In Each Line
+	#Split Data In Each Line By Whitespace
 	lexemes=[];
 
 	for ii in range(0,len(lines)):

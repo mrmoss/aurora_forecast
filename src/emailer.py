@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-#Emailer Library Source
+#Emailer Source
 #	Created By:		Mike Moss
 #	Modified On:	02/15/2014
 
-#Thread Library
+#Thread Module
 import thread;
 
-#SMTP Library
+#SMTP Module
 import smtplib;
 
 #Send Email Function (Sends an email through Gmail.)
