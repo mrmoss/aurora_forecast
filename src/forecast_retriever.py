@@ -234,6 +234,8 @@ for ii in range(1,len(sys.argv)):
 	elif(sys.argv[ii]=="--28-day"):
 		retreive_d28_cast=True;
 	else:
+		error_text=sys.argv[ii];
+
 		if(len(sys.argv[ii])<=1):
 			error=True;
 
@@ -248,11 +250,11 @@ for ii in range(1,len(sys.argv)):
 				elif(sys.argv[ii][jj]=="m"):
 					retrieve_d28_cast=True;
 				else:
+					error_text="-"+sys.argv[ii][jj];
 					error=True;
 					break;
 
 		if(error==True):
-			error_text=sys.argv[ii];
 			break;
 
 if(error==True):
