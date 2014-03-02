@@ -80,7 +80,7 @@ def parse_now(lexemes):
 					kp=float(lexemes[ii][17]);
 
 					#Test Predicted Date
-					date_test=date_util.date_util.valid_date(predicted_year,predicted_month,predicted_day,
+					date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
 						predicted_hour,predicted_minute,ii+1);
 
 					if(date_test[0]==False):

@@ -96,7 +96,7 @@ def test_all(json_string):
 		return_value=test_square_brackets(json_string);
 
 	if(return_value[0]==True):
-		return_value=test_json_syntax(json_string);
+		return_value=test_syntax(json_string);
 
 	if(return_value[0]==True):
 		return_value=test_aurora_syntax(json_string);

@@ -50,6 +50,7 @@ retry_timer=1;
 
 #Read Configuration File Function
 def read_config(filename):
+
 	try:
 		#Create Parser
 		config_parser=ConfigParser.RawConfigParser();
@@ -101,6 +102,7 @@ def read_config(filename):
 
 #Write Configuration File Function
 def write_config(filename):
+
 	try:
 		#Create Parser
 		config_parser=ConfigParser.RawConfigParser();
@@ -146,12 +148,15 @@ def error_message_end(success):
 def error_message_fatal_error():
 	print "fatal error - exiting"
 	exit();
+import file_util;
 
 #Forecast Update Function
 def get_forecast(link,parser,email_text):
 
 	#Try to Download Data
-	data_download=url_util.get_url(link);
+	data_download=file_util.file_to_string("now_cast.dat");
+	#url_util.get_url(link);
+	print("start");
 
 	#Failed Data Download
 	if(data_download==""):
@@ -160,31 +165,36 @@ def get_forecast(link,parser,email_text):
 	#Successful Data Download
 	else:
 		#Convert Downloaded Data
-		data_conversion=(False,"Invalid parser \""+parser+"\".";
+		data_conversion=(False,"Invalid parser \""+parser+"\".");
 
 		if(parser=="now"):
-			data_conversion=forecast_parser.parse_now(data_download);
-		elif(parser=="now"):
-			data_conversion=forecast_parser.parse_h1(data_download);
-		elif(parser=="now"):
-			data_conversion=forecast_parser.parse_d3(data_download);
-		elif(parser=="now"):
-			data_conversion=forecast_parser.parse_d28(data_download);
+			data_conversion=forecast_parser.parse_now(forecast_parser.lexer_whitespace(data_download));
+		elif(parser=="h1"):
+			data_conversion=forecast_parser.parse_h1(forecast_parser.lexer_whitespace(data_download));
+		elif(parser=="d3"):
+			data_conversion=forecast_parser.parse_d3(forecast_parser.lexer_whitespace(data_download));
+		elif(parser=="d28"):
+			data_conversion=forecast_parser.parse_d28(forecast_parser.lexer_whitespace(data_download));
+			print("d28");
 		else:
 			return data_conversion;
 
 		#Failed Conversion
 		if(data_conversion[0]==False):
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_converted[1]+"\r\n\r\nDownload Data:\r\n"+download_data+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+			print("conversion error - "+data_conversion[1]);
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+data_download+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 		#Successful Conversion
 		else:
+			json_string="["+data_conversion[1]+"]";
+
 			#Parse Converted Data
-			data_json=json_util.test_all(data_converted[1]);
+			data_json=json_util.test_all(json_string);
 
 			#Failed Parse
 			if(data_json[0]==False):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+data_converted[1]+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				print("parse error - "+data_json[1]);
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+json_string+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
 
 			#Successful Parse
 			else:
@@ -220,13 +230,13 @@ while True:
 	error_message_start("\tsigning into email...");
 
 	#Good Email Signin
-	if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
-		error_message_end(True);
+	#if(emailer.send_email("Aurora Forecaster","Server started!",server_email,receiver_email)):
+	#	error_message_end(True);
 
 	#Bad Email Signin
-	else:
-		error_message_end(False);
-		error_message_fatal_error();
+	#else:
+	#	error_message_end(False);
+	#	error_message_fatal_error();
 
 	#Server Started
 	print("server started");
@@ -235,7 +245,7 @@ while True:
 	while True:
 
 		#TEST
-		get_forecast(d28_forecast_link,"d28","28 day");
+		get_forecast(now_forecast_link,"now","now");
 
 		while True:
 			time.sleep(0);
