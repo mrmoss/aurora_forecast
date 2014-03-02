@@ -136,7 +136,7 @@ def write_config(filename):
 		#Failure
 		return False;
 
-#Fake Functions...
+#Fake Update Database Function
 def update_database(fake):
 	x=1;
 
@@ -207,6 +207,7 @@ def get_forecast(link,parser,email_text):
 #Assign Abort Signal Handler
 signal.signal(signal.SIGINT,abort_signal_handler);
 
+#Command Line Argument Variables
 error=False;
 error_text="";
 show_help=False;
@@ -218,49 +219,82 @@ retrieve_h1_cast=False;
 retrieve_d3_cast=False;
 retrieve_d28_cast=False;
 
+#No Arguemnts, Show Help
 if(len(sys.argv)==0):
 	show_help=true;
 
+#Go Through Arguments
 for ii in range(1,len(sys.argv)):
+
+	#Help Flag
 	if(sys.argv[ii]=="--help"):
 		show_help=True;
 		break;
+
+	#Now Cast Flag
 	elif(sys.argv[ii]=="--now"):
 		retreive_now_cast=True;
+
+	#1 Hour Cast Flag
 	elif(sys.argv[ii]=="--1-hour"):
 		retreive_h1_cast=True;
+
+	#3 Day Cast Flag
 	elif(sys.argv[ii]=="--3-day"):
 		retreive_d3_cast=True;
+
+	#28 Day Cast Flag
 	elif(sys.argv[ii]=="--28-day"):
 		retreive_d28_cast=True;
+
+	#Other Flags
 	else:
+
+		#Set Error Text to Argument
 		error_text=sys.argv[ii];
 
+		#If Empty or Just -, Error
 		if(len(sys.argv[ii])<=1):
 			error=True;
 
+		#If No Errors, Check Flag
 		if(error==False and sys.argv[ii].startswith("-")):
+
+			#Go Through Check Letters
 			for jj in range(1,len(sys.argv[ii])):
+
+				#Now Cast Flag
 				if(sys.argv[ii][jj]=="n"):
 					retrieve_now_cast=True;
+
+				#1 Hour Cast Flag
 				elif(sys.argv[ii][jj]=="h"):
 					retrieve_h1_cast=True;
+
+				#3 Day Cast Flag
 				elif(sys.argv[ii][jj]=="d"):
 					retrieve_d3_cast=True;
+
+				#28 Day Cast Flag
 				elif(sys.argv[ii][jj]=="m"):
 					retrieve_d28_cast=True;
+
+				#Unknown Flag
 				else:
 					error_text="-"+sys.argv[ii][jj];
 					error=True;
 					break;
 
+		#Error, Stop Looking Through Arguments
 		if(error==True):
 			break;
 
+#Error Found
 if(error==True):
 	print("Invalid argument \""+error_text+"\".  Use -h or --help for more information.");
 	exit(0);
 
+#Help Flag Set
 if(show_help==True):
 	print("Forecast Retreiver usage:");
 	print("\t--help\t\t\t\tShow this dialog.");
@@ -269,7 +303,6 @@ if(show_help==True):
 	print("\t-d, --3-day\t\t\tSpecify 3 day cast retrieval.");
 	print("\t-m, --28-day\t\t\tSpecify 28 day cast retrieval.");
 	exit(0);
-
 
 #Start Server
 print("Forecast Retriever");
