@@ -32,7 +32,8 @@ def get_next_three_days(issue_date):
 # Issue date is the best way to get date. Lines that start with digits are times.
 def parse_3_day(input_text, time_now):
     output_text = ''
-    issued = ':Issued:' 
+    issued = ':Issued:'
+
     for line in input_text:
         if issued in line:
             starting_from_today = get_issue_date(line)
@@ -41,14 +42,14 @@ def parse_3_day(input_text, time_now):
             kps = line[7:].split()
             for day in next_three_days:
                 json = '{' + time_now + ', "time_predicted":'
-                json += Timestamp(day + line[0:2]).json() 
+                json += Timestamp(day + line[0:2]).json()
                 kp_value = kps[0]
                 kps = kps[1:]
                 json += ',"forecast":"3day","kp":' + str(kp_value) + '},'
                 output_text += json
     # Remove the off-by-1 comma made by the loop.
     output_text = output_text[:-1]
-    return output_text 
+    return output_text
 
 
 def parse_1_hour(input_text, time_now):
