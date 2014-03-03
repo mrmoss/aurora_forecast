@@ -29,45 +29,27 @@ def insert_forecast(json_object,host,username,password,database):
 			if(ii["forecast"]=="now"):
 
 				#Create Entries
-				download_time=ii["download_time"]["year"]+"-"+ii["download_time"]["month"]+"-"+ii["download_time"]["day"]+" "+ii["download_time"]["hour"]+":"+ii["download_time"]["minute"]+":"+"00";
-				predicted_time=ii["predicted_time"]["year"]+"-"+ii["predicted_time"]["month"]+"-"++ii["predicted_time"]["day"]+ii["download_time"]["day"]+" "+ii["download_time"]["hour"]+":"+ii["download_time"]["minute"]+":"+"00";
-				kp=ii["kp"];
+				download_time=str(ii["download_time"]["year"]);
+				download_time+="-"+str(ii["download_time"]["month"]);
+				download_time+="-"+str(ii["download_time"]["day"]);
+				download_time+=" "+str(ii["download_time"]["hour"]);
+				download_time+=":"+str(ii["download_time"]["minute"]);
+				download_time+=":"+"00";
+
+				predicted_time=str(ii["predicted_time"]["year"]);
+				predicted_time+="-"+str(ii["predicted_time"]["month"]);
+				predicted_time+="-"+str(ii["predicted_time"]["day"]);
+				predicted_time+=" "+str(ii["predicted_time"]["hour"]);
+				predicted_time+=":"+str(ii["predicted_time"]["minute"]);
+				predicted_time+=":"+"00";
+
+				kp=str(ii["kp"]);
 
 				#Insert into Database
 				cursor.execute("insert into nowCast (date_forecasted,when_was_it_forecasted,kp_value) VALUES("+download_time+", "+predicted_time+", "+kp+");");
 
-			#1 Hour Forecast
-			elif(ii["forecast"]=="h1"):
-
-				#Create Entries
-				download_time=ii["download_time"]["year"]+"-"+ii["download_time"]["month"]+"-"+ii["download_time"]["day"]+" "+ii["download_time"]["hour"]+":"+ii["download_time"]["minute"]+":"+"00";
-				predicted_time=ii["predicted_time"]["year"]+"-"+ii["predicted_time"]["month"]+"-"+ii["predicted_time"]["day"]+ii["download_time"]["day"]+" "+ii["download_time"]["hour"]+":"+ii["download_time"]["minute"]+":"+"00";
-				kp=ii["kp"];
-
-				#Insert into Database
-				cursor.execute("insert into 1_forecast (date_forecasted,when_was_it_forecasted,kp_value) VALUES("+download_time+", "+predicted_time+", "+kp+");");
-
-			#3 Day Forecast
-			elif(ii["forecast"]=="d3"):
-
-				#Create Entries
-				download_time=ii["download_time"]["year"]+"-"+ii["download_time"]["month"]+"-"+ii["download_time"]["day"]+" "+ii["download_time"]["hour"]+":"+ii["download_time"]["minute"]+":"+"00";
-				predicted_time=ii["predicted_time"]["year"]+"-"+ii["predicted_time"]["month"]+"-"++ii["predicted_time"]["day"]+ii["download_time"]["day"]+" "+ii["download_time"]["hour"]+":"+ii["download_time"]["minute"]+":"+"00";
-				kp=ii["kp"];
-
-				#Insert into Database
-				cursor.execute("insert into 3_forecast (date_forecasted,when_was_it_forecasted,kp_value) VALUES("+download_time+", "+predicted_time+", "+kp+");");
-
-			#28 Day Forecast
-			elif(ii["forecast"]=="d28"):
-
-				#Create Entries
-				download_time=ii["download_time"]["year"]+"-"+ii["download_time"]["month"]+"-"+ii["download_time"]["day"];
-				predicted_time=ii["predicted_time"]["year"]+"-"+ii["predicted_time"]["month"]+"-"+ii["predicted_time"]["day"];
-				kp=ii["kp"];
-
-				#Insert into Database
-				cursor.execute("insert into 28_forecast (date_forecasted,when_was_it_forecasted,kp_value) VALUES("+download_time+", "+predicted_time+", "+kp+");");
+			else:
+				return (False,"Invalid forecast.");
 
 		#Close Cursor
 		cursor.close();
@@ -80,7 +62,7 @@ def insert_forecast(json_object,host,username,password,database):
 
 	#Bad Insertion
 	except Exception as e:
-		return (False,str(e).capitalize()+".");
+		return (False,str(e));
 
 
 
@@ -101,20 +83,14 @@ def insert_forecast(json_object,host,username,password,database):
 import forecast_parser;
 import json;
 
-data="";
-data+=":Data_list: wingkp_list.txt\n"
-data+="#                           1-hour         1-hour                    4-hour         4-hour\n";
-data+="# UT Date   Time         Predicted Time  Predicted  Lead-time     Predicted Time  Predicted  Lead-time   USAF Est.\n";
-data+="# YR MO DA  HHMM   S     YR MO DA  HHMM    Index    in Minutes    YR MO DA  HHMM    Index    in Minutes     Kp\n";
-data+="#-----------------------------------------------------------------------------------------------------------------\n";
-data+="2014 03 -1  -1-1   0   2014 02 24  0053     3.00       53.0     2014 02 24  0353      2.67     233.0        1.00";
+data="2014 03 -1  -1-1   0   2014 02 24  0053     3.00       53.0     2014 02 24  0353      2.67     233.0        1.00";
 lexemes=forecast_parser.lexer_whitespace(data);
 json_parse=forecast_parser.parse_now(lexemes);
 
 if(json_parse[0]):
 	json_obj=json.loads("["+json_parse[1]+"]");
 
-	insert=insert_forecast(json_obj,"127.0.0.1","root","not_putting_this_in_git","forecast_db");
+	insert=insert_forecast(json_obj,"127.0.0.1","root","not_adding_to_git","forecast_db");
 
 	if(insert[0]==False):
 		print(insert[1]);
