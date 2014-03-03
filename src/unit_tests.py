@@ -24,6 +24,7 @@ class json_utility_test_suite(unittest.TestCase):
 
 	#Testing Function
 	def runTest(self):
+		x=0;
 		#json_util.test_square_brackets
 		#json_util.test_syntax
 		#json_util.test_aurora_syntax
