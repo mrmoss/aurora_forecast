@@ -204,136 +204,139 @@ def get_forecast(link,parser,email_text):
 
 	return success;
 
-#Assign Abort Signal Handler
-signal.signal(signal.SIGINT,abort_signal_handler);
+#Forecast Parser Main
+if(__name__=="__main__"):
 
-#Command Line Argument Variables
-error=False;
-error_text="";
-show_help=False;
-link="";
-forecast="";
-email_text="";
-retrieve_now_cast=False;
-retrieve_h1_cast=False;
-retrieve_d3_cast=False;
-retrieve_d28_cast=False;
+	#Assign Abort Signal Handler
+	signal.signal(signal.SIGINT,abort_signal_handler);
 
-#No Arguemnts, Show Help
-if(len(sys.argv)<=1):
-	show_help=True;
+	#Command Line Argument Variables
+	error=False;
+	error_text="";
+	show_help=False;
+	link="";
+	forecast="";
+	email_text="";
+	retrieve_now_cast=False;
+	retrieve_h1_cast=False;
+	retrieve_d3_cast=False;
+	retrieve_d28_cast=False;
 
-#Go Through Arguments
-for ii in range(1,len(sys.argv)):
-
-	#Help Flag
-	if(sys.argv[ii]=="--help"):
+	#No Arguemnts, Show Help
+	if(len(sys.argv)<=1):
 		show_help=True;
-		break;
 
-	#Now Cast Flag
-	elif(sys.argv[ii]=="--now"):
-		retreive_now_cast=True;
+	#Go Through Arguments
+	for ii in range(1,len(sys.argv)):
 
-	#1 Hour Cast Flag
-	elif(sys.argv[ii]=="--1-hour"):
-		retreive_h1_cast=True;
-
-	#3 Day Cast Flag
-	elif(sys.argv[ii]=="--3-day"):
-		retreive_d3_cast=True;
-
-	#28 Day Cast Flag
-	elif(sys.argv[ii]=="--28-day"):
-		retreive_d28_cast=True;
-
-	#Other Flags
-	else:
-
-		#Set Error Text to Argument
-		error_text=sys.argv[ii];
-
-		#If Empty or Just -, Error
-		if(len(sys.argv[ii])<=1):
-			error=True;
-
-		#If No Errors, Check Flag
-		if(error==False and sys.argv[ii].startswith("-")):
-
-			#Go Through Check Letters
-			for jj in range(1,len(sys.argv[ii])):
-
-				#Now Cast Flag
-				if(sys.argv[ii][jj]=="n"):
-					retrieve_now_cast=True;
-
-				#1 Hour Cast Flag
-				elif(sys.argv[ii][jj]=="h"):
-					retrieve_h1_cast=True;
-
-				#3 Day Cast Flag
-				elif(sys.argv[ii][jj]=="d"):
-					retrieve_d3_cast=True;
-
-				#28 Day Cast Flag
-				elif(sys.argv[ii][jj]=="m"):
-					retrieve_d28_cast=True;
-
-				#Unknown Flag
-				else:
-					error_text="-"+sys.argv[ii][jj];
-					error=True;
-					break;
-
-		#Error, Stop Looking Through Arguments
-		if(error==True):
+		#Help Flag
+		if(sys.argv[ii]=="--help"):
+			show_help=True;
 			break;
 
-#Error Found
-if(error==True):
-	print("Invalid argument \""+error_text+"\".  Use -h or --help for more information.");
-	exit(0);
+		#Now Cast Flag
+		elif(sys.argv[ii]=="--now"):
+			retreive_now_cast=True;
 
-#Help Flag Set
-if(show_help==True):
-	print("Forecast Retreiver usage:");
-	print("\t--help\t\t\t\tShow this dialog.");
-	print("\t-n, --now\t\t\tSpecify now cast retrieval.");
-	print("\t-h, --1-hour\t\t\tSpecify 1 hour cast retrieval.");
-	print("\t-d, --3-day\t\t\tSpecify 3 day cast retrieval.");
-	print("\t-m, --28-day\t\t\tSpecify 28 day cast retrieval.");
-	exit(0);
+		#1 Hour Cast Flag
+		elif(sys.argv[ii]=="--1-hour"):
+			retreive_h1_cast=True;
 
-#Start Server
-print("Forecast Retriever");
+		#3 Day Cast Flag
+		elif(sys.argv[ii]=="--3-day"):
+			retreive_d3_cast=True;
 
-#Read Configuration File (On failure, write a default configuration file.)
-error_message_start("\tLoading Configuration File\t");
+		#28 Day Cast Flag
+		elif(sys.argv[ii]=="--28-day"):
+			retreive_d28_cast=True;
 
-if(read_config("forecast_retriever.cfg")==False):
-	error_message_end(False);
-	error_message_start("\tCreating Configuration File\t");
+		#Other Flags
+		else:
 
-	#Write Configuration on Read Fail
-	if(write_config("forecast_retriever.cfg")):
-		error_message_end(True);
-	else:
+			#Set Error Text to Argument
+			error_text=sys.argv[ii];
+
+			#If Empty or Just -, Error
+			if(len(sys.argv[ii])<=1):
+				error=True;
+
+			#If No Errors, Check Flag
+			if(error==False and sys.argv[ii].startswith("-")):
+
+				#Go Through Check Letters
+				for jj in range(1,len(sys.argv[ii])):
+
+					#Now Cast Flag
+					if(sys.argv[ii][jj]=="n"):
+						retrieve_now_cast=True;
+
+					#1 Hour Cast Flag
+					elif(sys.argv[ii][jj]=="h"):
+						retrieve_h1_cast=True;
+
+					#3 Day Cast Flag
+					elif(sys.argv[ii][jj]=="d"):
+						retrieve_d3_cast=True;
+
+					#28 Day Cast Flag
+					elif(sys.argv[ii][jj]=="m"):
+						retrieve_d28_cast=True;
+
+					#Unknown Flag
+					else:
+						error_text="-"+sys.argv[ii][jj];
+						error=True;
+						break;
+
+			#Error, Stop Looking Through Arguments
+			if(error==True):
+				break;
+
+	#Error Found
+	if(error==True):
+		print("Invalid argument \""+error_text+"\".  Use -h or --help for more information.");
+		exit(0);
+
+	#Help Flag Set
+	if(show_help==True):
+		print("Forecast Retreiver usage:");
+		print("\t--help\t\t\t\tShow this dialog.");
+		print("\t-n, --now\t\t\tSpecify now cast retrieval.");
+		print("\t-h, --1-hour\t\t\tSpecify 1 hour cast retrieval.");
+		print("\t-d, --3-day\t\t\tSpecify 3 day cast retrieval.");
+		print("\t-m, --28-day\t\t\tSpecify 28 day cast retrieval.");
+		exit(0);
+
+	#Start Server
+	print("Forecast Retriever");
+
+	#Read Configuration File (On failure, write a default configuration file.)
+	error_message_start("\tLoading Configuration File\t");
+
+	if(read_config("forecast_retriever.cfg")==False):
 		error_message_end(False);
-		error_message_fatal_error();
+		error_message_start("\tCreating Configuration File\t");
 
-else:
-	error_message_end(True);
+		#Write Configuration on Read Fail
+		if(write_config("forecast_retriever.cfg")):
+			error_message_end(True);
+		else:
+			error_message_end(False);
+			error_message_fatal_error();
 
-#Get Forecasts
-if(retrieve_now_cast==True):
-	error_message_start("\tRetrieving Now Cast\t\t");
-	error_message_end(get_forecast(now_forecast_link,"now","now"));
-if(retrieve_h1_cast==True):
-	error_message_start("\tRetrieving 1 Hour Cast\t\t");
-	error_message_end(get_forecast(h1_forecast_link,"h1","1 hour"));
-if(retrieve_d3_cast==True):
-	error_message_start("\tRetrieving 3 Day Cast\t\t");
-	error_message_end(get_forecast(d3_forecast_link,"d3","3 day"));
-if(retrieve_d28_cast==True):
-	error_message_start("\tRetrieving 28 Day Cast\t\t");
-	error_message_end(get_forecast(d28_forecast_link,"d28","28 day"));
+	else:
+		error_message_end(True);
+
+	#Get Forecasts
+	if(retrieve_now_cast==True):
+		error_message_start("\tRetrieving Now Cast\t\t");
+		error_message_end(get_forecast(now_forecast_link,"now","now"));
+	if(retrieve_h1_cast==True):
+		error_message_start("\tRetrieving 1 Hour Cast\t\t");
+		error_message_end(get_forecast(h1_forecast_link,"h1","1 hour"));
+	if(retrieve_d3_cast==True):
+		error_message_start("\tRetrieving 3 Day Cast\t\t");
+		error_message_end(get_forecast(d3_forecast_link,"d3","3 day"));
+	if(retrieve_d28_cast==True):
+		error_message_start("\tRetrieving 28 Day Cast\t\t");
+		error_message_end(get_forecast(d28_forecast_link,"d28","28 day"));

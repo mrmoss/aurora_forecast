@@ -13,14 +13,8 @@ import date_util;
 #Kp Utility Module
 import kp_util;
 
-#Is Integer Function (Tests if a string is an integer).
-def is_int(string):
-	try:
-		int(string);
-		return True;
-
-	except ValueError:
-		return False;
+#String Utility Module
+import string_util;
 
 #Whitespace Lexer (Returns lexemes that are separated by whitespace).
 def lexer_whitespace(raw_data):
@@ -126,9 +120,9 @@ def parse_now(lexemes):
 						#Data Found
 						found_data=True;
 
-					#Unknown Symbol
-					else:
-						return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".");
+				#Unknown Symbol
+				else:
+					return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".");
 
 		#No Data Means Error
 		if(found_data==False):
@@ -168,7 +162,7 @@ def parse_h1(lexemes):
 			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
 
 				#Valid YMD Row
-				if(len(lexemes[ii])==3 and is_int(lexemes[ii][0])):
+				if(len(lexemes[ii])==3 and string_util.is_int(lexemes[ii][0])):
 
 					#Found a Date
 					found_date=True;
@@ -279,7 +273,7 @@ def parse_d3(lexemes):
 			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
 
 				#Valid MD Row
-				if(len(lexemes[ii])==6 and date_util.month_to_int(lexemes[ii][0])>0 and is_int(lexemes[ii][1])):
+				if(len(lexemes[ii])==6 and date_util.month_to_int(lexemes[ii][0])>0 and string_util.is_int(lexemes[ii][1])):
 
 					#Found a Date
 					found_date=True;
@@ -456,9 +450,9 @@ def parse_d28(lexemes):
 						#Data Found
 						found_data=True;
 
-					#Unknown Symbol
-					else:
-						return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".");
+				#Unknown Symbol
+				else:
+					return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".");
 
 		#No Data Means Error
 		if(found_data==False):

@@ -2,7 +2,7 @@
 
 #String Utiltiy Source
 #	Created By:		Mike Moss
-#	Modified On:	03/01/2014
+#	Modified On:	03/02/2014
 
 #Returns a string with line numbers.
 def line_numbered(string):
@@ -19,3 +19,12 @@ def line_numbered(string):
 
 	#Return New String
 	return return_value;
+
+#Is Integer Function (Tests if a string is an integer).
+def is_int(string):
+	try:
+		int(string);
+		return True;
+
+	except ValueError:
+		return False;
