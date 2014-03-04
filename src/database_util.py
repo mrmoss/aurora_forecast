@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 #Database Utility Source
-#	Created By:		Mike Moss and Ignacio Saez Lahidalga
+#	Created By:		Ignacio Saez Lahidalga and Mike Moss
 #	Modified On:	03/03/2014
 
 #MySQL Module
@@ -9,6 +9,20 @@ import MySQLdb;
 
 #System Module
 import sys;
+
+#Convert JSON Date Object to String Date Function
+def convert_json_date_to_string_date(json_date):
+
+	#Create String Date
+	date_str=str(json_date["year"]);
+	date_str+="-"+str(json_date["month"]);
+	date_str+="-"+str(json_date["day"]);
+	date_str+=" "+str(json_date["hour"]);
+	date_str+=":"+str(json_date["minute"]);
+	date_str+=":00";
+
+	#Return String Date
+	return date_str;
 
 #Insert Forecast Function (Takes forecast information and inserts it into a given MySQL database,
 #		returns tuple [0](bool)success and [1](string)error).
@@ -26,28 +40,24 @@ def insert_forecast(json_object,host,username,password,database):
 		for ii in json_object:
 
 			#Now Forecast
-			if(ii["forecast"]=="now"):
+			if(ii["forecast"]=="now" or ii["forecast"]=="h1" or ii["forecast"]=="d1" or ii["forecast"]=="d28"):
 
-				#Create Entries
-				download_time=str(ii["download_time"]["year"]);
-				download_time+="-"+str(ii["download_time"]["month"]);
-				download_time+="-"+str(ii["download_time"]["day"]);
-				download_time+=" "+str(ii["download_time"]["hour"]);
-				download_time+=":"+str(ii["download_time"]["minute"]);
-				download_time+=":"+"00";
-
-				predicted_time=str(ii["predicted_time"]["year"]);
-				predicted_time+="-"+str(ii["predicted_time"]["month"]);
-				predicted_time+="-"+str(ii["predicted_time"]["day"]);
-				predicted_time+=" "+str(ii["predicted_time"]["hour"]);
-				predicted_time+=":"+str(ii["predicted_time"]["minute"]);
-				predicted_time+=":"+"00";
-
+				#Create Entry Values
+				forecast=ii["forecast"];
+				predicted_time=convert_json_date_to_string_date(ii["predicted_time"]);
+				download_time=convert_json_date_to_string_date(ii["download_time"]);
 				kp=str(ii["kp"]);
 
-				#Insert into Database
-				cursor.execute("insert into nowCast (date_forecasted,when_was_it_forecasted,kp_value) VALUES("+download_time+", "+predicted_time+", "+kp+");");
+				#Create Insertion Execute String
+				execute_str="replace into "+forecast+" values (\""+predicted_time+"\",\""+download_time+"\","+kp+");";
 
+				#Execute Insertion
+				cursor.execute(execute_str);
+
+				#Commit Changes
+				database.commit();
+
+			#Invalid Forecast
 			else:
 				return (False,"Invalid forecast.");
 
@@ -61,38 +71,9 @@ def insert_forecast(json_object,host,username,password,database):
 		return(True,"");
 
 	#Bad Insertion
+	except MySQLdb.Error as e:
+		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".");
+
+	#Something Other Bad Thing Happened
 	except Exception as e:
-		return (False,str(e));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import forecast_parser;
-import json;
-
-data="2014 03 -1  -1-1   0   2014 02 24  0053     3.00       53.0     2014 02 24  0353      2.67     233.0        1.00";
-lexemes=forecast_parser.lexer_whitespace(data);
-json_parse=forecast_parser.parse_now(lexemes);
-
-if(json_parse[0]):
-	json_obj=json.loads("["+json_parse[1]+"]");
-
-	insert=insert_forecast(json_obj,"127.0.0.1","root","not_adding_to_git","forecast_db");
-
-	if(insert[0]==False):
-		print(insert[1]);
-	else:
-		print("Worked?!");
+		return (False,str(e)[0:].capitalize()+".");
