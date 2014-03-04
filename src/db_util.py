@@ -39,27 +39,20 @@ def insert_forecast(json_object,host,username,password,database):
 		#Traverse JSON Object
 		for ii in json_object:
 
-			#Now Forecast
-			if(ii["forecast"]=="now" or ii["forecast"]=="h1" or ii["forecast"]=="d1" or ii["forecast"]=="d28"):
+			#Create Entry Values
+			forecast=ii["forecast"];
+			predicted_time=convert_json_date_to_string_date(ii["predicted_time"]);
+			download_time=convert_json_date_to_string_date(ii["download_time"]);
+			kp=str(ii["kp"]);
 
-				#Create Entry Values
-				forecast=ii["forecast"];
-				predicted_time=convert_json_date_to_string_date(ii["predicted_time"]);
-				download_time=convert_json_date_to_string_date(ii["download_time"]);
-				kp=str(ii["kp"]);
+			#Create Insertion Execute String
+			execute_str="insert into "+forecast+" (download_time,predicted_time,kp) values (\""+predicted_time+"\",\""+download_time+"\","+kp+");";
 
-				#Create Insertion Execute String
-				execute_str="replace into "+forecast+" values (\""+predicted_time+"\",\""+download_time+"\","+kp+");";
+			#Execute Insertion
+			cursor.execute(execute_str);
 
-				#Execute Insertion
-				cursor.execute(execute_str);
-
-				#Commit Changes
-				database.commit();
-
-			#Invalid Forecast
-			else:
-				return (False,"Invalid forecast.");
+			#Commit Changes
+			database.commit();
 
 		#Close Cursor
 		cursor.close();

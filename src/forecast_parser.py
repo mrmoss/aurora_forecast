@@ -440,7 +440,7 @@ def parse_d28(lexemes):
 						return_json+=	"\"minute\":"+str(downloaded_minute);
 						return_json+="}";
 						return_json+=",\n";
-						return_json+="\t\t\"forecast\":\"now\",\n";
+						return_json+="\t\t\"forecast\":\"d28\",\n";
 						return_json+="\t\t\"kp\":"+str(kp)+"\n";
 
 						return_json+="\t}\n";

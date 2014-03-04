@@ -5,32 +5,39 @@ drop table if exists d28;
 
 create table now
 (
+	id integer auto_increment not null,
 	predicted_time datetime not null,
 	download_time datetime not null,
 	kp float not null,
-	primary key (predicted_time)
+	primary key (id)
 );
 
 create table h1
 (
+	id integer auto_increment not null,
 	predicted_time datetime not null,
 	download_time datetime not null,
 	kp float not null,
-	primary key (predicted_time)
+	primary key (id)
+
 );
 
 create table d3
 (
+	id integer auto_increment not null,
 	predicted_time datetime not null,
 	download_time datetime not null,
 	kp float not null,
-	primary key (predicted_time)
+	primary key (id)
+
 );
 
 create table d28
 (
-	predicted_time date not null,
-	download_time date not null,
+	id integer auto_increment not null,
+	predicted_time datetime not null,
+	download_time datetime not null,
 	kp float not null,
-	primary key (predicted_time)
+	primary key (id)
+
 );

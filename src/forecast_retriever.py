@@ -2,10 +2,13 @@
 
 #Forecast Retriever Source
 #	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-#	Modified On:	03/02/2014
+#	Modified On:	03/03/2014
 
 #Configuration Parser Module
 import ConfigParser;
+
+#Database Utility Module
+import db_util;
 
 #Emailer Module
 import emailer;
@@ -15,6 +18,9 @@ import file_util;
 
 #Forecast Parser Module
 import forecast_parser;
+
+#JSON Module
+import json;
 
 #JSON Utility Module
 import json_util;
@@ -136,10 +142,6 @@ def write_config(filename):
 		#Failure
 		return False;
 
-#Fake Update Database Function
-def update_database(fake):
-	x=1;
-
 #Error Check Prompt Functions
 def error_message_start(message):
 	print message,
@@ -151,13 +153,9 @@ def error_message_end(success):
 def error_message_fatal_error():
 	print "fatal error - exiting"
 	exit();
-import file_util;
 
 #Forecast Update Function (Downloads, converts, parses, and updates database; returns success).
 def get_forecast(link,parser,email_text):
-
-	#Success Variable
-	success=False;
 
 	#Try to Download Data
 	data_download=url_util.get_url(link);
@@ -165,6 +163,7 @@ def get_forecast(link,parser,email_text):
 	#Failed Data Download
 	if(data_download==""):
 		emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast failed to download!\r\n\r\nDownload Link:\r\n"+time.strftime(link)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+		return (False,"Could not download resource.");
 
 	#Successful Data Download
 	else:
@@ -179,15 +178,16 @@ def get_forecast(link,parser,email_text):
 			data_conversion=forecast_parser.parse_d3(forecast_parser.lexer_whitespace(data_download));
 		elif(parser=="d28"):
 			data_conversion=forecast_parser.parse_d28(forecast_parser.lexer_whitespace(data_download));
-		else:
-			return data_conversion;
 
 		#Failed Conversion
 		if(data_conversion[0]==False):
 			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+string_util.line_numbered(data_download)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+			return data_conversion;
 
 		#Successful Conversion
 		else:
+
+			#Create JSON String
 			json_string="["+data_conversion[1]+"]";
 
 			#Parse Converted Data
@@ -196,13 +196,26 @@ def get_forecast(link,parser,email_text):
 			#Failed Parse
 			if(data_json[0]==False):
 				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+string_util.line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+				return data_json;
 
 			#Successful Parse
 			else:
-				update_database(data_json[1]);
-				success=True;
 
-	return success;
+				#Create JSON Object
+				json_object=json.loads(json_string);
+
+				#Insert Data
+				database_insertion=db_util.insert_forecast(json_object,"127.0.0.1","root","dont_put_in_git","forecast_db");
+				
+				#Failed Insertion
+				if(database_insertion[0]==False):
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast database reported an error!\r\n\r\nError Message:\r\n"+database_insertion[1]+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email);
+
+				#Return Result
+				return database_insertion;
+
+	#This should never happen...
+	return (False,"Unknown error occured.");
 
 #Forecast Parser Main
 if(__name__=="__main__"):
@@ -330,13 +343,13 @@ if(__name__=="__main__"):
 	#Get Forecasts
 	if(retrieve_now_cast==True):
 		error_message_start("\tRetrieving Now Cast\t\t");
-		error_message_end(get_forecast(now_forecast_link,"now","now"));
+		error_message_end(get_forecast(now_forecast_link,"now","now")[0]);
 	if(retrieve_h1_cast==True):
 		error_message_start("\tRetrieving 1 Hour Cast\t\t");
-		error_message_end(get_forecast(h1_forecast_link,"h1","1 hour"));
+		error_message_end(get_forecast(h1_forecast_link,"h1","1 hour")[0]);
 	if(retrieve_d3_cast==True):
 		error_message_start("\tRetrieving 3 Day Cast\t\t");
-		error_message_end(get_forecast(d3_forecast_link,"d3","3 day"));
+		error_message_end(get_forecast(d3_forecast_link,"d3","3 day")[0]);
 	if(retrieve_d28_cast==True):
 		error_message_start("\tRetrieving 28 Day Cast\t\t");
-		error_message_end(get_forecast(d28_forecast_link,"d28","28 day"));
+		error_message_end(get_forecast(d28_forecast_link,"d28","28 day")[0]);
