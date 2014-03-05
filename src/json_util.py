@@ -55,17 +55,15 @@ def test_aurora_syntax(json_string):
 			#Test Predicted Date
 			predicated_date=json_object[ii]["predicted_time"]
 
-			predicted_date_test=date_util.valid_date(predicated_date["year"],predicated_date["month"],predicated_date["day"],
-				predicated_date["hour"],predicated_date["minute"],-1)
+			predicted_date_test=date_util.valid_date(predicated_date,-1)
 
 			if(predicted_date_test[0]==False):
 				return predicted_date_test
 
 			#Test Download Date
-			predicated_date=json_object[ii]["download_time"]
+			download_date=json_object[ii]["download_time"]
 
-			download_date_test=date_util.valid_date(predicated_date["year"],predicated_date["month"],predicated_date["day"],
-				predicated_date["hour"],predicated_date["minute"],-1)
+			download_date_test=date_util.valid_date(download_date,-1)
 
 			if(download_date_test[0]==False):
 				return download_date_test
