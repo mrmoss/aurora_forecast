@@ -8,23 +8,23 @@
 def line_numbered(string):
 
 	#Return Value
-	return_value="";
+	return_value=""
 
 	#Separate Lines
-	lines=string.splitlines(True);
+	lines=string.splitlines(True)
 
 	#Add Line Numbers
 	for ii in range(0,len(lines)):
-		return_value+=str(ii+1)+":\t"+lines[ii];
+		return_value+=str(ii+1)+":\t"+lines[ii]
 
 	#Return New String
-	return return_value;
+	return return_value
 
 #Is Integer Function (Tests if a string is an integer).
 def is_int(string):
 	try:
-		int(string);
-		return True;
+		int(string)
+		return True
 
 	except ValueError:
-		return False;
+		return False

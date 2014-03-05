@@ -9,7 +9,7 @@ def valid_kp(kp,line):
 	if(kp<-1 or kp>9):
 		return (False,
 			"Invalid Kp on line "+str(line)+
-			" (expected a value between -1.0 to 9.0 and got "+str(kp)+").");
+			" (expected a value between -1.0 to 9.0 and got "+str(kp)+").")
 
 	#Good Kp
-	return (True,"");
+	return (True,"")
