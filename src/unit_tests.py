@@ -438,7 +438,7 @@ class forecast_parser_test_suite(unittest.TestCase):
 		data+="Wingst           N54 E 95   -1    -1    -1    -1    -1    -1    -1    -1    -1"
 		lexemes=forecast_parser.lexer_whitespace(data)
 		json=forecast_parser.parse_h1(lexemes)
-		self.assertEqual(json[0],True,"valid kp testing - "+json[1])
+		self.assertEqual(json[0],False,"valid kp testing - "+json[1])
 
 		data="\n\n"
 		data+=":Product: Geomagnetic Data                AK.txt\n"
@@ -452,7 +452,7 @@ class forecast_parser_test_suite(unittest.TestCase):
 		data+="Boulder          N49 W 42    4     2     1     0     0     2     2     1     1\n"
 		data+="Planetary(estimated Ap)     -1    -1    -1    -1    -1    -1    -1    -1    -1\n"
 		data+="Wingst           N54 E 95   -1    -1    -1    -1    -1    -1    -1    -1    -1"
-		self.assertEqual(json[0],True,"empty line testing - "+json[1])
+		self.assertEqual(json[0],False,"empty line testing - "+json[1])
 
 		data=""
 		data+=":Product: Geomagnetic Data                AK.txt\n"

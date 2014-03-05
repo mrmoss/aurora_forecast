@@ -39,54 +39,54 @@ def hhdashhhut_to_hours(hhdashhhut):
 		return (-1,-1)
 
 #Valid Date Function (Tests a date, returns tuple containing [0](bool)passed, [1](str)error).
-def valid_date(year,month,day,hour,minute,line):
+def valid_date(date,line):
 
 	#Force Types
-	year=int(year)
-	month=int(month)
-	day=int(day)
-	hour=int(hour)
-	minute=int(minute)
+	date["year"]=int(date["year"])
+	date["month"]=int(date["month"])
+	date["day"]=int(date["day"])
+	date["hour"]=int(date["hour"])
+	date["hour"]=int(date["hour"])
 	line=int(line)
 
-	#Invalid Year Check
-	if(year<1970):
+	#Invalid date["year"] Check
+	if(date["year"]<1970):
 		return_string="Invalid year "
 		if(line>0):
 			return_string+="on line "+str(line)+" "
-		return_string+=" (expected a value greater than or equal to 1970 and got "+str(year)+")."
+		return_string+=" (expected a value greater than or equal to 1970 and got "+str(date["year"])+")."
 		return (False,return_string)
 
-	#Invalid Month Check
-	if(month<-1 or month==0 or month>12 or (month==-1 and (day!=-1 or hour!=-1 or minute!=-1))):
+	#Invalid date["month"] Check
+	if(date["month"]<-1 or date["month"]==0 or date["month"]>12 or (date["month"]==-1 and (date["day"]!=-1 or date["hour"]!=-1 or date["minute"]!=-1))):
 		return_string="Invalid month "
 		if(line>0):
 			return_string+="on line "+str(line+1)+" "
-		return_string+=" (expected a value between 1 and 12 and got "+str(month)+")."
+		return_string+=" (expected a value between 1 and 12 and got "+str(date["month"])+")."
 		return (False,return_string)
 
-	#Invalid Day Check
-	if(day<-1 or day==0 or day>31 or (day==-1 and (hour!=-1 or minute!=-1))):
+	#Invalid date["day"] Check
+	if(date["day"]<-1 or date["day"]==0 or date["day"]>31 or (date["day"]==-1 and (date["hour"]!=-1 or date["minute"]!=-1))):
 		return_string="Invalid day "
 		if(line>0):
 			return_string+="on line "+str(line)+" "
-		return_string+=" (expected a value between 1 and 31 and got "+str(day)+")."
+		return_string+=" (expected a value between 1 and 31 and got "+str(date["day"])+")."
 		return (False,return_string)
 
-	#Invalid Hour Check
-	if(hour<-1 or hour>23 or (hour==-1 and minute!=-1)):
+	#Invalid date["hour"] Check
+	if(date["hour"]<-1 or date["hour"]>23 or (date["hour"]==-1 and date["minute"]!=-1)):
 		return_string="Invalid hour "
 		if(line>0):
 			return_string+="on line "+str(line)+" "
-		return_string+=" (expected a value between 0 and 23 and got "+str(hour)+")."
+		return_string+=" (expected a value between 0 and 23 and got "+str(date["hour"])+")."
 		return (False,return_string)
 
-	#Invalid Minute Check
-	if(minute<-1 or minute>59):
+	#Invalid date["minute"] Check
+	if(date["minute"]<-1 or date["minute"]>59):
 		return_string="Invalid minute "
 		if(line>0):
 			return_string+="on line "+str(line)+" "
-		return_string+=" (expected a value between 0 and 59 and got "+str(minute)+")."
+		return_string+=" (expected a value between 0 and 59 and got "+str(date["minute"])+")."
 		return (False,return_string)
 
 	#Good Date

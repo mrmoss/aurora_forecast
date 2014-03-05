@@ -31,6 +31,50 @@ def lexer_whitespace(raw_data):
 	#Return Lexemes
 	return lexemes
 
+#Assemble Dictionary Current Time Function, returns string, takes ((int)year,
+#	(int)month, (int)day, (int)hour, (int)minute)
+def assemble_dict_current_time():
+	time={};
+	time["year"]=datetime.datetime.today().year
+	time["month"]=datetime.datetime.today().month
+	time["day"]=datetime.datetime.today().day
+	time["hour"]=datetime.datetime.today().hour
+	time["minute"]=datetime.datetime.today().minute
+
+	return time;
+
+#Assemble JSON Forecast Date Function, returns string, takes ((int)yearm (int)month,
+#	(int)day, (int)hour, (int)minute).
+def assemble_json_forecast_date(time):
+	json_string="";
+	json_string+="{"
+	json_string+=	"\"year\":"+str(time["year"])+","
+	json_string+=	"\"month\":"+str(time["month"])+","
+	json_string+=	"\"day\":"+str(time["day"])+","
+	json_string+=	"\"hour\":"+str(time["hour"])+","
+	json_string+=	"\"minute\":"+str(time["minute"])
+	json_string+="}"
+
+	return json_string
+
+#Assemble JSON Forecast Function, returns string, takes ((time dict)predicted time,
+#	(time dict)download time, (string)forecast, (float)kp).
+def assemble_json_forecast(predicted_time,download_time,forecast,kp):
+
+	json_string="";
+	json_string+="\t{\n"
+	json_string+="\t\t\"predicted_time\":"
+	json_string+=assemble_json_forecast_date(predicted_time)
+	json_string+=",\n"
+	json_string+="\t\t\"download_time\":"
+	json_string+=assemble_json_forecast_date(download_time)
+	json_string+=",\n"
+	json_string+="\t\t\"forecast\":\""+forecast+"\",\n"
+	json_string+="\t\t\"kp\":"+str(kp)+"\n"
+	json_string+="\t}\n"
+
+	return json_string;
+
 #Now Parser (Parses the now forecast).
 def parse_now(lexemes):
 
@@ -39,11 +83,7 @@ def parse_now(lexemes):
 		return_json=""
 
 		#Retrieve Downloaded Time
-		downloaded_year=datetime.datetime.today().year
-		downloaded_month=datetime.datetime.today().month
-		downloaded_day=datetime.datetime.today().day
-		downloaded_hour=datetime.datetime.today().hour
-		downloaded_minute=datetime.datetime.today().minute
+		download_time=assemble_dict_current_time();
 		found_data=False
 
 		#Parse Lexemes
@@ -55,27 +95,19 @@ def parse_now(lexemes):
 				#Valid Time Row
 				if(len(lexemes[ii])==18):
 
-					#Default Values
-					predicted_year=1970
-					predicted_month=1
-					predicted_day=1
-					predicted_hour=1
-					predicted_min=1
-					kp=-1
-
 					#Extract Predicted Time
-					predicted_year=int(lexemes[ii][0])
-					predicted_month=int(lexemes[ii][1])
-					predicted_day=int(lexemes[ii][2])
-					predicted_hour=date_util.hhmm_to_hour(lexemes[ii][3])
-					predicted_minute=date_util.hhmm_to_min(lexemes[ii][3])
+					predicted_time={};
+					predicted_time["year"]=int(lexemes[ii][0])
+					predicted_time["month"]=int(lexemes[ii][1])
+					predicted_time["day"]=int(lexemes[ii][2])
+					predicted_time["hour"]=date_util.hhmm_to_hour(lexemes[ii][3])
+					predicted_time["minute"]=date_util.hhmm_to_min(lexemes[ii][3])
 
 					#Extract Predicted Kp
 					kp=float(lexemes[ii][17])
 
 					#Test Predicted Date
-					date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
-						predicted_hour,predicted_minute,ii+1)
+					date_test=date_util.valid_date(predicted_time,ii+1)
 
 					if(date_test[0]==False):
 						return date_test
@@ -88,36 +120,8 @@ def parse_now(lexemes):
 
 					#Only Add Good Data
 					if(kp>=0):
-
-						#Add JSON String
-						return_json+="\t{\n"
-
-						return_json+="\t\t\"predicted_time\":"
-						return_json+="{"
-						return_json+=	"\"year\":"+str(predicted_year)+","
-						return_json+=	"\"month\":"+str(predicted_month)+","
-						return_json+=	"\"day\":"+str(predicted_day)+","
-						return_json+=	"\"hour\":"+str(predicted_hour)+","
-						return_json+=	"\"minute\":"+str(predicted_minute)
-						return_json+="}"
-						return_json+=",\n"
-						return_json+="\t\t\"download_time\":"
-						return_json+="{"
-						return_json+=	"\"year\":"+str(downloaded_year)+","
-						return_json+=	"\"month\":"+str(downloaded_month)+","
-						return_json+=	"\"day\":"+str(downloaded_day)+","
-						return_json+=	"\"hour\":"+str(downloaded_hour)+","
-						return_json+=	"\"minute\":"+str(downloaded_minute)
-						return_json+="}"
-						return_json+=",\n"
-						return_json+="\t\t\"forecast\":\"now\",\n"
-						return_json+="\t\t\"kp\":"+str(kp)+"\n"
-
-						return_json+="\t}\n"
-
+						return_json+=assemble_json_forecast(predicted_time,download_time,"now",kp);
 						return_json+="\t,\n"
-
-						#Data Found
 						found_data=True
 
 				#Unknown Symbol
@@ -142,17 +146,10 @@ def parse_h1(lexemes):
 		return_json=""
 
 		#Retrieve Downloaded Time
-		downloaded_year=datetime.datetime.today().year
-		downloaded_month=datetime.datetime.today().month
-		downloaded_day=datetime.datetime.today().day
-		downloaded_hour=datetime.datetime.today().hour
-		downloaded_minute=datetime.datetime.today().minute
+		download_time=assemble_dict_current_time();
 
 		#Default Predicted Time
 		found_date=False
-		predicted_year=1970
-		predicted_month=1
-		predicted_day=1
 		found_data=False
 
 		#Parse Lexemes
@@ -168,9 +165,12 @@ def parse_h1(lexemes):
 					found_date=True
 
 					#Extract Predicted YMD
-					predicted_year=int(lexemes[ii][0])
-					predicted_month=date_util.month_to_int(lexemes[ii][1])
-					predicted_day=int(lexemes[ii][2])
+					predicted_time={};
+					predicted_time["year"]=int(lexemes[ii][0])
+					predicted_time["month"]=date_util.month_to_int(lexemes[ii][1])
+					predicted_time["day"]=int(lexemes[ii][2])
+					predicted_time["hour"]=0;
+					predicted_time["minute"]=0;
 
 				#Valid Planetary Estimated Ap Row
 				elif(found_date==True and len(lexemes[ii])==11 and lexemes[ii][0].startswith("Planetary")):
@@ -181,9 +181,6 @@ def parse_h1(lexemes):
 						#Create 3 Entries Per Three Hour Segment
 						for kk in range(0,3):
 
-							#Data Found
-							found_data=True
-
 							#Extract Predicted Hour, Minute is -1
 							predicted_hour=jj*3+kk
 							predicted_minute=-1
@@ -192,8 +189,7 @@ def parse_h1(lexemes):
 							kp=float(lexemes[ii][3+jj])
 
 							#Test Predicted Date
-							date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
-								predicted_hour,predicted_minute,ii+1)
+							date_test=date_util.valid_date(predicted_time,ii+1)
 
 							if(date_test[0]==False):
 								return date_test
@@ -206,34 +202,9 @@ def parse_h1(lexemes):
 
 							#Only Add Good Data
 							if(kp>=0):
-
-								#Add JSON String
-								return_json+="\t{\n"
-
-								return_json+="\t\t\"predicted_time\":"
-								return_json+="{"
-								return_json+=	"\"year\":"+str(predicted_year)+","
-								return_json+=	"\"month\":"+str(predicted_month)+","
-								return_json+=	"\"day\":"+str(predicted_day)+","
-								return_json+=	"\"hour\":"+str(predicted_hour)+","
-								return_json+=	"\"minute\":"+str(predicted_minute)
-								return_json+="}"
-								return_json+=",\n"
-								return_json+="\t\t\"download_time\":"
-								return_json+="{"
-								return_json+=	"\"year\":"+str(downloaded_year)+","
-								return_json+=	"\"month\":"+str(downloaded_month)+","
-								return_json+=	"\"day\":"+str(downloaded_day)+","
-								return_json+=	"\"hour\":"+str(downloaded_hour)+","
-								return_json+=	"\"minute\":"+str(downloaded_minute)
-								return_json+="}"
-								return_json+=",\n"
-								return_json+="\t\t\"forecast\":\"h1\",\n"
-								return_json+="\t\t\"kp\":"+str(kp)+"\n"
-
-								return_json+="\t}\n"
-
+								return_json+=assemble_json_forecast(predicted_time,download_time,"h1",kp);
 								return_json+="\t,\n"
+								found_data=True
 
 		#No Data Means Error
 		if(found_data==False):
@@ -253,17 +224,10 @@ def parse_d3(lexemes):
 		return_json=""
 
 		#Retrieve Downloaded Time
-		downloaded_year=datetime.datetime.today().year
-		downloaded_month=datetime.datetime.today().month
-		downloaded_day=datetime.datetime.today().day
-		downloaded_hour=datetime.datetime.today().hour
-		downloaded_minute=datetime.datetime.today().minute
+		download_time=assemble_dict_current_time();
 
 		#Default Predicted Time
 		found_date=False
-		date=[]
-		predicted_year=downloaded_year
-		predicted_month=1
 		found_data=False
 
 		#Parse Lexemes
@@ -295,21 +259,19 @@ def parse_d3(lexemes):
 							#3 Hours Per Segment
 							for kk in range(0,3):
 
-								#Found Data
-								found_data=True
-
 								#Extract Predicted Time, Minute is -1
-								predicted_month=date_util.month_to_int(date[jj*2])
-								predicted_day=int(date[jj*2+1])
-								predicted_hour=hours[0]+kk
-								predicted_minute=-1
+								predicted_time={};
+								predicted_time["year"]=download_time["year"]
+								predicted_time["month"]=date_util.month_to_int(date[jj*2])
+								predicted_time["day"]=int(date[jj*2+1])
+								predicted_time["hour"]=hours[0]+kk
+								predicted_time["minute"]=-1
 
 								#Extract Predicted Kp
 								kp=float(lexemes[ii][1+jj])
 
 								#Test Predicted Date
-								date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
-									predicted_hour,predicted_minute,ii+1)
+								date_test=date_util.valid_date(predicted_time,ii+1)
 
 								if(date_test[0]==False):
 									return date_test
@@ -322,34 +284,9 @@ def parse_d3(lexemes):
 
 								#Only Add Good Data
 								if(kp>=0):
-
-									#Add JSON String
-									return_json+="\t{\n"
-
-									return_json+="\t\t\"predicted_time\":"
-									return_json+="{"
-									return_json+=	"\"year\":"+str(downloaded_year)+","
-									return_json+=	"\"month\":"+str(predicted_month)+","
-									return_json+=	"\"day\":"+str(predicted_day)+","
-									return_json+=	"\"hour\":"+str(predicted_hour)+","
-									return_json+=	"\"minute\":"+str(predicted_minute)
-									return_json+="}"
-									return_json+=",\n"
-									return_json+="\t\t\"download_time\":"
-									return_json+="{"
-									return_json+=	"\"year\":"+str(downloaded_year)+","
-									return_json+=	"\"month\":"+str(downloaded_month)+","
-									return_json+=	"\"day\":"+str(downloaded_day)+","
-									return_json+=	"\"hour\":"+str(downloaded_hour)+","
-									return_json+=	"\"minute\":"+str(downloaded_minute)
-									return_json+="}"
-									return_json+=",\n"
-									return_json+="\t\t\"forecast\":\"d3\",\n"
-									return_json+="\t\t\"kp\":"+str(kp)+"\n"
-
-									return_json+="\t}\n"
-
+									return_json+=assemble_json_forecast(predicted_time,download_time,"d3",kp);
 									return_json+="\t,\n"
+									found_data=True
 
 		#No Data Means Error
 		if(found_data==False):
@@ -369,11 +306,7 @@ def parse_d28(lexemes):
 		return_json=""
 
 		#Retrieve Downloaded Time
-		downloaded_year=datetime.datetime.today().year
-		downloaded_month=datetime.datetime.today().month
-		downloaded_day=datetime.datetime.today().day
-		downloaded_hour=datetime.datetime.today().hour
-		downloaded_minute=datetime.datetime.today().minute
+		download_time=assemble_dict_current_time();
 		found_data=False
 
 		#Parse Lexemes
@@ -394,18 +327,18 @@ def parse_d28(lexemes):
 					kp=-1
 
 					#Extract Predicted Time
-					predicted_year=int(lexemes[ii][0])
-					predicted_month=date_util.month_to_int(lexemes[ii][1])
-					predicted_day=int(lexemes[ii][2])
-					predicted_hour=-1
-					predicted_minute=-1
+					predicted_time={};
+					predicted_time["year"]=int(lexemes[ii][0])
+					predicted_time["month"]=date_util.month_to_int(lexemes[ii][1])
+					predicted_time["day"]=int(lexemes[ii][2])
+					predicted_time["hour"]=-1
+					predicted_time["minute"]=-1
 
 					#Extract Predicted Kp
 					kp=float(lexemes[ii][5])
 
 					#Test Predicted Date
-					date_test=date_util.valid_date(predicted_year,predicted_month,predicted_day,
-						predicted_hour,predicted_minute,ii+1)
+					date_test=date_util.valid_date(predicted_time,ii+1)
 
 					if(date_test[0]==False):
 						return date_test
@@ -418,33 +351,7 @@ def parse_d28(lexemes):
 
 					#Only Add Good Data
 					if(kp>=0):
-
-						#Add JSON String
-						return_json+="\t{\n"
-
-						return_json+="\t\t\"predicted_time\":"
-						return_json+="{"
-						return_json+=	"\"year\":"+str(predicted_year)+","
-						return_json+=	"\"month\":"+str(predicted_month)+","
-						return_json+=	"\"day\":"+str(predicted_day)+","
-						return_json+=	"\"hour\":"+str(predicted_hour)+","
-						return_json+=	"\"minute\":"+str(predicted_minute)
-						return_json+="}"
-						return_json+=",\n"
-						return_json+="\t\t\"download_time\":"
-						return_json+="{"
-						return_json+=	"\"year\":"+str(downloaded_year)+","
-						return_json+=	"\"month\":"+str(downloaded_month)+","
-						return_json+=	"\"day\":"+str(downloaded_day)+","
-						return_json+=	"\"hour\":"+str(downloaded_hour)+","
-						return_json+=	"\"minute\":"+str(downloaded_minute)
-						return_json+="}"
-						return_json+=",\n"
-						return_json+="\t\t\"forecast\":\"d28\",\n"
-						return_json+="\t\t\"kp\":"+str(kp)+"\n"
-
-						return_json+="\t}\n"
-
+						return_json+=assemble_json_forecast(predicted_time,download_time,"d28",kp);
 						return_json+="\t,\n"
 
 						#Data Found
