@@ -56,106 +56,161 @@ class json_utility_test_suite(unittest.TestCase):
 		json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
 		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "valid aurora syntax")
 
+		#assertions testing year
 		year = datetime.datetime.now().year
 		for ii in range (1970, year):
 			json_string = '[{"predicted_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},'
 			json_string += '"download_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "year >= 1970 and <= now should be true")
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "year = " + str(ii) + " should be true")
 
 		for ii in range (0, 1969):
 			json_string = '[{"predicted_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},'
 			json_string += '"download_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "year < 1970 should be false")
-
-		for ii in range (-1, 9):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "kp >= -1 and <= 9 should be true")
-
-		for ii in range (-1000, -2):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "kp < -1 should be false")
-
-		for ii in range (10, 1000):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "kp > 9 should be false")
-
-		for ii in range (1, 12):
-			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "month >= 1 and <= 12 should be true")
-
-		for ii in range (-1000, -2):
-			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month < -1 should be false")
-
-		for ii in range (13, 1000):
-			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month > 12 should be false")
-
-		for ii in range (1, 31):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "day >= 1 and <= 31 should be true")
-
-		for ii in range (-1000, -2):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "day < -1 should be false")
-
-		for ii in range (32, 1000):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "day > 31 should be false")
-
-		for ii in range (0, 23):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "hour >= 0 and <= 23 should be true")
-
-		for ii in range (-1000, -2):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "hour < -1 should be false")
-
-		for ii in range (24, 1000):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "hour > 23 should be false")
-
-		for ii in range (-1, 59):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "minute >= -1 and <= 59 should be true")
-
-		for ii in range (-1000, -2):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "minute < -1 should be false")
-
-		for ii in range (60, 1000):
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "minute > 59 should be false")
-
-		forecast = ('"now"', '"h1"', '"d3"', '"d28"')
-
-		for ii in forecast:
-			print ii
-			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":' + ii + '}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "valid forecast")
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "year = " + str(ii) + " should be false")
 
 		for ii in range (year+1, 3000):
 			json_string = '[{"predicted_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},'
 			json_string += '"download_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "year > now (current year) should be false")
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "year = " + str(ii) + " should be false")
+
+		#assertions testing kp
+		for ii in range (-1, 9):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "kp = " + str(ii) + " should be true")
+
+		for ii in range (-1000, -2):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "kp = " + str(ii) + " should be false")
+
+		for ii in range (10, 1000):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "kp = " + str(ii) + " should be false")
+	
+		#assertions testing month
+		for ii in range (1, 12):
+			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "month = " + str(ii) + " should be true")
+
+		for ii in range (-1000, -2):
+			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month = " + str(ii) + " should be false")
+
+		for ii in range (13, 1000):
+			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month = " + str(ii) + " should be false")
+
+		json_string = '[{"predicted_time":{"year":1970,"month":-1,"day":-1,"hour":-1,"minute":-1},'
+		json_string += '"download_time":{"year":1970,"month":-1,"day":-1,"hour":-1,"minute":-1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "month = -1, day = -1, hour = -1, minute = -1 should be true")
+
+		json_string = '[{"predicted_time":{"year":1970,"month":-1,"day": 1,"hour":-1,"minute":-1},'
+		json_string += '"download_time":{"year":1970,"month":-1,"day":1,"hour":-1,"minute":-1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month = -1, day = 1, hour = -1, minute = -1 should be false")
+
+		json_string = '[{"predicted_time":{"year":1970,"month": 0,"day": 1,"hour": 1,"minute": 1},'
+		json_string += '"download_time":{"year":1970,"month": 0,"day":1,"hour": 1,"minute": 1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month = 0 should be false")
+
+		#assertions testing day
+		for ii in range (1, 31):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "day = " + str(ii) + " should be true")
+
+		for ii in range (-1000, -2):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "day = " + str(ii) + " should be false")
+
+		for ii in range (32, 1000):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":' + str(ii) + ',"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "day = " + str(ii) + " should be false")
+
+		json_string = '[{"predicted_time":{"year":1970,"month": 1,"day":-1,"hour":-1,"minute":-1},'
+		json_string += '"download_time":{"year":1970,"month": 1,"day":-1,"hour":-1,"minute":-1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "month = 1, day = -1, hour = -1, minute = -1 should be true")
+
+		json_string = '[{"predicted_time":{"year":1970,"month": 1,"day": -1,"hour": 1,"minute":-1},'
+		json_string += '"download_time":{"year":1970,"month": 1,"day": -1,"hour": 1,"minute":-1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month = 1, day = -1, hour = 1, minute = -1 should be false")
+
+		json_string = '[{"predicted_time":{"year":1970,"month": 1,"day": 0,"hour": 1,"minute": 1},'
+		json_string += '"download_time":{"year":1970,"month": 1,"day": 0,"hour": 1,"minute": 1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "day = 0 should be false")
+
+		#assertions testing hour
+		for ii in range (0, 23):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "hour = " + str(ii) + " should be true")
+
+		for ii in range (-1000, -2):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "hour = " + str(ii) + " should be false")
+
+		for ii in range (24, 1000):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":' + str(ii) + ',"minute":1},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "hour = " + str(ii) + " should be false")
+
+		json_string = '[{"predicted_time":{"year":1970,"month": 1,"day": 1,"hour":-1,"minute":-1},'
+		json_string += '"download_time":{"year":1970,"month": 1,"day": 1,"hour":-1,"minute":-1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "month = 1, day = 1, hour = -1, minute = -1 should be true")
+
+		json_string = '[{"predicted_time":{"year":1970,"month": 1,"day": 1,"hour": -1,"minute": 1},'
+		json_string += '"download_time":{"year":1970,"month": 1,"day": 1,"hour": -1,"minute": 1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "month = 1, day = 1, hour = -1, minute = 1 should be false")
+
+		#assertions testing minute
+		for ii in range (-1, 59):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "minute = " + str(ii) + " should be true")
+
+		for ii in range (-1000, -2):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "minute = " + str(ii) + " should be false")
+
+		for ii in range (60, 1000):
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "minute = " + str(ii) + " should be false")	
+
+		#assertions testing forecast
+		forecast = ('"now"', '"h1"', '"d3"', '"d28"')
+
+		for ii in forecast:
+			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
+			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":' + ii + '}]'
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "forecast " + ii + " should be true")
+	
+		#assertions testing downlaod_time and predicted_time
+		json_string = '["download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "missing predicted_time should be false")
+
+		json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "missing download time should be false")
 
 		#json_util.test_all
+		self.assertEqual(json_util.test_all('[')[0], False, "missing ending square bracket should be false")
+		self.assertEqual(json_util.test_all('["key":7]')[0], False, "invalid json")
+		
+		json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
+		json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "valid aurora syntax")
+		
+		json_string += '[{"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "invalid aurora syntax")					
+		
 
 #Kp Utility Tests
 class kp_utility_test_suite(unittest.TestCase):
