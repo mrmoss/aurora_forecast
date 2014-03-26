@@ -49,6 +49,8 @@
 				//Check for Safari
 				if(!skip_safari)
 				{
+					var ua=navigator.userAgent.toLowerCase();
+
 					if(ua.indexOf('safari')!=-1)
 					{
 						var html="You are running Safari.  Safari has shitty support for WebGl...get a real browser...<br/>";
