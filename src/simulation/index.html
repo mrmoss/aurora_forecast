@@ -33,16 +33,29 @@
 			var height=400;
 
 			//Setup Function (Happens Once)
-			function setup()
+			function setup(skip_safari)
 			{
 				//Get Canvas Object
 				var canvas=document.getElementById('canvas');
+				canvas.innerHTML="";
 
 				//Check for WebGl Support
 				if(!Detector.webgl)
 				{
 					canvas.innerHTML="Your graphics card does not support WebGL!";
 					return;
+				}
+
+				//Check for Safari
+				if(!skip_safari)
+				{
+					if(ua.indexOf('safari')!=-1)
+					{
+						var html="You are running Safari.  Safari has shitty support for WebGl...get a real browser...<br/>";
+						html+="<input type='button' value='Bypass' onclick='setup(true);'/>";
+						canvas.innerHTML=html;
+						return;
+					}
 				}
 
 				//Create Renderer
@@ -157,7 +170,7 @@
 		</script>
 	</head>
 
-	<body onload="setup();">
+	<body onload="setup(false);">
 		<div id="canvas"></div>
 	</body>
 </html>
