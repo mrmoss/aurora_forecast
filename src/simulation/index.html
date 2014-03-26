@@ -1,80 +1,88 @@
+<!--
+	#WebGl Based Aurora Simulation
+	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
+	#	Modified On:	03/25/2014
+-->
+
 <!doctype html>
+
 <html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1.0">
-	<title>WebGL Earth</title>
-	<script src="js/Detector.js"></script>
-	<script src="js/three.min.js"></script>
-	<script src="js/TrackballControls.js"></script>
-	<script type="text/javascript">
-		var renderer;
-		var scene;
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+		<title>WebGL Earth</title>
+		<script src="js/Detector.js"></script>
+		<script src="js/three.min.js"></script>
+		<script src="js/TrackballControls.js"></script>
+		<script type="text/javascript">
+			//Globals
+			var renderer;
+			var scene;
 
-		var camera;
-		var light;
-		var earth;
-		var clouds;
-		var stars;
+			var camera;
+			var light;
+			var earth;
+			var clouds;
+			var stars;
 
-		var width=400;
-		var height=400;
+			var width=400;
+			var height=400;
 
-		//Setup Function (Happens Once)
-		function setup()
-		{
-			//Get Canvas Object
-			var canvas=document.getElementById('canvas');
-
-			//Check for WebGl Support
-			if(!Detector.webgl)
+			//Setup Function (Happens Once)
+			function setup()
 			{
-				canvas.innerHTML="Your graphics card does not support WebGL!";
-				return;
+				//Get Canvas Object
+				var canvas=document.getElementById('canvas');
+
+				//Check for WebGl Support
+				if(!Detector.webgl)
+				{
+					canvas.innerHTML="Your graphics card does not support WebGL!";
+					return;
+				}
+
+				//Create Renderer
+				renderer=new THREE.WebGLRenderer();
+				renderer.setSize(width,height);
+				canvas.appendChild(renderer.domElement);
+
+				//Create Scene
+				scene=new THREE.Scene();
+
+				//Create Camera
+				camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
+				camera.position.z=1.5;
+
+				//Add Lights
+				scene.add(new THREE.AmbientLight(0x333333));
+				light=new THREE.DirectionalLight(0xffffff,1);
+				light.position.set(5,3,5);
+				scene.add(light);
+
+				//Create Star Background
+				stars=create_stars(scene,90,64);
+
+				//Create Earth
+				var radius=0.5;
+				var segments=32;
+				earth=create_earth(scene,radius,segments);
+
+				//Start Rendering
+				render();
 			}
 
-			//Create Renderer
-			renderer=new THREE.WebGLRenderer();
-			renderer.setSize(width,height);
-			canvas.appendChild(renderer.domElement);
+			//Render Function (Happens Every Frame Update)
+			function render()
+			{
+				//Rotate Earth
+				var speed=0.001;
+				earth.planet.rotation.y+=speed;
+				earth.clouds.rotation.y+=speed*2;
 
-			//Create Scene
-			scene=new THREE.Scene();
-
-			//Create Camera
-			camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
-			camera.position.z=1.5;
-
-			//Add Lights
-			scene.add(new THREE.AmbientLight(0x333333));
-			light=new THREE.DirectionalLight(0xffffff,1);
-			light.position.set(5,3,5);
-			scene.add(light);
-
-			//Create Star Background
-			stars=create_stars(scene,90,64);
-
-			//Create Earth
-			var radius=0.5;
-			var segments=32;
-			earth=create_earth(scene,radius,segments);
-
-			//Start Rendering
-			render();
-		}
-
-		//Render Function (Happens Every Frame Update)
-		function render()
-		{
-			//Rotate Earth
-			var speed=0.001;
-			earth.planet.rotation.y+=speed;
-			earth.clouds.rotation.y+=speed*2;
-
-			//Render
-			requestAnimationFrame(render);
-			renderer.render(scene,camera);
-		}
+				//Render
+				requestAnimationFrame(render);
+				renderer.render(scene,camera);
+			}
 
 
 
@@ -85,59 +93,60 @@
 
 
 
-		function create_earth(scene,radius,segments)
-		{
-			var ret={};
+			function create_earth(scene,radius,segments)
+			{
+				var ret={};
 
-			ret.planet=new THREE.Mesh
-			(
-				new THREE.SphereGeometry(radius,segments,segments),
-				new THREE.MeshPhongMaterial
-				({
-					map:         THREE.ImageUtils.loadTexture('images/2_no_clouds_4k.jpg'),
-					bumpMap:     THREE.ImageUtils.loadTexture('images/elev_bump_4k.jpg'),
-					bumpScale:   0.005,
-					specularMap: THREE.ImageUtils.loadTexture('images/water_4k.png'),
-					specular:    new THREE.Color('grey')
-				})
-			);
+				ret.planet=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius,segments,segments),
+					new THREE.MeshPhongMaterial
+					({
+						map:         THREE.ImageUtils.loadTexture('images/2_no_clouds_4k.jpg'),
+						bumpMap:     THREE.ImageUtils.loadTexture('images/elev_bump_4k.jpg'),
+						bumpScale:   0.005,
+						specularMap: THREE.ImageUtils.loadTexture('images/water_4k.png'),
+						specular:    new THREE.Color('grey')
+					})
+				);
 
-			scene.add(ret.planet);
+				scene.add(ret.planet);
 
-			ret.clouds=new THREE.Mesh
-			(
-				new THREE.SphereGeometry(radius+0.003,segments,segments),
-				new THREE.MeshPhongMaterial
-				({
-					map:         THREE.ImageUtils.loadTexture('images/fair_clouds_4k.png'),
-					transparent: true
-				})
-			);
+				ret.clouds=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius+0.003,segments,segments),
+					new THREE.MeshPhongMaterial
+					({
+						map:         THREE.ImageUtils.loadTexture('images/fair_clouds_4k.png'),
+						transparent: true
+					})
+				);
 
-			scene.add(ret.clouds);
+				scene.add(ret.clouds);
 
-			return ret;
-		}
+				return ret;
+			}
 
-		function create_stars(scene,radius,segments)
-		{
-			var ret=new THREE.Mesh
-			(
-				new THREE.SphereGeometry(radius,segments,segments),
-				new THREE.MeshBasicMaterial
-				({
-					map:  THREE.ImageUtils.loadTexture('images/galaxy_starfield.png'),
-					side: THREE.BackSide
-				})
-			);
+			function create_stars(scene,radius,segments)
+			{
+				var ret=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius,segments,segments),
+					new THREE.MeshBasicMaterial
+					({
+						map:  THREE.ImageUtils.loadTexture('images/galaxy_starfield.png'),
+						side: THREE.BackSide
+					})
+				);
 
-			scene.add(ret);
+				scene.add(ret);
 
-			return ret;
-		}
-	</script>
-</head>
-<body onload="setup();">
-	<div id="canvas"></div>
-</body>
+				return ret;
+			}
+		</script>
+	</head>
+
+	<body onload="setup();">
+		<div id="canvas"></div>
+	</body>
 </html>
