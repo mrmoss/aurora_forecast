@@ -46,7 +46,7 @@ def insert_forecast(json_object,host,username,password,database):
 			kp=str(ii["kp"])
 
 			#Create Insertion Execute String
-			execute_str="insert into "+forecast+" (download_time,predicted_time,kp) values (\""+predicted_time+"\",\""+download_time+"\","+kp+")"
+			execute_str="insert into "+forecast+" (predicted_time,download_time,kp) values (\""+predicted_time+"\",\""+download_time+"\","+kp+")"
 
 			#Execute Insertion
 			cursor.execute(execute_str)
