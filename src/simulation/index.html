@@ -1,20 +1,56 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	03/25/2014
+	#	Modified On:	03/27/2014
 -->
 
 <!doctype html>
 
 <html>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
 	<head>
+		<meta charset="utf-8">
+
 		<!--Three.js Source-->
-		<script src="js/Detector.js"></script>
 		<script src="js/three.min.js"></script>
 		<script src="js/TrackballControls.js"></script>
+
+		<script id="vertex_shader" type="x-shader/x-vertex">
+
+			uniform float time;
+			varying vec2 uv_coords;
+			uniform vec2 kp_location;
+			uniform vec2 kp_size;
+
+			void main()
+			{
+				uv_coords=uv;
+				gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+			}
+
+		</script>
+
+		<script id="fragment_shader" type="x-shader/x-fragment">
+
+			uniform float time;
+			varying vec2 uv_coords;
+			uniform vec2 kp_location;
+			uniform vec2 kp_size;
+
+			void main()
+			{
+				float dis=clamp(distance(kp_location,uv_coords),0.0,1.0);
+
+				if(dis>0.6&&dis<0.7)
+				{
+					gl_FragColor=vec4(1,1,1,dis);
+				}
+				else
+				{
+					discard;
+				}
+			}
+
+		</script>
 
 		<!--Aurora Simulation Source-->
 		<script type="text/javascript">
@@ -39,27 +75,6 @@
 				var canvas=document.getElementById('canvas');
 				canvas.innerHTML="";
 
-				//Check for WebGl Support
-				if(!Detector.webgl)
-				{
-					canvas.innerHTML="Your graphics card does not support WebGL!";
-					return;
-				}
-
-				//Check for Safari
-				if(!skip_safari)
-				{
-					var ua=navigator.userAgent.toLowerCase();
-
-					if(ua.indexOf('safari')!=-1)
-					{
-						var html="You are running Safari.  Safari has shitty support for WebGl...get a real browser...<br/>";
-						html+="<input type='button' value='Bypass' onclick='setup(true);'/>";
-						canvas.innerHTML=html;
-						return;
-					}
-				}
-
 				//Create Renderer
 				renderer=new THREE.WebGLRenderer();
 				renderer.setSize(width,height);
@@ -77,7 +92,7 @@
 
 				//Add Lights
 				scene.add(new THREE.AmbientLight(0x333333));
-				light=new THREE.DirectionalLight(0xffffff,1);
+				light=new THREE.DirectionalLight(0xffffff,2);
 				light.position.set(5,3,5);
 				scene.add(light);
 
@@ -100,9 +115,9 @@
 				controls.update();
 
 				//Rotate Earth
-				var speed=0.001;
+				var speed=0.0;
 				earth.planet.rotation.y+=speed;
-				earth.clouds.rotation.y+=speed;
+				//earth.clouds.rotation.y+=speed;
 
 				//Render
 				requestAnimationFrame(render);
@@ -137,17 +152,24 @@
 
 				scene.add(ret.planet);
 
-				ret.clouds=new THREE.Mesh
+				ret.aurora=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(radius+0.003,segments,segments),
-					new THREE.MeshPhongMaterial
+					new THREE.ShaderMaterial
 					({
-						map:         THREE.ImageUtils.loadTexture('images/fair_clouds_4k.png'),
-						transparent: true
+						transparent: true,
+						uniforms:
+						{
+							time:{type:"f",value:0},
+							kp_location:{type:"v2",value:new THREE.Vector2(0.0,1.0)},
+							kp_size:{type:"v2",value:new THREE.Vector2(0.0,1.0)}
+						},
+						vertexShader: document.getElementById('vertex_shader').textContent,
+						fragmentShader: document.getElementById('fragment_shader').textContent
 					})
 				);
 
-				scene.add(ret.clouds);
+				scene.add(ret.aurora);
 
 				return ret;
 			}
@@ -172,7 +194,7 @@
 		</script>
 	</head>
 
-	<body onload="setup(false);">
+	<body onload="setup(true);">
 		<div id="canvas"></div>
 	</body>
 </html>
