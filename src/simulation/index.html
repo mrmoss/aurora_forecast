@@ -36,18 +36,66 @@
 			uniform vec2 kp_location;
 			uniform vec2 kp_size;
 
+			float map(float from_min,float from_max,float to_min,float to_max,float val)
+			{
+				return (val-from_min)/(from_max-from_min)*(to_max-to_min)+to_min;
+			}
+
+			void circlize(vec2 uv,vec2 loc,float radius,bool fill,bool inner)
+			{
+				vec2 pos=vec2(uv.x,uv.y-radius);
+
+				float dis=distance(pos,loc);
+
+				if((inner&&dis<=radius)||(!inner&&dis>radius))
+				{
+					if(fill)
+						gl_FragColor=vec4(0.0,1.0,0.0,1.0);
+					else
+						discard;
+				}
+			}
+
 			void main()
 			{
-				float dis=clamp(distance(kp_location,uv_coords),0.0,1.0);
+				//Line Based
+				/*float range=0.07;
+				float middle=0.4;
 
-				if(dis>0.6&&dis<0.7)
-				{
-					gl_FragColor=vec4(1,1,1,dis);
-				}
+				if(uv_coords.y>middle&&uv_coords.y<middle+range)
+					gl_FragColor=vec4(0.0,1.0,0.0,map(middle,middle+range,1.0,0.0,uv_coords.y));
+				else if(uv_coords.y>middle-range&&uv_coords.y<middle)
+					gl_FragColor=vec4(0.0,1.0,0.0,map(middle,middle-range,1.0,0.0,uv_coords.y));
 				else
-				{
-					discard;
-				}
+					discard;*/
+
+				//Circle Based
+				/*vec2 new_uv_coords=vec2(uv_coords.x*2.0,uv_coords.y);
+
+				float dis=distance(new_uv_coords,kp_location);
+				float middle=kp_size.x;
+				float range=kp_size.y;
+
+				if(dis>middle&&dis<middle+range)
+					gl_FragColor=vec4(0.0,1.0,0.0,map(middle,middle+range,1.0,0.0,dis));
+				else if(dis>middle-range&&dis<middle)
+					gl_FragColor=vec4(0.0,1.0,0.0,map(middle,middle-range,1.0,0.0,dis));
+				else
+					discard;*/
+
+				//Aurora Based?
+				vec2 new_uv_coords=vec2(uv_coords.x*2.0,uv_coords.y);
+
+				//Get rid of inner circle
+				float radius_0=kp_size.x;
+				circlize(new_uv_coords,kp_location+vec2(0,0.01),radius_0,false,true);
+
+				//Fill in center circle
+				float radius_1=kp_size.y;
+				circlize(new_uv_coords,kp_location,radius_1,true,true);
+
+				//Get rid of outside center circle
+				circlize(new_uv_coords,kp_location,radius_1,false,false);
 			}
 
 		</script>
@@ -68,9 +116,20 @@
 			var width=400;
 			var height=400;
 
+			var kp_location_test;
+			var kp_size;
+
 			//Setup Function (Happens Once)
 			function setup(skip_safari)
 			{
+				kp_location_test=new THREE.Vector2(1,0.4);
+				kp_size_test=new THREE.Vector2(0.1,0.4);
+
+				document.getElementById("kp_x").value=kp_location_test.x;
+				document.getElementById("kp_y").value=kp_location_test.y;
+				document.getElementById("kp_middle").value=kp_size_test.x;
+				document.getElementById("kp_range").value=kp_size_test.y;
+
 				//Get Canvas Object
 				var canvas=document.getElementById('canvas');
 				canvas.innerHTML="";
@@ -87,14 +146,14 @@
 				camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
 				camera.position.z=1.5;
 
-				//Create Controls
-				controls=new THREE.TrackballControls(camera);
-
 				//Add Lights
-				scene.add(new THREE.AmbientLight(0x333333));
-				light=new THREE.DirectionalLight(0xffffff,2);
+				scene.add(new THREE.AmbientLight(0xaaaaaa));
+				light=new THREE.DirectionalLight(0xffffff,1.5);
 				light.position.set(5,3,5);
 				scene.add(light);
+				/*light=new THREE.DirectionalLight(0xffffff,0.5);
+				light.position.set(-5,-3,-5);
+				scene.add(light);*/
 
 				//Create Star Background
 				stars=create_stars(scene,90,64);
@@ -104,6 +163,9 @@
 				var segments=32;
 				earth=create_earth(scene,radius,segments);
 
+				//Create Controls
+				//controls=new THREE.TrackballControls(camera);
+
 				//Start Rendering
 				render();
 			}
@@ -111,13 +173,18 @@
 			//Render Function (Happens Every Frame Update)
 			function render()
 			{
+				kp_location_test.x=parseFloat(document.getElementById("kp_x").value);
+				kp_location_test.y=parseFloat(document.getElementById("kp_y").value);
+				kp_size_test.x=parseFloat(document.getElementById("kp_middle").value);
+				kp_size_test.y=parseFloat(document.getElementById("kp_range").value);
+
 				//Update Controls
-				controls.update();
+				//controls.update();
 
 				//Rotate Earth
-				var speed=0.0;
-				earth.planet.rotation.y+=speed;
-				//earth.clouds.rotation.y+=speed;
+				var speed=0.0001;
+				earth.aurora.rotation.y=-Math.PI/2.0;
+				earth.clouds.rotation.y+=speed;
 
 				//Render
 				requestAnimationFrame(render);
@@ -152,17 +219,29 @@
 
 				scene.add(ret.planet);
 
-				ret.aurora=new THREE.Mesh
+				ret.clouds=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(radius+0.003,segments,segments),
+					new THREE.MeshPhongMaterial
+					({
+						map:         THREE.ImageUtils.loadTexture('images/fair_clouds_4k.png'),
+						transparent: true
+					})
+				);
+
+				scene.add(ret.clouds);
+
+				ret.aurora=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius+0.006,segments,segments),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
 						uniforms:
 						{
 							time:{type:"f",value:0},
-							kp_location:{type:"v2",value:new THREE.Vector2(0.0,1.0)},
-							kp_size:{type:"v2",value:new THREE.Vector2(0.0,1.0)}
+							kp_location:{type:"v2",value:kp_location_test},
+							kp_size:{type:"v2",value:kp_size_test},
 						},
 						vertexShader: document.getElementById('vertex_shader').textContent,
 						fragmentShader: document.getElementById('fragment_shader').textContent
@@ -196,5 +275,7 @@
 
 	<body onload="setup(true);">
 		<div id="canvas"></div>
+		<input type="range" id="kp_x" min="0.0" max="1.0" step="0.001"/><input type="range" id="kp_y" min="0.0" max="1.0" step="0.001"/><br/>
+		<input type="range" id="kp_middle" min="0.0" max="1.0" step="0.001"/><input type="range" id="kp_range" min="0.0" max="1.0" step="0.001"/><br/>
 	</body>
 </html>
