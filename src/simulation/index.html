@@ -41,11 +41,11 @@
 				return (val-from_min)/(from_max-from_min)*(to_max-to_min)+to_min;
 			}
 
-			void circlize(vec2 uv,vec2 loc,float radius,bool fill,bool inner)
+			void circlize(vec2 uv,vec2 bottom_of_circle,float radius,bool fill,bool inner)
 			{
-				vec2 pos=vec2(uv.x,uv.y-radius);
+				vec2 center_of_circle=vec2(uv.x,uv.y-radius);
 
-				float dis=distance(pos,loc);
+				float dis=distance(center_of_circle,bottom_of_circle);
 
 				if((inner&&dis<=radius)||(!inner&&dis>radius))
 				{
@@ -56,11 +56,34 @@
 				}
 			}
 
+			void circlize_glow(vec2 uv,vec2 bottom_of_circle,float radius_big,float radius_small,bool fill,bool inner)
+			{
+				/*vec2 center_of_circle_big=vec2(uv.x,uv.y-radius_big);
+				vec2 center_of_circle_small=vec2(uv.x,uv.y-radius_small);
+
+				float dis=distance(center_of_circle_big,bottom_of_circle);
+				float dis_to_small_circle=distance(center_of_circle_small,bottom_of_circle);
+
+				if((inner&&dis<=radius_big)||(!inner&&dis>radius_big))
+				{
+					if(fill)
+					{
+						float value=abs(distance(center_of_circle_small,uv)+radius_small);
+
+						float alpha=1.0-map(0.0,2.0*radius_big-dis_to_small_circle,0.0,1.0,value);
+
+						gl_FragColor=vec4(0.0,1.0,0.0,alpha);
+					}
+					else
+						discard;
+				}*/
+			}
+
 			void main()
 			{
 				//Line Based
-				/*float range=0.07;
-				float middle=0.4;
+				/*float middle=kp_size.x;
+				float range=kp_size.y;
 
 				if(uv_coords.y>middle&&uv_coords.y<middle+range)
 					gl_FragColor=vec4(0.0,1.0,0.0,map(middle,middle+range,1.0,0.0,uv_coords.y));
@@ -92,10 +115,16 @@
 
 				//Fill in center circle
 				float radius_1=kp_size.y;
-				circlize(new_uv_coords,kp_location,radius_1,true,true);
+				float radius_diff=(radius_0+radius_1)/2.0;
+				//circlize(new_uv_coords,kp_location,radius_1,true,true);
+				circlize_glow(new_uv_coords,kp_location,radius_1,radius_0,true,true);
 
 				//Get rid of outside center circle
 				circlize(new_uv_coords,kp_location,radius_1,false,false);
+				float test=distance(new_uv_coords,kp_location+vec2(0,0.01)+vec2(0.0,radius_0));
+				float max_value=radius_1*2.0-radius_0*2.0-0.01;
+				float map_it=map(0.0,max_value,0.0,1.0,test);
+				gl_FragColor=vec4(1.0,0.0,0.0,1.0-map_it);
 			}
 
 		</script>
