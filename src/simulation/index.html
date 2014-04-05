@@ -117,14 +117,22 @@
 				float radius_1=kp_size.y;
 				float radius_diff=(radius_0+radius_1)/2.0;
 				//circlize(new_uv_coords,kp_location,radius_1,true,true);
-				circlize_glow(new_uv_coords,kp_location,radius_1,radius_0,true,true);
+				//circlize_glow(new_uv_coords,kp_location,radius_1,radius_0,true,true);
 
 				//Get rid of outside center circle
 				circlize(new_uv_coords,kp_location,radius_1,false,false);
-				float test=distance(new_uv_coords,kp_location+vec2(0,0.01)+vec2(0.0,radius_0));
+
+
+
+
+
+				float distance_from_0=distance(new_uv_coords,kp_location+vec2(0.0,radius_0))-radius_0+0.01;
+				float distance_from_1=radius_1-distance(new_uv_coords,kp_location+vec2(0.0,radius_1));
+
 				float max_value=radius_1*2.0-radius_0*2.0-0.01;
-				float map_it=map(0.0,max_value,0.0,1.0,test);
-				gl_FragColor=vec4(1.0,0.0,0.0,1.0-map_it);
+				float map_it=map(0.0,max_value,0.0,1.0,distance_from_0);
+				//gl_FragColor=vec4(fract(4.0*distance_from_0),fract(4.0*distance_from_1),fract(50.0*distance_from_0*distance_from_1),1.0);
+				gl_FragColor=vec4(0.0,1.0,0.0,0.7-cos(100.0*distance_from_0*distance_from_1)/2.0);
 			}
 
 		</script>
@@ -212,7 +220,12 @@
 
 				//Rotate Earth
 				var speed=0.0001;
-				earth.aurora.rotation.y=-Math.PI/2.0;
+				earth.planet.rotation.y=parseFloat(document.getElementById("rot_y").value);
+				earth.planet.rotation.z=parseFloat(document.getElementById("rot_x").value);
+
+				earth.aurora.rotation.y=parseFloat(document.getElementById("rot_y").value);
+				earth.aurora.rotation.z=parseFloat(document.getElementById("rot_x").value);
+
 				earth.clouds.rotation.y+=speed;
 
 				//Render
@@ -306,5 +319,6 @@
 		<div id="canvas"></div>
 		<input type="range" id="kp_x" min="0.0" max="1.0" step="0.001"/><input type="range" id="kp_y" min="0.0" max="1.0" step="0.001"/><br/>
 		<input type="range" id="kp_middle" min="0.0" max="1.0" step="0.001"/><input type="range" id="kp_range" min="0.0" max="1.0" step="0.001"/><br/>
+		<input type="range" id="rot_x" min="0.0" max="12.0" step="0.01"/><input type="range" id="rot_y" min="0.0" max="12.0" step="0.01"/>
 	</body>
 </html>
