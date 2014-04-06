@@ -17,8 +17,6 @@
 		<script id="vertex_shader" type="x-shader/x-vertex">
 
 			varying vec2 uv_coords;
-			//uniform vec2 time;
-			uniform vec2 kp;
 
 			void main()
 			{
@@ -31,30 +29,51 @@
 		<script id="fragment_shader" type="x-shader/x-fragment">
 
 			varying vec2 uv_coords;
-			//uniform vec2 time;
 			uniform vec2 kp;
 			vec2 uv_coords_scaled=vec2(uv_coords.x*2.0,uv_coords.y);
 			vec2 screen_center=vec2(0.5,0.5);
+			uniform int view_type;
 
 			float map(float x,float in_min,float in_max,float out_min,float out_max)
 			{
 				return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
 			}
 
-			void main()
+			void draw_aurora(const float radius,const float thickness)
 			{
 				float radial_distance=abs(distance(uv_coords_scaled,screen_center));
 
-				float ring_radius=0.11+kp.x*0.01;
-				float ring_thickness=0.02+kp.x*0.03;
-				float ring_distance=abs(radial_distance-ring_radius);
+				float ring_distance=abs(radial_distance-radius);
 
-				float color=map(ring_distance,0.0,ring_thickness/2.0,1.0,0.2);
-
-				if(color<=0.0)
-					discard;
+				float color=map(ring_distance,0.0,thickness/2.0,1.0,0.2);
 
 				gl_FragColor=vec4(color-0.3,color,0.0,color);
+			}
+
+			void draw_view_line(const float radius,const float thickness)
+			{
+				float radial_distance=abs(distance(uv_coords_scaled,screen_center));
+
+				float ring_distance=abs(radial_distance-radius);
+
+				float color=map(ring_distance,0.0,thickness/2.0,1.0,0.2);
+
+				gl_FragColor=vec4(color,0.0,0.0,color);
+			}
+
+			void main()
+			{
+				float ring_radius_0=0.11+kp.x*0.01;
+				float ring_thickness_0=0.02+kp.x*0.03;
+				float ring_radius_1=ring_radius_0+0.03+kp.x*0.005;
+				float ring_thickness_1=0.01;
+
+				if(view_type==0)
+					draw_aurora(ring_radius_0,ring_thickness_0);
+				else if(view_type==1)
+					draw_view_line(ring_radius_1,ring_thickness_1);
+				else
+					discard;
 			}
 
 		</script>
@@ -77,8 +96,8 @@
 			var earth;
 			var stars;
 
-			var width=400;
-			var height=400;
+			var width=1024;
+			var height=768;
 
 			//Setup Function (Happens Once)
 			function setup(skip_safari)
@@ -142,9 +161,21 @@
 				//Rotate Earth
 				var speed=0.0001;
 
-				earth.aurora.rotation.x=earth.planet.rotation.x-1.44;
-				earth.aurora.rotation.y=earth.planet.rotation.y+0.07;
-				earth.aurora.rotation.z=earth.planet.rotation.z;
+				earth.aurora_north.rotation.x=earth.planet.rotation.x-1.44;
+				earth.aurora_north.rotation.y=earth.planet.rotation.y+0.07;
+				earth.aurora_north.rotation.z=earth.planet.rotation.z;
+
+				earth.aurora_south.rotation.x=earth.planet.rotation.x+1.89;
+				earth.aurora_south.rotation.y=earth.planet.rotation.y+0.06;
+				earth.aurora_south.rotation.z=earth.planet.rotation.z-2.52;
+
+				earth.view_line_north.rotation.x=earth.aurora_north.rotation.x;
+				earth.view_line_north.rotation.y=earth.aurora_north.rotation.y;
+				earth.view_line_north.rotation.z=earth.aurora_north.rotation.z;
+
+				earth.view_line_south.rotation.x=earth.aurora_south.rotation.x;
+				earth.view_line_south.rotation.y=earth.aurora_south.rotation.y;
+				earth.view_line_south.rotation.z=earth.aurora_south.rotation.z;
 
 				kp.x=parseFloat(document.getElementById("kp").value);
 
@@ -204,26 +235,77 @@
 
 				scene.add(ret.clouds);
 
-				ret.aurora=new THREE.Mesh
+				ret.aurora_north=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(radius+0.006,segments,segments),
-					//new THREE.PlaneGeometry(1,1),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
 						uniforms:
 						{
-							kp:{type:"v2",value:kp}/*,
-							time:{type:"v2",value:time},
-							kp_location:{type:"v2",value:kp_location_test},
-							kp_size:{type:"v2",value:kp_size_test}*/
+							kp:{type:"v2",value:kp},
+							view_type:{type:"i",value:0}
 						},
 						vertexShader: document.getElementById('vertex_shader').textContent,
 						fragmentShader: document.getElementById('fragment_shader').textContent
 					})
 				);
 
-				scene.add(ret.aurora);
+				scene.add(ret.aurora_north);
+
+				ret.aurora_south=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius+0.009,segments,segments),
+					new THREE.ShaderMaterial
+					({
+						transparent: true,
+						uniforms:
+						{
+							kp:{type:"v2",value:kp},
+							view_type:{type:"i",value:0}
+						},
+						vertexShader: document.getElementById('vertex_shader').textContent,
+						fragmentShader: document.getElementById('fragment_shader').textContent
+					})
+				);
+
+				scene.add(ret.aurora_south);
+
+				ret.view_line_north=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius+0.012,segments,segments),
+					new THREE.ShaderMaterial
+					({
+						transparent: true,
+						uniforms:
+						{
+							kp:{type:"v2",value:kp},
+							view_type:{type:"i",value:1}
+						},
+						vertexShader: document.getElementById('vertex_shader').textContent,
+						fragmentShader: document.getElementById('fragment_shader').textContent
+					})
+				);
+
+				scene.add(ret.view_line_north);
+
+				ret.view_line_south=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(radius+0.015,segments,segments),
+					new THREE.ShaderMaterial
+					({
+						transparent: true,
+						uniforms:
+						{
+							kp:{type:"v2",value:kp},
+							view_type:{type:"i",value:1}
+						},
+						vertexShader: document.getElementById('vertex_shader').textContent,
+						fragmentShader: document.getElementById('fragment_shader').textContent
+					})
+				);
+
+				scene.add(ret.view_line_south);
 
 				return ret;
 			}
