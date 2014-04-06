@@ -17,7 +17,6 @@
 		<script id="vertex_shader" type="x-shader/x-vertex">
 
 			varying vec2 uv_coords;
-			//uniform vec2 time;
 			uniform vec2 kp;
 
 			void main()
@@ -31,7 +30,6 @@
 		<script id="fragment_shader" type="x-shader/x-fragment">
 
 			varying vec2 uv_coords;
-			//uniform vec2 time;
 			uniform vec2 kp;
 			vec2 uv_coords_scaled=vec2(uv_coords.x*2.0,uv_coords.y);
 			vec2 screen_center=vec2(0.5,0.5);
@@ -64,9 +62,6 @@
 
 			//Globals
 			var root="";
-			//var clock;
-			//var time;
-			//var time_add;
 			var kp;
 			var renderer;
 			var scene;
@@ -84,12 +79,6 @@
 			function setup(skip_safari)
 			{
 				kp=new THREE.Vector2(0.0,0.0);
-
-				//Create Clock
-				/*clock=new THREE.Clock();
-				time=new THREE.Vector2(0.0,0.0);
-				time.x=0.0;
-				time_add=true;*/
 
 				//Get Canvas Object
 				var canvas=document.getElementById('canvas');
@@ -114,9 +103,6 @@
 				light=new THREE.DirectionalLight(0xffffff,1.5);
 				light.position.set(5,3,5);
 				scene.add(light);
-				/*light=new THREE.DirectionalLight(0xffffff,0.5);
-				light.position.set(-5,-3,-5);
-				scene.add(light);*/
 
 				//Create Star Background
 				stars=create_stars(scene,90,64);
@@ -164,15 +150,6 @@
 				renderer.render(scene,camera);
 			}
 
-
-
-
-
-
-
-
-
-
 			function create_earth(scene,radius,segments)
 			{
 				var ret={};
@@ -207,16 +184,12 @@
 				ret.aurora=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(radius+0.006,segments,segments),
-					//new THREE.PlaneGeometry(1,1),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
 						uniforms:
 						{
-							kp:{type:"v2",value:kp}/*,
-							time:{type:"v2",value:time},
-							kp_location:{type:"v2",value:kp_location_test},
-							kp_size:{type:"v2",value:kp_size_test}*/
+							kp:{type:"v2",value:kp}
 						},
 						vertexShader: document.getElementById('vertex_shader').textContent,
 						fragmentShader: document.getElementById('fragment_shader').textContent
