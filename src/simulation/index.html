@@ -34,8 +34,8 @@
 
 			//Simulation Globals
 			var kp=0;
-			var latitude=64.8436;
-			var longitude=-147.7231;
+			var latitude=0;
+			var longitude=0;
 			var latitude_to=latitude;
 			var longitude_to=longitude;
 			var latitude_down=latitude;
@@ -63,8 +63,15 @@
 				canvas.addEventListener('mousemove',mouse_move_callback,false);
 				canvas.addEventListener('mouseover',mouse_over_callback,false);
 
-				//Get Current Location
-				navigator.geolocation.getCurrentPosition(get_location);
+				//Setup Locations
+				setup_locations();
+
+				//Go to Default Location
+				if(locations.length>0)
+				{
+					latitude_to=locations[0].latitude;
+					longitude_to=locations[0].longitude;
+				}
 
 				//Initialize Kp Shader Uniform
 				kp=new THREE.Vector2(0.0,0.0);
@@ -97,10 +104,34 @@
 			//Render Function (Happens Every Frame Update)
 			function render()
 			{
+				//Limit Latitude
+				if(latitude>=90)
+					latitude=89.99;
+				if(latitude<-90)
+					latitude=-90;
+				if(latitude_to>=90)
+					latitude_to=89.99;
+				if(latitude_to<-90)
+					latitude_to=-90;
+
+				//Limit
+				while(longitude>360)
+					longitude-=360;
+				while(longitude<-360)
+					longitude+=360;
+
 				//Auto Move Location
 				var move_speed=0.1;
 				latitude+=(latitude_to-latitude)*move_speed;
-				longitude+=(longitude_to-longitude)*move_speed;
+
+				var diff=longitude_to-longitude;
+
+				while(diff>360)
+					diff-=360;
+				while(diff<-360)
+					diff+=360;
+
+				longitude+=diff*move_speed;
 
 				//Set Camera
 				var look_at_x=Math.sin((90-latitude)/180*Math.PI)*Math.cos(Math.PI/2+(270-longitude)/180*Math.PI)*zoom;
@@ -143,12 +174,17 @@
 
 				//TESTING
 				var str="";
+				var longitude_show=longitude;
+				while(longitude_show>180)
+					longitude_show-=180;
+				while(longitude_show<-180)
+					longitude_show+=180;
 				str+="lat:\t"+latitude+"\n";
-				str+="lng:\t"+longitude+"\n";
+				str+="lng:\t"+longitude_show+"\n";
 				str+="lat_to:\t"+latitude_to+"\n";
 				str+="lng_to:\t"+longitude_to+"\n";
-				str+="lat_diff:\t"+Math.abs(latitude_to-latitude)+"\n";
-				str+="lng_diff:\t"+Math.abs(longitude_to-longitude)+"\n";
+				str+="lat_diff:\t"+(latitude_to-latitude)+"\n";
+				str+="lng_diff:\t"+(longitude_to-longitude)+"\n";
 				str+="zoom:\t"+zoom+"\n";
 				str+="kp:\t"+kp.x+"\n";
 				str+="shit:\t"+shit;
@@ -310,15 +346,38 @@
 				alert(methods.join(","));
 			}
 
-			//Get Location Callback
-			function get_location(location)
+			//Setup Locations Functions
+			function setup_locations()
 			{
-				//Setup Locations
-				locations.push({name:"My Location",latitude:location.coords.latitude,
-					longitude:location.coords.longitude});
+				//Setup Default Locations
 				locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
 				locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
 
+				//Update Location Options
+				update_location_options();
+
+				//Get Current Location
+				navigator.geolocation.getCurrentPosition(get_current_location);
+			}
+
+			//Get Current Location Callback
+			function get_current_location(location)
+			{
+				//Add Current Location
+				locations.push({name:"My Location",latitude:location.coords.latitude,
+					longitude:location.coords.longitude});
+
+				//Update Location Options
+				update_location_options();
+			}
+
+			//Update Location Options Function
+			function update_location_options()
+			{
+				//Clear Out Old Options
+				document.getElementById("locations").options.length=0;
+
+				//Add Locations
 				for(var ii=0;ii<locations.length;++ii)
 					document.getElementById("locations").options[ii]=new Option(locations[ii].name);
 			}
@@ -383,16 +442,6 @@
 
 					var latitude_new=latitude_down+mouse_y-mouse_down_y;
 					var longitude_new=longitude_down+mouse_down_x-mouse_x;
-
-					while(latitude_new<-90)
-						latitude_new=-90;
-					while(latitude_new>89.99)
-						latitude_new=89.99;
-
-					while(longitude_new<-180)
-						longitude_new+=360;
-					while(longitude_new>180)
-						longitude_new-=360;
 
 					latitude_to=latitude_new;
 					longitude_to=longitude_new;
