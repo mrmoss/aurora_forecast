@@ -1,43 +1,50 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/05/2014
+	#	Modified On:	04/06/2014
 -->
 
 <!doctype html>
 
 <html>
+
+	<!--Head-->
 	<head>
+
+		<!--Unicode 8 Compliant-->
 		<meta charset="utf-8">
 
 		<!--Three.js Source-->
 		<script src="js/three.min.js"></script>
-		<script src="js/TrackballControls.js"></script>
-		<script src="js/OrbitControls.js"></script>
 
 		<!--Aurora Simulation Source-->
 		<script type="text/javascript">
 
-			//Globals
+			//Site Globals
 			var root="";
-			var kp;
-			var renderer;
-			var scene;
-			var controls;
-
-			var camera;
-			var light;
-			var universe;
-			var stars;
-
 			var width=400;
 			var height=400;
 
+			//Three.js Globals
+			var renderer;
+			var scene;
+			var camera;
+			var universe;
+
+			//Simulation Globals
+			var kp=0;
 			var latitude=64.8436;
 			var longitude=-147.7231;
+			var latitude_down=latitude;
+			var longitude_down=longitude;
+			var zoom=2;
+			var zoom_min=1;
+			var zoom_max=3;
 
-			//TESTING
-			var test_point;
+			//Input Globals
+			var mouse_down=false;
+			var mouse_down_x=0.0;
+			var mouse_down_y=0.0;
 
 			//TESTING
 			function show_members(obj)
@@ -58,26 +65,84 @@
 				longitude=location.coords.longitude;
 			}
 
-			//GPS Lookat Function
-			function gps_lookat(x,y)
+			//Mouse Wheel Callback
+			function mouse_wheel_callback(event)
 			{
+				var canvas=document.getElementById("canvas");
+
+				if(event.target!=canvas)
+				{
+					zoom-=event.detail*0.01;
+
+					if(zoom>zoom_max)
+						zoom=zoom_max;
+					if(zoom<zoom_min)
+						zoom=zoom_min;
+				}
 			}
 
-			//TESTING
-			function gps_update_test()
+			//Mouse Down Callback
+			function mouse_down_callback(event)
 			{
-				latitude=parseFloat(document.getElementById("latitude").value);
-				longitude=parseFloat(document.getElementById("longitude").value);
-				gps_lookat(latitude,longitude);
+				var canvas=document.getElementById("canvas");
+
+				if(event.target!=canvas)
+				{
+					mouse_down=true;
+					latitude_down=latitude;
+					longitude_down=longitude;
+					mouse_down_x=event.pageX-canvas.offsetLeft;
+					mouse_down_y=event.pageY-canvas.offsetTop;
+				}
+			}
+
+			//Mouse Up Callback
+			function mouse_up_callback(event)
+			{
+				mouse_down=false;
+			}
+
+			//Mouse Move Callback
+			function mouse_move_callback(event)
+			{
+				var canvas=document.getElementById("canvas");
+
+				if(mouse_down)
+				{
+					var mouse_x=event.pageX-canvas.offsetLeft;
+					var mouse_y=event.pageY-canvas.offsetTop;
+
+					var latitude_new=latitude_down+mouse_y-mouse_down_y;
+					var longitude_new=longitude_down+mouse_down_x-mouse_x;
+
+					while(latitude_new<-90)
+						latitude_new=-90;
+					while(latitude_new>89.99)
+						latitude_new=89.99;
+
+					while(longitude_new<-180)
+						longitude_new+=360;
+					while(longitude_new>180)
+						longitude_new-=360;
+
+					latitude=latitude_new;
+					longitude=longitude_new;
+				}
 			}
 
 			//Setup Function (Happens Once)
-			function setup(skip_safari)
+			function setup()
 			{
+				//Setup Input Callbacks
+				var canvas=document.getElementById("canvas");
+				canvas.addEventListener('mousewheel',mouse_wheel_callback,false);
+				canvas.addEventListener('DOMMouseScroll',mouse_wheel_callback,false);
+				canvas.addEventListener('mousedown',mouse_down_callback,false);
+				canvas.addEventListener('mouseup',mouse_up_callback,false);
+				canvas.addEventListener('mousemove',mouse_move_callback,false);
+
 				//Get Current Location
 				//navigator.geolocation.getCurrentPosition(get_location);
-				document.getElementById("latitude").value=latitude;
-				document.getElementById("longitude").value=longitude;
 
 				//Initialize Kp Shader Uniform
 				kp=new THREE.Vector2(0.0,0.0);
@@ -100,25 +165,8 @@
 				camera.position.y=0;
 				camera.position.z=5;
 
-				//Add Lights
-				scene.add(new THREE.AmbientLight(0xaaaaaa));
-				light=new THREE.DirectionalLight(0xffffff,1.5);
-				light.position.set(5,3,5);
-				scene.add(light);
-
 				//Create Universe
 				universe=create_universe(scene,0.5,32);
-
-				//Create Controls
-				//controls=new THREE.TrackballControls(camera,renderer.domElement);
-				controls=new THREE.OrbitControls(camera,renderer.domElement);
-
-				//TESTING
-				test_point=new THREE.Mesh
-				(
-					new THREE.SphereGeometry(0.0125,10,10)
-				);
-				scene.add(test_point);
 
 				//Start Rendering
 				render();
@@ -127,17 +175,14 @@
 			//Render Function (Happens Every Frame Update)
 			function render()
 			{
-				//Update Controls
-				controls.update();
-
-				//TESTING
-				var test_point_radius=0.5;
-				test_point.position.x=Math.sin((90-latitude)/180*Math.PI)*Math.cos(Math.PI/2+(270-longitude)/180*Math.PI)*test_point_radius;
-				test_point.position.y=Math.cos((90-latitude)/180*Math.PI)*test_point_radius;
-				test_point.position.z=Math.sin((90-latitude)/180*Math.PI)*Math.sin(Math.PI/2+(270-longitude)/180*Math.PI)*test_point_radius;
-
-				//Rotate Universe
-				var speed=0.0001;
+				//Set Camera
+				var look_at_x=Math.sin((90-latitude)/180*Math.PI)*Math.cos(Math.PI/2+(270-longitude)/180*Math.PI)*zoom;
+				var look_at_y=Math.cos((90-latitude)/180*Math.PI)*zoom;
+				var look_at_z=Math.sin((90-latitude)/180*Math.PI)*Math.sin(Math.PI/2+(270-longitude)/180*Math.PI)*zoom;
+				camera.position.x=look_at_x;
+				camera.position.y=look_at_y;
+				camera.position.z=look_at_z;
+				camera.lookAt(universe.planet.position);
 
 				//Set North Pole Aurora
 				universe.aurora_north.rotation.x=universe.planet.rotation.x-1.44;
@@ -160,7 +205,7 @@
 				universe.view_line_south.rotation.z=universe.aurora_south.rotation.z;
 
 				//Rotate Clouds
-				universe.clouds.rotation.y+=speed;
+				universe.clouds.rotation.y+=0.0001;
 
 				//Render
 				requestAnimationFrame(render);
@@ -169,20 +214,20 @@
 				//TESTING
 				kp.x=parseFloat(document.getElementById("kp").value);
 
+				//TESTING
 				var str="";
-
-				str+="cx:\t"+camera.rotation.x+"\n";
-				str+="cy:\t"+camera.rotation.y+"\n";
-				str+="cz:\t"+camera.rotation.z+"\n";
 				str+="lat:\t"+latitude+"\n";
 				str+="lng:\t"+longitude+"\n";
+				str+="zoom:\t"+zoom+"\n";
 				str+="kp:\t"+kp.x;
 
 				document.getElementById("dump").value=str;
 			}
 
+			//Create Universe Function (Creates Earth Scene)
 			function create_universe(scene,radius,segments)
 			{
+				//Create Star Background
 				var ret={};
 
 				ret.stars=new THREE.Mesh
@@ -197,6 +242,7 @@
 
 				scene.add(ret.stars);
 
+				//Create Planet Earth
 				ret.planet=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(radius,segments,segments),
@@ -212,9 +258,10 @@
 
 				scene.add(ret.planet);
 
+				//Create Cloud Layer
 				ret.clouds=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*1,segments,segments),
 					new THREE.MeshPhongMaterial
 					({
 						map:         THREE.ImageUtils.loadTexture(root+"images/fair_clouds_4k.png"),
@@ -224,9 +271,10 @@
 
 				scene.add(ret.clouds);
 
+				//Create Northern Auroral Oval
 				ret.aurora_north=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.006,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*2,segments,segments),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -242,9 +290,10 @@
 
 				scene.add(ret.aurora_north);
 
+				//Create Southern Auroral Oval
 				ret.aurora_south=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.009,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*3,segments,segments),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -260,9 +309,10 @@
 
 				scene.add(ret.aurora_south);
 
+				//Create Northern View Line
 				ret.view_line_north=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.012,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*4,segments,segments),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -278,9 +328,10 @@
 
 				scene.add(ret.view_line_north);
 
+				//Create Southern View Line
 				ret.view_line_south=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.015,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*5,segments,segments),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -296,93 +347,128 @@
 
 				scene.add(ret.view_line_south);
 
+				//Create Ambient Light
+				ret.ambient_light=new THREE.AmbientLight(0xaaaaaa);
+				scene.add(ret.ambient_light);
+
+				//Create Directional Light
+				ret.directional_light=new THREE.DirectionalLight(0xffffff,1.5);
+				ret.directional_light.position.set(5,3,5);
+				scene.add(ret.directional_light);
+
+				//Return Scene
 				return ret;
 			}
 
 		</script>
 
+		<!--GLSL Vertex Shader Source-->
 		<script id="vertex_shader" type="x-shader/x-vertex">
 
+			//UV Coordinates
 			varying vec2 uv_coords;
 
+			//Main
 			void main()
 			{
+				//Pass UV Coordinates to Fragment Shader
 				uv_coords=uv;
+
+				//Calculate Position
 				gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
 			}
 
 		</script>
 
+		<!--GLSL Fragment Shader Source-->
 		<script id="fragment_shader" type="x-shader/x-fragment">
 
+			//UV Coordinates
 			varying vec2 uv_coords;
-			uniform vec2 kp;
 			vec2 uv_coords_scaled=vec2(uv_coords.x*2.0,uv_coords.y);
 			vec2 screen_center=vec2(0.5,0.5);
+
+			//Uniforms
+			uniform vec2 kp;
 			uniform int view_type;
 
+			//Map Function (Linear Interpolatation)
 			float map(float x,float in_min,float in_max,float out_min,float out_max)
 			{
 				return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
 			}
 
-			void draw_aurora(const float radius,const float thickness)
+			//Draw Circle Function
+			float draw_circle(const float radius,const float thickness)
 			{
 				float radial_distance=abs(distance(uv_coords_scaled,screen_center));
-
 				float ring_distance=abs(radial_distance-radius);
-
 				float color=map(ring_distance,0.0,thickness/2.0,1.0,0.2);
+				return color;
+			}
 
+			//Draw Aurora Function
+			void draw_aurora(const float radius,const float thickness)
+			{
+				float color=draw_circle(radius,thickness);
 				gl_FragColor=vec4(color-0.3,color,0.0,color);
 			}
 
+			//Draw View Line Function
 			void draw_view_line(const float radius,const float thickness)
 			{
-				float radial_distance=abs(distance(uv_coords_scaled,screen_center));
-
-				float ring_distance=abs(radial_distance-radius);
-
-				float color=map(ring_distance,0.0,thickness/2.0,1.0,0.2);
-
+				float color=draw_circle(radius,thickness);
 				gl_FragColor=vec4(color,0.0,0.0,color);
 			}
 
+			//Main
 			void main()
 			{
-				float ring_radius_0=0.11+kp.x*0.01;
-				float ring_thickness_0=0.02+kp.x*0.03;
-				float ring_radius_1=ring_radius_0+0.03+kp.x*0.005;
-				float ring_thickness_1=0.01;
+				//Aurora Variables
+				float aurora_radius=0.11+kp.x*0.01;
+				float aurora_thickness=0.02+kp.x*0.03;
 
+				//View Line Variables
+				float view_line_radius=aurora_radius+0.03+kp.x*0.005;
+				float view_line_thickness=0.01;
+
+				//Draw Aurora (0)
 				if(view_type==0)
-					draw_aurora(ring_radius_0,ring_thickness_0);
+					draw_aurora(aurora_radius,aurora_thickness);
+
+				//Draw View Line (1)
 				else if(view_type==1)
-					draw_view_line(ring_radius_1,ring_thickness_1);
+					draw_view_line(view_line_radius,view_line_thickness);
+
+				//Discard Otherwise
 				else
 					discard;
 			}
 
 		</script>
+
 	</head>
 
-	<body onload="setup(true);">
+	<!--Body-->
+	<body onload="setup();">
+
+		<!--Simulation Canvas-->
 		<div id="canvas"></div>
 
+		<!--TESTING-->
 		<table>
 			<tr>
-				<td>
+				<td style="vertical-align:top;">
 					debug data:<br/>
-					<textarea id="dump" rows="8" cols="30"></textarea><br/>
+					<textarea id="dump" rows="10" cols="30"></textarea><br/>
 				</td>
-				<td>
+				<td style="vertical-align:top;">
+					tools:<br/>
 					kp:<input type="range" id="kp" min="0" max="9" step="0.01" value="0"/><br/>
-					lat:<input type="range" id="latitude" min="-90" max="90" step="0.01" value="0.0" onmousemove="gps_update_test();"/><br/>
-					lng:<input type="range" id="longitude" min="-180" max="180" step="0.01" value="0.0" onmousemove="gps_update_test();"/>
-					<!--lat:<input type="text" id="latitude" value="0.0" onchange="gps_update_test()"/><br/>
-					lng:<input type="text" id="longitude" value="0.0" onchange="gps_update_test()"/>-->
 				</td>
 			</tr>
 		</table>
+
 	</body>
+
 </html>
