@@ -41,7 +41,7 @@
 			var latitude_down=latitude;
 			var longitude_down=longitude;
 			var zoom=2;
-			var zoom_min=1;
+			var zoom_min=0.2;
 			var zoom_max=3;
 			var shit=0;
 
@@ -107,31 +107,17 @@
 				//Limit Latitude
 				if(latitude>=90)
 					latitude=89.99;
-				if(latitude<-90)
-					latitude=-90;
+				if(latitude<=-90)
+					latitude=-89.99;
 				if(latitude_to>=90)
 					latitude_to=89.99;
 				if(latitude_to<-90)
 					latitude_to=-90;
 
-				//Limit
-				while(longitude>360)
-					longitude-=360;
-				while(longitude<-360)
-					longitude+=360;
-
-				//Auto Move Location
+				//Auto Move Location (P Controller)
 				var move_speed=0.1;
 				latitude+=(latitude_to-latitude)*move_speed;
-
-				var diff=longitude_to-longitude;
-
-				while(diff>360)
-					diff-=360;
-				while(diff<-360)
-					diff+=360;
-
-				longitude+=diff*move_speed;
+				longitude+=(longitude_to-longitude)*move_speed;
 
 				//Set Camera
 				var look_at_x=Math.sin((90-latitude)/180*Math.PI)*Math.cos(Math.PI/2+(270-longitude)/180*Math.PI)*zoom;
@@ -175,16 +161,14 @@
 				//TESTING
 				var str="";
 				var longitude_show=longitude;
+
 				while(longitude_show>180)
-					longitude_show-=180;
+					longitude_show-=360;
 				while(longitude_show<-180)
-					longitude_show+=180;
+					longitude_show+=360;
+
 				str+="lat:\t"+latitude+"\n";
 				str+="lng:\t"+longitude_show+"\n";
-				str+="lat_to:\t"+latitude_to+"\n";
-				str+="lng_to:\t"+longitude_to+"\n";
-				str+="lat_diff:\t"+(latitude_to-latitude)+"\n";
-				str+="lng_diff:\t"+(longitude_to-longitude)+"\n";
 				str+="zoom:\t"+zoom+"\n";
 				str+="kp:\t"+kp.x+"\n";
 				str+="shit:\t"+shit;
@@ -330,8 +314,15 @@
 			//Set Location
 			function set_location()
 			{
+				//Set "To" Location
 				latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
 				longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
+
+				//Limit Longitude Wrap Around
+				while(longitude>180)
+					longitude-=360;
+				while(longitude<-180)
+					longitude+=360;
 			}
 
 			//TESTING
@@ -561,7 +552,7 @@
 				<td style="vertical-align:top;">
 					tools:<br/>
 					kp:<input type="range" id="kp" min="0" max="9" step="0.01" value="0"/><br/>
-					location:<select id="locations" onchange="set_location();"></select>
+					location:<select id="locations" onmouseup="set_location();"></select>
 				</td>
 			</tr>
 		</table>
