@@ -24,6 +24,7 @@
 			var root="";
 			var width=800;
 			var height=600;
+			var earth_radius=0.5;
 			var locations=new Array();
 			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
 			locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
@@ -86,7 +87,7 @@
 				camera.position.z=5;
 
 				//Create Universe
-				universe=create_universe(scene,0.5,24);
+				universe=create_universe(scene,earth_radius,24);
 
 				//Setup Locations
 				setup_locations();
@@ -132,7 +133,7 @@
 				camera.lookAt(universe.planet.position);
 
 				//Update Marker
-				var marker_radius=0.51;
+				var marker_radius=earth_radius+universe.marker.radius/2.0;
 				universe.marker.position.x=
 					Math.sin((90-universe.marker.latitude)/180*Math.PI)*Math.cos(Math.PI/2+
 					(270-universe.marker.longitude)/180*Math.PI)*marker_radius;
@@ -143,24 +144,14 @@
 					(270-universe.marker.longitude)/180*Math.PI)*marker_radius;
 
 				//Update North Pole Aurora
-				universe.aurora_north.rotation.x=universe.planet.rotation.x-1.44;
-				universe.aurora_north.rotation.y=universe.planet.rotation.y+0.07;
-				universe.aurora_north.rotation.z=universe.planet.rotation.z;
+				universe.aurora_north.rotation.x=universe.planet.rotation.x-1.5;
+				universe.aurora_north.rotation.y=universe.planet.rotation.y+0.04;
+				universe.aurora_north.rotation.z=universe.planet.rotation.z+0.49
 
 				//Update South Pole Aurora
-				universe.aurora_south.rotation.x=universe.planet.rotation.x+1.89;
-				universe.aurora_south.rotation.y=universe.planet.rotation.y+0.06;
-				universe.aurora_south.rotation.z=universe.planet.rotation.z-2.52;
-
-				//Update North Pole Aurora View Line
-				universe.view_line_north.rotation.x=universe.aurora_north.rotation.x;
-				universe.view_line_north.rotation.y=universe.aurora_north.rotation.y;
-				universe.view_line_north.rotation.z=universe.aurora_north.rotation.z;
-
-				//Update South Pole Aurora View Line
-				universe.view_line_south.rotation.x=universe.aurora_south.rotation.x;
-				universe.view_line_south.rotation.y=universe.aurora_south.rotation.y;
-				universe.view_line_south.rotation.z=universe.aurora_south.rotation.z;
+				universe.aurora_south.rotation.x=universe.planet.rotation.x+1.8805985402277465;
+				universe.aurora_south.rotation.y=universe.planet.rotation.y-0.11217274015818644;
+				universe.aurora_south.rotation.z=universe.planet.rotation.z+2.8051980031399686;
 
 				//Update Clouds
 				universe.clouds.rotation.y+=0.0001;
@@ -169,7 +160,7 @@
 				var time_obj=get_time();
 				var time_now=time_obj.hour*60*60+time_obj.minute*60+time_obj.second;
 				var time_max=24*60*60;
-				universe.sun.longitude=time_now/time_max*360-180;
+				universe.sun.longitude=5+time_now/time_max*360-180;
 				universe.sun.latitude=0;
 
 				while(universe.sun.longitude>180)
@@ -256,15 +247,17 @@
 				scene.add(ret.clouds);
 
 				//Create Marker
+				var marker_radius=0.008;
 				ret.marker=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(0.015,segments,segments+1),
+					new THREE.SphereGeometry(marker_radius,segments,segments+1),
 					new THREE.MeshNormalMaterial
 					({
 						color:       new THREE.Color(0xffff00)
 					})
 				);
 
+				ret.marker.radius=marker_radius;
 				ret.marker.latitude=0;
 				ret.marker.longitude=0;
 				scene.add(ret.marker);
@@ -272,14 +265,17 @@
 				//Create Northern Auroral Oval
 				ret.aurora_north=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*4,segments,segments+1),
+					new THREE.SphereGeometry
+						(
+							radius+marker_radius+0.006,segments,segments+1,
+							0,Math.PI,0,Math.PI
+						),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
 						uniforms:
 						{
 							kp:{type:"v2",value:kp},
-							view_type:{type:"i",value:0}
 						},
 						vertexShader: document.getElementById('vertex_shader').textContent,
 						fragmentShader: document.getElementById('fragment_shader').textContent
@@ -291,7 +287,11 @@
 				//Create Southern Auroral Oval
 				ret.aurora_south=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*6,segments,segments+1),
+					new THREE.SphereGeometry
+					(
+						radius+marker_radius+0.006,segments,segments+1,
+						0,Math.PI,0,Math.PI
+					),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -306,44 +306,6 @@
 				);
 
 				scene.add(ret.aurora_south);
-
-				//Create Northern View Line
-				ret.view_line_north=new THREE.Mesh
-				(
-					new THREE.SphereGeometry(radius+0.003*8,segments,segments+1),
-					new THREE.ShaderMaterial
-					({
-						transparent: true,
-						uniforms:
-						{
-							kp:{type:"v2",value:kp},
-							view_type:{type:"i",value:1}
-						},
-						vertexShader: document.getElementById('vertex_shader').textContent,
-						fragmentShader: document.getElementById('fragment_shader').textContent
-					})
-				);
-
-				scene.add(ret.view_line_north);
-
-				//Create Southern View Line
-				ret.view_line_south=new THREE.Mesh
-				(
-					new THREE.SphereGeometry(radius+0.003*10,segments,segments+1),
-					new THREE.ShaderMaterial
-					({
-						transparent: true,
-						uniforms:
-						{
-							kp:{type:"v2",value:kp},
-							view_type:{type:"i",value:1}
-						},
-						vertexShader: document.getElementById('vertex_shader').textContent,
-						fragmentShader: document.getElementById('fragment_shader').textContent
-					})
-				);
-
-				scene.add(ret.view_line_south);
 
 				//Create Ambient Light
 				ret.ambient_light=new THREE.AmbientLight(0x444444);
@@ -535,17 +497,21 @@
 
 			//UV Coordinates
 			varying vec2 uv_coords;
-			vec2 uv_coords_scaled=vec2(uv_coords.x*2.0,uv_coords.y);
+			vec2 uv_coords_scaled=vec2(uv_coords.x,uv_coords.y);
 			vec2 screen_center=vec2(0.5,0.5);
 
 			//Uniforms
 			uniform vec2 kp;
-			uniform int view_type;
 
 			//Map Function (Linear Interpolatation)
 			float map(float x,float in_min,float in_max,float out_min,float out_max)
 			{
 				return (x-in_min)*(out_max-out_min)/(in_max-in_min)+out_min;
+			}
+
+			vec4 average(vec4 x,vec4 y)
+			{
+				return vec4((x.r+y.r)/2.0,(x.g+y.g)/2.0,(x.b+y.b)/2.0,(x.a+y.a)/2.0);
 			}
 
 			//Draw Circle Function
@@ -558,41 +524,41 @@
 			}
 
 			//Draw Aurora Function
-			void draw_aurora(const float radius,const float thickness)
+			vec4 draw_aurora(const float radius,const float thickness)
 			{
 				float color=draw_circle(radius,thickness);
-				gl_FragColor=vec4(color-0.3,color,0.0,color);
+				return vec4(max(0.0,color-0.3),color,0.0,color);
 			}
 
 			//Draw View Line Function
-			void draw_view_line(const float radius,const float thickness)
+			vec4 draw_view_line(const float radius,const float thickness)
 			{
 				float color=draw_circle(radius,thickness);
-				gl_FragColor=vec4(color,0.0,0.0,color);
+				return vec4(color,0.0,0.0,color);
 			}
 
 			//Main
 			void main()
 			{
 				//Aurora Variables
-				float aurora_radius=0.11+kp.x*0.01;
+				float aurora_radius=0.10+kp.x*0.015;
 				float aurora_thickness=0.02+kp.x*0.03;
 
 				//View Line Variables
-				float view_line_radius=aurora_radius+0.03+kp.x*0.00975;
+				float view_line_radius=aurora_radius+0.03+kp.x*0.005;
 				float view_line_thickness=0.01;
 
-				//Draw Aurora (0)
-				if(view_type==0)
-					draw_aurora(aurora_radius,aurora_thickness);
+				//Get Aurora Color
+				vec4 color_0=draw_aurora(aurora_radius,aurora_thickness);
 
-				//Draw View Line (1)
-				else if(view_type==1)
-					draw_view_line(view_line_radius,view_line_thickness);
+				//Get View Line Color
+				vec4 color_1=draw_view_line(view_line_radius,view_line_thickness);
 
-				//Discard Otherwise
-				else
-					discard;
+				//Mix Colors
+				gl_FragColor=mix(color_0*2.0,color_1*2.0,0.4);
+
+				//Determine Alpha
+				gl_FragColor.a=max(color_0.a,color_1.a);
 			}
 
 		</script>
