@@ -45,7 +45,6 @@
 			var zoom=2;
 			var zoom_min=0.7;
 			var zoom_max=3;
-			var shit=0;
 
 			//Input Globals
 			var mouse_down=false;
@@ -205,8 +204,7 @@
 				str+="lat:\t"+view_latitude+"\n";
 				str+="lng:\t"+view_longitude_show+"\n";
 				str+="zoom:\t"+zoom+"\n";
-				str+="kp:\t"+kp.x+"\n";
-				str+="shit:\t"+shit;
+				str+="kp:\t"+kp.x;
 				document.getElementById("dump").value=str;
 			}
 
