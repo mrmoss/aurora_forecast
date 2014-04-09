@@ -1,7 +1,7 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/06/2014
+	#	Modified On:	04/08/2014
 -->
 
 <!doctype html>
@@ -22,9 +22,11 @@
 
 			//Site Globals
 			var root="";
-			var width=400;
-			var height=400;
+			var width=800;
+			var height=600;
 			var locations=new Array();
+			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
+			locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
 
 			//Three.js Globals
 			var renderer;
@@ -34,14 +36,14 @@
 
 			//Simulation Globals
 			var kp=0;
-			var latitude=0;
-			var longitude=0;
-			var latitude_to=latitude;
-			var longitude_to=longitude;
-			var latitude_down=latitude;
-			var longitude_down=longitude;
+			var view_latitude=0;
+			var view_longitude=0;
+			var view_latitude_to=0;
+			var view_longitude_to=0;
+			var view_latitude_down=0;
+			var view_longitude_down=0;
 			var zoom=2;
-			var zoom_min=0.2;
+			var zoom_min=0.7;
 			var zoom_max=3;
 			var shit=0;
 
@@ -62,16 +64,6 @@
 				canvas.addEventListener('mouseup',mouse_up_callback,false);
 				canvas.addEventListener('mousemove',mouse_move_callback,false);
 				canvas.addEventListener('mouseover',mouse_over_callback,false);
-
-				//Setup Locations
-				setup_locations();
-
-				//Go to Default Location
-				if(locations.length>0)
-				{
-					latitude_to=locations[0].latitude;
-					longitude_to=locations[0].longitude;
-				}
 
 				//Initialize Kp Shader Uniform
 				kp=new THREE.Vector2(0.0,0.0);
@@ -95,7 +87,17 @@
 				camera.position.z=5;
 
 				//Create Universe
-				universe=create_universe(scene,0.5,32);
+				universe=create_universe(scene,0.5,24);
+
+				//Setup Locations
+				setup_locations();
+
+				//Go to Default Location
+				if(locations.length>0)
+				{
+					view_latitude_to=locations[0].latitude;
+					view_longitude_to=locations[0].longitude;
+				}
 
 				//Start Rendering
 				render();
@@ -105,51 +107,84 @@
 			function render()
 			{
 				//Limit Latitude
-				if(latitude>=90)
-					latitude=89.99;
-				if(latitude<=-90)
-					latitude=-89.99;
-				if(latitude_to>=90)
-					latitude_to=89.99;
-				if(latitude_to<-90)
-					latitude_to=-90;
+				if(view_latitude>=90)
+					view_latitude=89.99;
+				if(view_latitude<=-90)
+					view_latitude=-89.99;
+				if(view_latitude_to>=90)
+					view_latitude_to=89.99;
+				if(view_latitude_to<-90)
+					view_latitude_to=-90;
 
 				//Auto Move Location (P Controller)
 				var move_speed=0.1;
-				latitude+=(latitude_to-latitude)*move_speed;
-				longitude+=(longitude_to-longitude)*move_speed;
+				view_latitude+=(view_latitude_to-view_latitude)*move_speed;
+				view_longitude+=(view_longitude_to-view_longitude)*move_speed;
 
-				//Set Camera
-				var look_at_x=Math.sin((90-latitude)/180*Math.PI)*Math.cos(Math.PI/2+(270-longitude)/180*Math.PI)*zoom;
-				var look_at_y=Math.cos((90-latitude)/180*Math.PI)*zoom;
-				var look_at_z=Math.sin((90-latitude)/180*Math.PI)*Math.sin(Math.PI/2+(270-longitude)/180*Math.PI)*zoom;
+				//Update Camera
+				var look_at_x=Math.sin((90-view_latitude)/180*Math.PI)*Math.cos(Math.PI/2+
+					(270-view_longitude)/180*Math.PI)*zoom;
+				var look_at_y=Math.cos((90-view_latitude)/180*Math.PI)*zoom;
+				var look_at_z=Math.sin((90-view_latitude)/180*Math.PI)*Math.sin(Math.PI/2+
+					(270-view_longitude)/180*Math.PI)*zoom;
 				camera.position.x=look_at_x;
 				camera.position.y=look_at_y;
 				camera.position.z=look_at_z;
 				camera.lookAt(universe.planet.position);
 
-				//Set North Pole Aurora
+				//Update Marker
+				var marker_radius=0.51;
+				universe.marker.position.x=
+					Math.sin((90-universe.marker.latitude)/180*Math.PI)*Math.cos(Math.PI/2+
+					(270-universe.marker.longitude)/180*Math.PI)*marker_radius;
+				universe.marker.position.y=
+					Math.cos((90-universe.marker.latitude)/180*Math.PI)*marker_radius;
+				universe.marker.position.z=
+					Math.sin((90-universe.marker.latitude)/180*Math.PI)*Math.sin(Math.PI/2+
+					(270-universe.marker.longitude)/180*Math.PI)*marker_radius;
+
+				//Update North Pole Aurora
 				universe.aurora_north.rotation.x=universe.planet.rotation.x-1.44;
 				universe.aurora_north.rotation.y=universe.planet.rotation.y+0.07;
 				universe.aurora_north.rotation.z=universe.planet.rotation.z;
 
-				//Set South Pole Aurora
+				//Update South Pole Aurora
 				universe.aurora_south.rotation.x=universe.planet.rotation.x+1.89;
 				universe.aurora_south.rotation.y=universe.planet.rotation.y+0.06;
 				universe.aurora_south.rotation.z=universe.planet.rotation.z-2.52;
 
-				//Set North Pole Aurora View Line
+				//Update North Pole Aurora View Line
 				universe.view_line_north.rotation.x=universe.aurora_north.rotation.x;
 				universe.view_line_north.rotation.y=universe.aurora_north.rotation.y;
 				universe.view_line_north.rotation.z=universe.aurora_north.rotation.z;
 
-				//Set South Pole Aurora View Line
+				//Update South Pole Aurora View Line
 				universe.view_line_south.rotation.x=universe.aurora_south.rotation.x;
 				universe.view_line_south.rotation.y=universe.aurora_south.rotation.y;
 				universe.view_line_south.rotation.z=universe.aurora_south.rotation.z;
 
-				//Rotate Clouds
+				//Update Clouds
 				universe.clouds.rotation.y+=0.0001;
+
+				//Update Sun
+				var time_obj=get_time();
+				var time_now=time_obj.hour*60*60+time_obj.minute*60+time_obj.second;
+				var time_max=24*60*60;
+				universe.sun.longitude=time_now/time_max*360-180;
+				universe.sun.latitude=0;
+
+				while(universe.sun.longitude>180)
+					universe.sun.longitude-=360;
+				while(universe.sun.longitude<-180)
+					universe.sun.longitude+=360;
+
+				var sun_radius=10;
+				var sun_x=Math.sin((90-universe.sun.latitude)/180*Math.PI)*Math.cos(Math.PI/2+
+					(270-universe.sun.longitude)/180*Math.PI)*sun_radius;
+				var sun_y=Math.cos((90-universe.sun.latitude)/180*Math.PI)*sun_radius;
+				var sun_z=Math.sin((90-universe.sun.latitude)/180*Math.PI)*Math.sin(Math.PI/2+
+					(270-universe.sun.longitude)/180*Math.PI)*sun_radius;
+				universe.sun.position.set(sun_x,sun_y,sun_z);
 
 				//Render
 				requestAnimationFrame(render);
@@ -160,15 +195,15 @@
 
 				//TESTING
 				var str="";
-				var longitude_show=longitude;
+				var view_longitude_show=view_longitude;
 
-				while(longitude_show>180)
-					longitude_show-=360;
-				while(longitude_show<-180)
-					longitude_show+=360;
+				while(view_longitude_show>180)
+					view_longitude_show-=360;
+				while(view_longitude_show<-180)
+					view_longitude_show+=360;
 
-				str+="lat:\t"+latitude+"\n";
-				str+="lng:\t"+longitude_show+"\n";
+				str+="lat:\t"+view_latitude+"\n";
+				str+="lng:\t"+view_longitude_show+"\n";
 				str+="zoom:\t"+zoom+"\n";
 				str+="kp:\t"+kp.x+"\n";
 				str+="shit:\t"+shit;
@@ -183,7 +218,7 @@
 
 				ret.stars=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(90,segments,segments),
+					new THREE.SphereGeometry(90,segments,segments+1),
 					new THREE.MeshBasicMaterial
 					({
 						map:  THREE.ImageUtils.loadTexture(root+"images/galaxy_starfield.png"),
@@ -196,7 +231,7 @@
 				//Create Planet Earth
 				ret.planet=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius,segments,segments),
+					new THREE.SphereGeometry(radius,segments,segments+1),
 					new THREE.MeshPhongMaterial
 					({
 						map:         THREE.ImageUtils.loadTexture(root+"images/2_no_clouds_4k.jpg"),
@@ -212,7 +247,7 @@
 				//Create Cloud Layer
 				ret.clouds=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*1,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*2,segments,segments+1),
 					new THREE.MeshPhongMaterial
 					({
 						map:         THREE.ImageUtils.loadTexture(root+"images/fair_clouds_4k.png"),
@@ -222,10 +257,24 @@
 
 				scene.add(ret.clouds);
 
+				//Create Marker
+				ret.marker=new THREE.Mesh
+				(
+					new THREE.SphereGeometry(0.015,segments,segments+1),
+					new THREE.MeshNormalMaterial
+					({
+						color:       new THREE.Color(0xffff00)
+					})
+				);
+
+				ret.marker.latitude=0;
+				ret.marker.longitude=0;
+				scene.add(ret.marker);
+
 				//Create Northern Auroral Oval
 				ret.aurora_north=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*2,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*4,segments,segments+1),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -244,7 +293,7 @@
 				//Create Southern Auroral Oval
 				ret.aurora_south=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*3,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*6,segments,segments+1),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -263,7 +312,7 @@
 				//Create Northern View Line
 				ret.view_line_north=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*4,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*8,segments,segments+1),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -282,7 +331,7 @@
 				//Create Southern View Line
 				ret.view_line_south=new THREE.Mesh
 				(
-					new THREE.SphereGeometry(radius+0.003*5,segments,segments),
+					new THREE.SphereGeometry(radius+0.003*10,segments,segments+1),
 					new THREE.ShaderMaterial
 					({
 						transparent: true,
@@ -299,13 +348,15 @@
 				scene.add(ret.view_line_south);
 
 				//Create Ambient Light
-				ret.ambient_light=new THREE.AmbientLight(0xaaaaaa);
+				ret.ambient_light=new THREE.AmbientLight(0x444444);
 				scene.add(ret.ambient_light);
 
-				//Create Directional Light
-				ret.directional_light=new THREE.DirectionalLight(0xffffff,1.5);
-				ret.directional_light.position.set(5,3,5);
-				scene.add(ret.directional_light);
+				//Create Sun Light
+				ret.sun=new THREE.DirectionalLight(0xffffff,1.5);
+				ret.sun.position.set(0,0,0);
+				ret.sun.latitude=0;
+				ret.sun.longitude=0;
+				scene.add(ret.sun);
 
 				//Return Scene
 				return ret;
@@ -315,14 +366,18 @@
 			function set_location()
 			{
 				//Set "To" Location
-				latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
-				longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
+				view_latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
+				view_longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
 
 				//Limit Longitude Wrap Around
-				while(longitude>180)
-					longitude-=360;
-				while(longitude<-180)
-					longitude+=360;
+				while(view_longitude>180)
+					view_longitude-=360;
+				while(view_longitude<-180)
+					view_longitude+=360;
+
+				//Set Marker Location
+				universe.marker.latitude=view_latitude_to;
+				universe.marker.longitude=view_longitude_to;
 			}
 
 			//TESTING
@@ -337,15 +392,29 @@
 				alert(methods.join(","));
 			}
 
-			//Setup Locations Functions
+			//Get Time Function
+			function get_time()
+			{
+				var date=new Date();
+
+				var ret={};
+				ret.second=date.getUTCSeconds();
+				ret.minute=date.getUTCMinutes();
+				ret.hour=date.getUTCHours();
+				ret.day=date.getUTCDay();
+				ret.year=date.getFullYear()
+
+				return ret;
+			}
+
+			//Setup Locations Function
 			function setup_locations()
 			{
-				//Setup Default Locations
-				locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
-				locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
-
 				//Update Location Options
 				update_location_options();
+
+				//Update Live Location
+				set_location();
 
 				//Get Current Location
 				navigator.geolocation.getCurrentPosition(get_current_location);
@@ -408,8 +477,8 @@
 				if(event.target!=canvas)
 				{
 					mouse_down=true;
-					latitude_down=latitude;
-					longitude_down=longitude;
+					view_latitude_down=view_latitude;
+					view_longitude_down=view_longitude;
 					mouse_down_x=event.pageX-canvas.offsetLeft;
 					mouse_down_y=event.pageY-canvas.offsetTop;
 				}
@@ -431,11 +500,8 @@
 					var mouse_x=event.pageX-canvas.offsetLeft;
 					var mouse_y=event.pageY-canvas.offsetTop;
 
-					var latitude_new=latitude_down+mouse_y-mouse_down_y;
-					var longitude_new=longitude_down+mouse_down_x-mouse_x;
-
-					latitude_to=latitude_new;
-					longitude_to=longitude_new;
+					view_latitude_to=view_latitude_down+mouse_y-mouse_down_y;
+					view_longitude_to=view_longitude_down+mouse_down_x-mouse_x;
 				}
 			}
 
@@ -515,7 +581,7 @@
 				float aurora_thickness=0.02+kp.x*0.03;
 
 				//View Line Variables
-				float view_line_radius=aurora_radius+0.03+kp.x*0.005;
+				float view_line_radius=aurora_radius+0.03+kp.x*0.00975;
 				float view_line_thickness=0.01;
 
 				//Draw Aurora (0)
@@ -544,12 +610,12 @@
 
 		<!--TESTING-->
 		<table>
-			<tr>
-				<td style="vertical-align:top;">
+			<tr style="vertical-align:top;">
+				<td>
 					debug data:<br/>
 					<textarea id="dump" rows="10" cols="60"></textarea><br/>
 				</td>
-				<td style="vertical-align:top;">
+				<td>
 					tools:<br/>
 					kp:<input type="range" id="kp" min="0" max="9" step="0.01" value="0"/><br/>
 					location:<select id="locations" onmouseup="set_location();"></select>
