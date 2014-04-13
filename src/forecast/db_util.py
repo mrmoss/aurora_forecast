@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 #Database Utility Source
-#	Created By:		Ignacio Saez Lahidalga and Mike Moss
-#	Modified On:	03/27/2014
+#	Created By:		Ignacio Saez Lahidalga and Mike Moss and Caleb Hellickson
+#	Modified On:	04/12/2014
 
 #MySQL Module
 import MySQLdb
@@ -70,3 +70,51 @@ def insert_forecast(json_object,host,username,password,database):
 	#Something Other Bad Thing Happened
 	except Exception as e:
 		return (False,str(e)[0:].capitalize()+".")
+		
+def get_json_date_from_database(json_object):
+	#call function to get date string
+    date_str = convert_json_date_to_string_date(json_object)
+    return date_str
+	
+def retreive_from_database(json_object,host,username,password,database):
+
+    for ii in json_object:
+
+        #Create Entry Values
+        forecast=ii["forecast"]
+        
+    predicted_time=get_json_date_from_database(ii["predicted_time"])
+
+	#build mysql command returning a kp
+    sql_command = "Select kp from " +forecast+ " where predicted_time="+"'"+predicted_time+"'"
+
+	#connect to the MariaDB database
+    db = MySQLdb.connect(host,username,password,database)
+
+    cursor = db.cursor()
+	
+	#execute the MySQL command we built
+    cursor.execute(sql_command)
+
+	#datas is the tuple we got back from the database
+    datas = cursor.fetchall()
+	
+    #disconnect from the server
+    db.close
+	
+	#iterate through datas tuple and get the kp value from our date string
+    for i, var in enumerate(datas):
+        if i == len(datas) - 1:
+            kp = var
+	
+	#set parsed_kp to float for concatination
+    parsed_kp = 0.0
+    
+    #parse KP	
+    for ii in kp:
+		
+        if ii != "(" or ii !=")" or ii != ",":
+			#set parsed kp value to what we want
+            parsed_kp += ii	
+		
+    return parsed_kp
