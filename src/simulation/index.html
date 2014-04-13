@@ -1,7 +1,45 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/08/2014
+	#	Modified On:	04/12/2014
+
+
+	Works On:
+		Windows:
+			Firefox
+			IE 11
+			Chrome
+			Opera
+
+		Linux:
+			Firefox
+			Chrome
+
+		MacOs:
+			Firefox
+			Safari
+				Config
+					Preferences
+						Advanced
+								Show Develop menu in menu bar.
+					Show Menu Bar
+				Develop
+					Enable WebGl
+			Chrome
+
+		Android:
+			Firefox
+			Chrome
+				chrome://flags/#enable-webgl
+
+		IOS:
+
+	Doesn' Work On?:
+		Windows:
+			Safari
+
+		Android:
+			Default Browser
 -->
 
 <!doctype html>
@@ -16,6 +54,7 @@
 
 		<!--Three.js Source-->
 		<script src="js/three.min.js"></script>
+		<script src="js/Detector.js"></script>
 
 		<!--Aurora Simulation Source-->
 		<script type="text/javascript">
@@ -55,6 +94,9 @@
 			//Setup Function (Happens Once)
 			function setup()
 			{
+				if(!Detector.webgl)
+					Detector.addGetWebGLMessage();
+
 				//Setup Input Callbacks
 				var canvas=document.getElementById("canvas");
 				canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
@@ -223,8 +265,8 @@
 					new THREE.SphereGeometry(radius,segments,segments+1),
 					new THREE.MeshPhongMaterial
 					({
-						map:         THREE.ImageUtils.loadTexture(root+"images/2_no_clouds_4k.jpg"),
-						bumpMap:     THREE.ImageUtils.loadTexture(root+"images/elev_bump_4k.jpg"),
+						map:         THREE.ImageUtils.loadTexture(root+"images/2_no_clouds_4k.png"),
+						bumpMap:     THREE.ImageUtils.loadTexture(root+"images/elev_bump_4k.png"),
 						bumpScale:   0.005,
 						specularMap: THREE.ImageUtils.loadTexture(root+"images/water_4k.png"),
 						specular:    new THREE.Color('grey')
@@ -275,7 +317,7 @@
 						transparent: true,
 						uniforms:
 						{
-							kp:{type:"v2",value:kp},
+							kp:{type:"v2",value:kp}
 						},
 						vertexShader: document.getElementById('vertex_shader').textContent,
 						fragmentShader: document.getElementById('fragment_shader').textContent
@@ -297,8 +339,7 @@
 						transparent: true,
 						uniforms:
 						{
-							kp:{type:"v2",value:kp},
-							view_type:{type:"i",value:0}
+							kp:{type:"v2",value:kp}
 						},
 						vertexShader: document.getElementById('vertex_shader').textContent,
 						fragmentShader: document.getElementById('fragment_shader').textContent
@@ -497,8 +538,6 @@
 
 			//UV Coordinates
 			varying vec2 uv_coords;
-			vec2 uv_coords_scaled=vec2(uv_coords.x,uv_coords.y);
-			vec2 screen_center=vec2(0.5,0.5);
 
 			//Uniforms
 			uniform vec2 kp;
@@ -517,6 +556,8 @@
 			//Draw Circle Function
 			float draw_circle(const float radius,const float thickness)
 			{
+				vec2 uv_coords_scaled=vec2(uv_coords.x,uv_coords.y);
+				vec2 screen_center=vec2(0.5,0.5);
 				float radial_distance=abs(distance(uv_coords_scaled,screen_center));
 				float ring_distance=abs(radial_distance-radius);
 				float color=map(ring_distance,0.0,thickness/2.0,1.0,0.2);
