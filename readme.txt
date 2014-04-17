@@ -1,2 +1,3 @@
-Python 2.7
-python-mysqldb
+Requirements:
+	Python 2.7
+	python-mysqldb

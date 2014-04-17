@@ -1,7 +1,7 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/12/2014
+	#	Modified On:	04/17/2014
 
 
 	Works On:
@@ -52,6 +52,8 @@
 		<!--Unicode 8 Compliant-->
 		<meta charset="utf-8">
 
+		<script src="js/hammer.min.js"></script>
+
 		<!--Three.js Source-->
 		<script src="js/three.min.js"></script>
 		<script src="js/Detector.js"></script>
@@ -85,6 +87,9 @@
 			var zoom=2;
 			var zoom_min=0.7;
 			var zoom_max=3;
+			var touches=0;
+			var zoom_down=zoom;
+			var scale_down=0;
 
 			//Input Globals
 			var mouse_down=false;
@@ -94,11 +99,30 @@
 			//Setup Function (Happens Once)
 			function setup()
 			{
+				//Detect WebGL
 				if(!Detector.webgl)
 					Detector.addGetWebGLMessage();
 
 				//Setup Input Callbacks
 				var canvas=document.getElementById("canvas");
+
+				//Enable Mobile Zooming
+				Hammer(canvas).on
+				(
+					"pinch",
+					function(e)
+					{
+						if(e.gesture.eventType==Hammer.EVENT_START)
+						{
+							zoom_down=zoom;
+							scale_down=e.gesture.scale;
+						}
+
+						zoom=zoom_down+(scale_down-e.gesture.scale)*0.5;
+						e.preventDefault();
+					}
+				);
+
 				canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
 				canvas.addEventListener('mousewheel',mouse_wheel_callback,false);
 				canvas.addEventListener('DOMMouseScroll',mouse_wheel_callback,false);
@@ -106,6 +130,12 @@
 				canvas.addEventListener('mouseup',mouse_up_callback,false);
 				canvas.addEventListener('mousemove',mouse_move_callback,false);
 				canvas.addEventListener('mouseover',mouse_over_callback,false);
+
+				canvas.addEventListener('touchleave',touch_leave_window_callback,false);
+				canvas.addEventListener('touchstart',touch_down_callback,false);
+				canvas.addEventListener('touchend',touch_up_callback,false);
+				canvas.addEventListener('touchmove',touch_move_callback,false);
+				canvas.addEventListener('touchenter',touch_over_callback,false);
 
 				//Initialize Kp Shader Uniform
 				kp=new THREE.Vector2(0.0,0.0);
@@ -148,6 +178,16 @@
 			//Render Function (Happens Every Frame Update)
 			function render()
 			{
+				//Limit Number of Touches
+				if(touches>1&&mouse_down)
+					mouse_down=false;
+
+				//Limit Zoom
+				if(zoom>zoom_max)
+					zoom=zoom_max;
+				if(zoom<zoom_min)
+					zoom=zoom_min;
+
 				//Limit Latitude
 				if(view_latitude>=90)
 					view_latitude=89.99;
@@ -450,7 +490,7 @@
 
 				var from=event.relatedTarget||event.toElement;
 
-				if(!from||from.nodeName == "HTML")
+				if(!from||from.nodeName=="HTML")
 					mouse_down=false;
 			}
 
@@ -462,11 +502,7 @@
 				if(event.target!=canvas)
 				{
 					zoom+=event.detail*0.01;
-
-					if(zoom>zoom_max)
-						zoom=zoom_max;
-					if(zoom<zoom_min)
-						zoom=zoom_min;
+					event.preventDefault();
 				}
 			}
 
@@ -509,6 +545,113 @@
 			//Mouse Over Callback
 			function mouse_over_callback(event)
 			{
+				if(event.target==canvas)
+					mouse_down=false;
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			//Touch Leave Window Callback
+			function touch_leave_window_callback(event)
+			{
+				event=event?event:window.event;
+
+				var from=event.relatedTarget||event.toElement;
+
+				if(!from||from.nodeName=="HTML")
+					mouse_down=false;
+			}
+
+			//Touch Down Callback
+			function touch_down_callback(event)
+			{
+				touches=event.touches.length;
+
+				var canvas=document.getElementById("canvas");
+
+				if(event.target!=canvas)
+				{
+					mouse_down=true;
+
+					view_latitude_down=view_latitude;
+					view_longitude_down=view_longitude;
+
+					mouse_down_x=event.changedTouches[0].pageX-canvas.offsetLeft;
+					mouse_down_y=event.changedTouches[0].pageY-canvas.offsetTop;
+
+					event.preventDefault();
+				}
+			}
+
+			//Touch Up Callback
+			function touch_up_callback(event)
+			{
+				mouse_down=false;
+			}
+
+			//Touch Move Callback
+			function touch_move_callback(event)
+			{
+				touches=event.touches.length;
+
+				var canvas=document.getElementById("canvas");
+
+				if(mouse_down)
+				{
+					var mouse_x=event.changedTouches[0].pageX-canvas.offsetLeft;
+					var mouse_y=event.changedTouches[0].pageY-canvas.offsetTop;
+
+					view_latitude_to=view_latitude_down+mouse_y-mouse_down_y;
+					view_longitude_to=view_longitude_down+mouse_down_x-mouse_x;
+
+					event.preventDefault();
+				}
+			}
+
+			//Touch Over Callback
+			function touch_over_callback(event)
+			{
+				touches=event.touches.length;
+
 				if(event.target==canvas)
 					mouse_down=false;
 			}
@@ -627,7 +770,20 @@
 				</td>
 			</tr>
 		</table>
-
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
 	</body>
 
 </html>
