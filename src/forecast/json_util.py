@@ -4,19 +4,10 @@
 #	Created By:		Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
 #	Modified On:	03/01/2014
 
-#Date/Time Module
 import datetime
-
-#Date Utility Modile
 import date_util
-
-#Forecast Parser Module
 import forecast_parser
-
-#JSON Module
 import json
-
-#Kp Utility Module
 import kp_util
 
 #Tests starting and Eending brackets, returns tuple [0](bool)success and [1](string)error_message.
