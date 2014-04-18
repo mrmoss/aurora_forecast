@@ -4,40 +4,17 @@
 #	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
 #	Modified On:	03/03/2014
 
-#Configuration Parser Module
 import ConfigParser
-
-#Database Utility Module
 import db_util
-
-#Emailer Module
 import emailer
-
-#File Utility Module
 import file_util
-
-#Forecast Parser Module
 import forecast_parser
-
-#JSON Module
 import json
-
-#JSON Utility Module
 import json_util
-
-#Signal Module
 import signal
-
-#String Utility Module
 import string_util
-
-#System Module
 import sys
-
-#Time Module
 import time
-
-#URL Utility Module
 import url_util
 
 #Abort Signal Handler Function (Kills program.)
