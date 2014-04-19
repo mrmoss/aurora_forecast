@@ -62,7 +62,7 @@
 		<script type="text/javascript">
 
 			//Site Globals
-			var root="";
+			var root="http://aurora.cs.uaf.edu/sites/simulation/";
 			var width=800;
 			var height=600;
 			var earth_radius=0.5;
@@ -499,7 +499,7 @@
 			{
 				var canvas=document.getElementById("canvas");
 
-				if(event.target!=canvas)
+				if(event.target!=canvas||mouse_down)
 				{
 					zoom+=event.detail*0.01;
 					event.preventDefault();
@@ -548,47 +548,6 @@
 				if(event.target==canvas)
 					mouse_down=false;
 			}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 			//Touch Leave Window Callback
 			function touch_leave_window_callback(event)
@@ -750,7 +709,7 @@
 	</head>
 
 	<!--Body-->
-	<body onload="setup();">
+	<body onload="setup();" style="overflow:hidden;">
 
 		<!--Simulation Canvas-->
 		<div id="canvas"></div>
@@ -770,20 +729,6 @@
 				</td>
 			</tr>
 		</table>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
 	</body>
 
 </html>

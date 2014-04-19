@@ -10,6 +10,47 @@ import MySQLdb
 #System Module
 import sys
 
+#Date Data
+import datetime
+
+#Convert JSON Date Object to String Date Function
+def convert_json_date_to_string_date_or_interval(json_date):
+	
+	if json_date["year"] == -1:
+		date_str = "'1970-01-01 00:00:00' and '" + str(datetime.datetime.today().year) + "-12-31 23:59:00'"
+		return (date_str,True)
+
+	#Create String Date
+	date_str="'"+str(json_date["year"])
+	
+	if json_date["month"] == -1:
+		date_str += "-01-01 00:00:00' and " +date_str+ "-12-31 23:59:00'"
+		return (date_str,True)
+		
+	date_str+="-"+str(json_date["month"])
+	
+	if json_date["day"] == -1:
+		date_str += "-01 00:00:00' and " +date_str+ "-31 23:59:00'"
+		return (date_str,True)
+		
+	date_str+="-"+str(json_date["day"])
+	
+	if json_date["hour"] == -1:
+		date_str += " 00:00:00' and " + date_str+ " 23:59:00'"
+		return (date_str,True)
+		
+	date_str+=" "+str(json_date["hour"])
+	
+	if json_date["minute"] == -1:
+		date_str += ":00:00' and " + date_str + ":59:00'"
+		return (date_str,True)
+		
+	date_str+=":"+str(json_date["minute"])
+	date_str+=":00"
+
+	#Return String Date
+	return (date_str,False)
+
 #Convert JSON Date Object to String Date Function
 def convert_json_date_to_string_date(json_date):
 
@@ -73,48 +114,59 @@ def insert_forecast(json_object,host,username,password,database):
 		
 def get_json_date_from_database(json_object):
 	#call function to get date string
-    date_str = convert_json_date_to_string_date(json_object)
-    return date_str
+	date_str = convert_json_date_to_string_date_or_interval(json_object)
+	return date_str
 	
 def retreive_from_database(json_object,host,username,password,database):
+	err_str = ""
+	try:
+		for ii in json_object:
 
-    for ii in json_object:
+			#Create Entry Values
+			forecast=ii["forecast"]
+			
+			predicted_time=get_json_date_from_database(ii["predicted_time"])[0]
+			newCommand=get_json_date_from_database(ii["predicted_time"])[1]
+			
+			if newCommand:
+				sql_command = "Select kp from " +forecast+ " where (predicted_time between " +predicted_time+")"
+			else:
+				#build mysql command returning a kp
+				sql_command = "Select kp from " +forecast+ " where predicted_time="+predicted_time
 
-        #Create Entry Values
-        forecast=ii["forecast"]
-        
-    predicted_time=get_json_date_from_database(ii["predicted_time"])
+			#connect to the MariaDB database
+			db = MySQLdb.connect(host,username,password,database)
 
-	#build mysql command returning a kp
-    sql_command = "Select kp from " +forecast+ " where predicted_time="+"'"+predicted_time+"'"
+			cursor = db.cursor()
+			
+			#execute the MySQL command we built
+			cursor.execute(sql_command)
 
-	#connect to the MariaDB database
-    db = MySQLdb.connect(host,username,password,database)
-
-    cursor = db.cursor()
+			#datas is the tuple we got back from the database
+			datas = cursor.fetchall()
+			
+			#disconnect from the server
+			db.close
+			
+			parsed_kp_array=[]
+			
+			#print datas
+			
+			auxillary = 0
+			
+			#iterate through datas tuple and get the kp value from our date string
+			#for x in range(0,len(datas)):
+			
+			for i in datas:
+				
+				#if i == len(datas) - 1:
+					
+				if(len(i)>0):
+					parsed_kp_array.append(i[0])
+						
+			return (True,parsed_kp_array)
+	except MySQLdb.Error as e:
+		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".")		
 	
-	#execute the MySQL command we built
-    cursor.execute(sql_command)
-
-	#datas is the tuple we got back from the database
-    datas = cursor.fetchall()
+#def get_date_range(date_string):
 	
-    #disconnect from the server
-    db.close
-	
-	#iterate through datas tuple and get the kp value from our date string
-    for i, var in enumerate(datas):
-        if i == len(datas) - 1:
-            kp = var
-	
-	#set parsed_kp to float for concatination
-    parsed_kp = 0.0
-    
-    #parse KP	
-    for ii in kp:
-		
-        if ii != "(" or ii !=")" or ii != ",":
-			#set parsed kp value to what we want
-            parsed_kp += ii	
-		
-    return parsed_kp
