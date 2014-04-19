@@ -1,13 +1,13 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/17/2014
+	#	Modified On:	04/18/2014
 
 
 	Works On:
 		Windows:
 			Firefox
-			IE 11
+			IE 9+
 			Chrome
 			Opera
 
@@ -21,7 +21,7 @@
 				Config
 					Preferences
 						Advanced
-								Show Develop menu in menu bar.
+							Show Develop menu in menu bar.
 					Show Menu Bar
 				Develop
 					Enable WebGl
@@ -34,9 +34,10 @@
 
 		IOS:
 
-	Doesn' Work On?:
+	Doesn't Work On?:
 		Windows:
 			Safari
+			IE 6/7/8
 
 		Android:
 			Default Browser
@@ -52,6 +53,7 @@
 		<!--Unicode 8 Compliant-->
 		<meta charset="utf-8">
 
+		<!--Hammer.js Source-->
 		<script src="js/hammer.min.js"></script>
 
 		<!--Three.js Source-->
@@ -63,8 +65,8 @@
 
 			//Site Globals
 			var root="http://aurora.cs.uaf.edu/sites/simulation/";
-			var width=800;
-			var height=600;
+			var width= 300;
+			var height= 300;
 			var earth_radius=0.5;
 			var locations=new Array();
 			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
@@ -96,9 +98,19 @@
 			var mouse_down_x=0.0;
 			var mouse_down_y=0.0;
 
+			function resize_function(event)
+			{
+				var size=document.body.clientWidth;
+				renderer.setSize(size,size);
+				parent.document.getElementById("simulation").height=String(size);
+			}
+
 			//Setup Function (Happens Once)
 			function setup()
 			{
+				//Set Resize Callback
+				parent.window.addEventListener('resize',resize_function);
+
 				//Detect WebGL
 				if(!Detector.webgl)
 					Detector.addGetWebGLMessage();
@@ -123,9 +135,9 @@
 					}
 				);
 
+				mouse_scroll_init("canvas");
+
 				canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
-				canvas.addEventListener('mousewheel',mouse_wheel_callback,false);
-				canvas.addEventListener('DOMMouseScroll',mouse_wheel_callback,false);
 				canvas.addEventListener('mousedown',mouse_down_callback,false);
 				canvas.addEventListener('mouseup',mouse_up_callback,false);
 				canvas.addEventListener('mousemove',mouse_move_callback,false);
@@ -145,8 +157,8 @@
 				canvas.innerHTML="";
 
 				//Create Renderer
-				renderer=new THREE.WebGLRenderer();
-				renderer.setSize(width,height);
+				renderer=new THREE.WebGLRenderer({preserveDrawingBuffer:true});
+				//renderer.setSize(width,height);
 				canvas.appendChild(renderer.domElement);
 
 				//Create Scene
@@ -170,6 +182,9 @@
 					view_latitude_to=locations[0].latitude;
 					view_longitude_to=locations[0].longitude;
 				}
+
+				//Resize Simulation
+				resize_function();
 
 				//Start Rendering
 				render();
@@ -236,7 +251,7 @@
 				universe.aurora_south.rotation.z=universe.planet.rotation.z+2.8051980031399686;
 
 				//Update Clouds
-				universe.clouds.rotation.y+=0.0001;
+				//universe.clouds.rotation.y+=0.0001;
 
 				//Update Sun
 				var time_obj=get_time();
@@ -264,21 +279,6 @@
 
 				//TESTING
 				kp.x=parseFloat(document.getElementById("kp").value);
-
-				//TESTING
-				var str="";
-				var view_longitude_show=view_longitude;
-
-				while(view_longitude_show>180)
-					view_longitude_show-=360;
-				while(view_longitude_show<-180)
-					view_longitude_show+=360;
-
-				str+="lat:\t"+view_latitude+"\n";
-				str+="lng:\t"+view_longitude_show+"\n";
-				str+="zoom:\t"+zoom+"\n";
-				str+="kp:\t"+kp.x;
-				document.getElementById("dump").value=str;
 			}
 
 			//Create Universe Function (Creates Earth Scene)
@@ -316,7 +316,7 @@
 				scene.add(ret.planet);
 
 				//Create Cloud Layer
-				ret.clouds=new THREE.Mesh
+				/*ret.clouds=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(radius+0.003*2,segments,segments+1),
 					new THREE.MeshPhongMaterial
@@ -326,7 +326,7 @@
 					})
 				);
 
-				scene.add(ret.clouds);
+				scene.add(ret.clouds);*/
 
 				//Create Marker
 				var marker_radius=0.008;
@@ -494,14 +494,38 @@
 					mouse_down=false;
 			}
 
+			//Mouse Wheel Initialize Function
+			function mouse_scroll_init(div)
+			{
+				var elem=document.getElementById(div);
+				
+				if(elem.addEventListener)
+				{
+					elem.addEventListener("mousewheel",mouse_wheel_callback,false);
+					elem.addEventListener("DOMMouseScroll",mouse_wheel_callback,false);
+				}
+				else
+				{
+					if(elem.attachEvent)
+						elem.attachEvent("onmousewheel",MouseScroll);
+				}
+			}
+
 			//Mouse Wheel Callback
 			function mouse_wheel_callback(event)
 			{
+				var roll=0;
+
+				if('wheelDelta' in event)
+					roll=event.wheelDelta;
+				else
+					roll=-40*event.detail;
+
 				var canvas=document.getElementById("canvas");
 
 				if(event.target!=canvas||mouse_down)
 				{
-					zoom+=event.detail*0.01;
+					zoom+=roll*0.001;
 					event.preventDefault();
 				}
 			}
@@ -615,6 +639,11 @@
 					mouse_down=false;
 			}
 
+			function take_pic()
+			{
+				window.open(renderer.domElement.toDataURL());
+			}
+
 		</script>
 
 		<!--GLSL Vertex Shader Source-->
@@ -713,22 +742,11 @@
 
 		<!--Simulation Canvas-->
 		<div id="canvas"></div>
-		<br/>
 
 		<!--TESTING-->
-		<table>
-			<tr style="vertical-align:top;">
-				<td>
-					debug data:<br/>
-					<textarea id="dump" rows="10" cols="60"></textarea><br/>
-				</td>
-				<td>
-					tools:<br/>
-					kp:<input type="range" id="kp" min="0" max="9" step="0.01" value="0"/><br/>
-					location:<select id="locations" onmouseup="set_location();"></select>
-				</td>
-			</tr>
-		</table>
+		<div style="position:absolute;top:16px;left:16px;">
+			<select id="locations" onclick="set_location();" onchange="set_location();"></select>     <input type="range" id="kp" min="0" max="9" step="0.01" value="0"/>    <input type="button" onclick="take_pic();" value="test"/>
+		</div>
 	</body>
 
 </html>
