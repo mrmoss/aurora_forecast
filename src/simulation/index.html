@@ -56,6 +56,9 @@
 		<!--Hammer.js Source-->
 		<script src="js/hammer.min.js"></script>
 
+		<!--JSZip Source-->
+		<script src="js/jszip.min.js"></script>
+
 		<!--Three.js Source-->
 		<script src="js/three.min.js"></script>
 		<script src="js/Detector.js"></script>
@@ -69,8 +72,10 @@
 			var height= 300;
 			var earth_radius=0.5;
 			var locations=new Array();
-			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
+
+			//Create Locations
 			locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
+			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
 
 			//Three.js Globals
 			var renderer;
@@ -92,6 +97,9 @@
 			var touches=0;
 			var zoom_down=zoom;
 			var scale_down=0;
+
+			//Download Globals
+			var zip;
 
 			//Input Globals
 			var mouse_down=false;
@@ -273,12 +281,15 @@
 					(270-universe.sun.longitude)/180*Math.PI)*sun_radius;
 				universe.sun.position.set(sun_x,sun_y,sun_z);
 
+				//Limit Kp
+				if(kp>9)
+					kp=9;
+				if(kp<0)
+					kp=0;
+
 				//Render
 				requestAnimationFrame(render);
 				renderer.render(scene,camera);
-
-				//TESTING
-				kp.x=parseFloat(document.getElementById("kp").value);
 			}
 
 			//Create Universe Function (Creates Earth Scene)
@@ -306,8 +317,8 @@
 					new THREE.MeshPhongMaterial
 					({
 						map:         THREE.ImageUtils.loadTexture(root+"images/2_no_clouds_4k.png"),
-						bumpMap:     THREE.ImageUtils.loadTexture(root+"images/elev_bump_4k.png"),
-						bumpScale:   0.005,
+						//bumpMap:     THREE.ImageUtils.loadTexture(root+"images/elev_bump_4k.png"),
+						//bumpScale:   0.005,
 						specularMap: THREE.ImageUtils.loadTexture(root+"images/water_4k.png"),
 						specular:    new THREE.Color('grey')
 					})
@@ -329,13 +340,14 @@
 				scene.add(ret.clouds);*/
 
 				//Create Marker
-				var marker_radius=0.008;
+				var marker_radius=0.005;
 				ret.marker=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(marker_radius,segments,segments+1),
-					new THREE.MeshNormalMaterial
+					new THREE.ShaderMaterial
 					({
-						color:       new THREE.Color(0xffff00)
+						vertexShader: document.getElementById('marker_vertex_shader').textContent,
+						fragmentShader: document.getElementById('marker_fragment_shader').textContent
 					})
 				);
 
@@ -349,7 +361,7 @@
 				(
 					new THREE.SphereGeometry
 						(
-							radius+marker_radius+0.006,segments,segments+1,
+							radius+0.003,segments,segments+1,
 							0,Math.PI,0,Math.PI
 						),
 					new THREE.ShaderMaterial
@@ -359,8 +371,8 @@
 						{
 							kp:{type:"v2",value:kp}
 						},
-						vertexShader: document.getElementById('vertex_shader').textContent,
-						fragmentShader: document.getElementById('fragment_shader').textContent
+						vertexShader: document.getElementById('aurora_vertex_shader').textContent,
+						fragmentShader: document.getElementById('aurora_fragment_shader').textContent
 					})
 				);
 
@@ -371,7 +383,7 @@
 				(
 					new THREE.SphereGeometry
 					(
-						radius+marker_radius+0.006,segments,segments+1,
+						radius+0.003,segments,segments+1,
 						0,Math.PI,0,Math.PI
 					),
 					new THREE.ShaderMaterial
@@ -381,8 +393,8 @@
 						{
 							kp:{type:"v2",value:kp}
 						},
-						vertexShader: document.getElementById('vertex_shader').textContent,
-						fragmentShader: document.getElementById('fragment_shader').textContent
+						vertexShader: document.getElementById('aurora_vertex_shader').textContent,
+						fragmentShader: document.getElementById('aurora_fragment_shader').textContent
 					})
 				);
 
@@ -464,12 +476,22 @@
 			//Get Current Location Callback
 			function get_current_location(location)
 			{
-				//Add Current Location
-				locations.push({name:"My Location",latitude:location.coords.latitude,
-					longitude:location.coords.longitude});
+				//Get Current Location
+				var current_location={name:"My Location",latitude:location.coords.latitude,
+					longitude:location.coords.longitude};
+
+				//Insert Into Locations Array
+				locations.splice(0,0,current_location);
 
 				//Update Location Options
 				update_location_options();
+
+				//Auto Set Location
+				if(document.getElementById("locations").length>0)
+				{
+					document.getElementById("locations").selectedIndex=0;
+					set_location();
+				}
 			}
 
 			//Update Location Options Function
@@ -639,15 +661,52 @@
 					mouse_down=false;
 			}
 
-			function take_pic()
+			//Record 2D Images Function
+			function record_2d_images()
 			{
-				window.open(renderer.domElement.toDataURL());
+				//Create New Zip File
+				zip=new JSZip();
+
+				//Download North Pole Images
+				universe.marker.visible=false;
+				kp.x=0;
+				setTimeout(function(){render_2d_images("north_pole_");},1000);
+			}
+
+			//Render 2D Images
+			function render_2d_images(file_prefix)
+			{
+				//Shoot Kp 0-9
+				if(kp.x<10)
+				{
+					//Render Scene
+					renderer.render();
+
+					//Render Scene
+					var data=renderer.domElement.toDataURL();
+
+					//Add File to Zip
+					zip.file(file_prefix+kp.x+".png",data.substr(data.indexOf(',')+1),{base64:true});
+
+					//Increase Kp
+					kp.x=kp.x+1;
+
+					//Give Some Time to Download
+					setTimeout(function(){render_2d_images(file_prefix);},1000);
+				}
+
+				//Download Zip
+				else
+				{
+					window.open(window.URL.createObjectURL(zip.generate({type:"blob"})));
+					universe.marker.visible=true;
+				}
 			}
 
 		</script>
 
-		<!--GLSL Vertex Shader Source-->
-		<script id="vertex_shader" type="x-shader/x-vertex">
+		<!--GLSL Aurora Vertex Shader Source-->
+		<script id="aurora_vertex_shader" type="x-shader/x-vertex">
 
 			//UV Coordinates
 			varying vec2 uv_coords;
@@ -664,14 +723,15 @@
 
 		</script>
 
-		<!--GLSL Fragment Shader Source-->
-		<script id="fragment_shader" type="x-shader/x-fragment">
+		<!--GLSL Aurora Fragment Shader Source-->
+		<script id="aurora_fragment_shader" type="x-shader/x-fragment">
 
 			//UV Coordinates
 			varying vec2 uv_coords;
 
 			//Uniforms
 			uniform vec2 kp;
+
 
 			//Map Function (Linear Interpolatation)
 			float map(float x,float in_min,float in_max,float out_min,float out_max)
@@ -735,6 +795,38 @@
 
 		</script>
 
+		<!--GLSL Marker Vertex Shader Source-->
+		<script id="marker_vertex_shader" type="x-shader/x-vertex">
+
+			//UV Coordinates
+			varying vec2 uv_coords;
+
+			//Main
+			void main()
+			{
+				//Pass UV Coordinates to Fragment Shader
+				uv_coords=uv;
+
+				//Calculate Position
+				gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+			}
+
+		</script>
+
+		<!--GLSL Marker Fragment Shader Source-->
+		<script id="marker_fragment_shader" type="x-shader/x-fragment">
+
+			//UV Coordinates
+			varying vec2 uv_coords;
+
+			//Main
+			void main()
+			{
+				gl_FragColor=vec4(1.0,0.0,1.0,1.0);
+			}
+
+		</script>
+
 	</head>
 
 	<!--Body-->
@@ -744,8 +836,8 @@
 		<div id="canvas"></div>
 
 		<!--TESTING-->
-		<div style="position:absolute;top:16px;left:16px;">
-			<select id="locations" onclick="set_location();" onchange="set_location();"></select>     <input type="range" id="kp" min="0" max="9" step="0.01" value="0"/>    <input type="button" onclick="take_pic();" value="test"/>
+		<div style="position:absolute;bottom:16px;left:20px;">
+			<select id="locations" onclick="set_location();" onchange="set_location();"></select>     <input type="button" onclick="record_2d_images();" value="test"/>
 		</div>
 	</body>
 
