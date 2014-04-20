@@ -4,10 +4,7 @@
 #	Created By:		Ignacio Saez Lahidalga and Mike Moss and Caleb Hellickson
 #	Modified On:	04/19/2014
 
-#MySQL Module
 import MySQLdb
-
-#System Module
 import sys
 
 #Date Data
@@ -61,8 +58,6 @@ def convert_json_date_to_string_date(json_date):
 	date_str+=" "+str(json_date["hour"])
 	date_str+=":"+str(json_date["minute"])
 	date_str+=":00"
-
-	#Return String Date
 	return date_str
 
 #Insert Forecast Function (Takes forecast information and inserts it into a given MySQL database,

@@ -4,25 +4,13 @@
 #	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
 #	Modified On:	03/04/2014
 
-#Forecast Parser Module
 import forecast_parser
-
-#JSON Utility Module
 import json_util
-
-#Kp Utility Module
 import kp_util
-
-#String Utility Module
 import string_util
-
-#Unit Testing Module
 import unittest
-
-#To get current date and time
 import datetime
 
-#JSON Utility Tests
 class json_utility_test_suite(unittest.TestCase):
 
 	#Testing Function
