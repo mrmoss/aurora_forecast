@@ -72,10 +72,20 @@
 			var height= 300;
 			var earth_radius=0.5;
 			var locations=new Array();
+			var fallback_locations=new Array();
+			var fallback_locations_index=0;
+			var use_fallback=false;
 
 			//Create Locations
 			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
 			locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
+
+			//2D Fallback Locations
+			fallback_locations.push({name:"Alaska",latitude:64.8436,longitude:-147.7231,zoom:0.84});
+			fallback_locations.push({name:"United States",latitude:37.28,longitude:-100.61,zoom:1.06});
+			fallback_locations.push({name:"Europe",latitude:50.41,longitude:10.03,zoom:1.06});
+			fallback_locations.push({name:"North Polar",latitude:65.41,longitude:-66.975,zoom:1.42});
+			fallback_locations.push({name:"South Polar",latitude:-83.02,longitude:108.81,zoom:1.3});
 
 			//Three.js Globals
 			var renderer;
@@ -106,6 +116,7 @@
 			var mouse_down_x=0.0;
 			var mouse_down_y=0.0;
 
+			//Window Resize Function
 			function resize_function(event)
 			{
 				var size=document.body.clientWidth;
@@ -116,86 +127,102 @@
 			//Setup Function (Happens Once)
 			function setup()
 			{
-				//Set Resize Callback
-				parent.window.addEventListener('resize',resize_function);
-
 				//Detect WebGL
 				if(!Detector.webgl)
-					Detector.addGetWebGLMessage();
-
-				//Setup Input Callbacks
-				var canvas=document.getElementById("canvas");
-
-				//Enable Mobile Zooming
-				Hammer(canvas).on
-				(
-					"pinch",
-					function(e)
-					{
-						if(e.gesture.eventType==Hammer.EVENT_START)
-						{
-							zoom_down=zoom;
-							scale_down=e.gesture.scale;
-						}
-
-						zoom=zoom_down+(scale_down-e.gesture.scale)*0.5;
-						e.preventDefault();
-					}
-				);
-
-				mouse_scroll_init("canvas");
-
-				canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
-				canvas.addEventListener('mousedown',mouse_down_callback,false);
-				canvas.addEventListener('mouseup',mouse_up_callback,false);
-				canvas.addEventListener('mousemove',mouse_move_callback,false);
-				canvas.addEventListener('mouseover',mouse_over_callback,false);
-
-				canvas.addEventListener('touchleave',touch_leave_window_callback,false);
-				canvas.addEventListener('touchstart',touch_down_callback,false);
-				canvas.addEventListener('touchend',touch_up_callback,false);
-				canvas.addEventListener('touchmove',touch_move_callback,false);
-				canvas.addEventListener('touchenter',touch_over_callback,false);
-
-				//Initialize Kp Shader Uniform
-				kp=new THREE.Vector2(0.0,0.0);
-
-				//Get Canvas Object
-				var canvas=document.getElementById('canvas');
-				canvas.innerHTML="";
-
-				//Create Renderer
-				renderer=new THREE.WebGLRenderer({preserveDrawingBuffer:true});
-				//renderer.setSize(width,height);
-				canvas.appendChild(renderer.domElement);
-
-				//Create Scene
-				scene=new THREE.Scene();
-
-				//Create Camera
-				camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
-				camera.position.x=0;
-				camera.position.y=0;
-				camera.position.z=5;
-
-				//Create Universe
-				universe=create_universe(scene,earth_radius,24);
-
-				//Setup Locations
-				setup_locations();
-
-				//Go to Default Location
-				if(locations.length>0)
 				{
-					view_latitude_to=locations[0].latitude;
-					view_longitude_to=locations[0].longitude;
+					use_fallback=true;
+					//Detector.addGetWebGLMessage();
 				}
 
-				//Resize Simulation
-				resize_function();
+				//Use WebGL
+				if(!use_fallback)
+				{
+					//Set Resize Callback
+					parent.window.addEventListener('resize',resize_function);
 
-				//Start Rendering
-				render();
+					//Setup Input Callbacks
+					var canvas=document.getElementById("canvas");
+
+					//Enable Mobile Zooming
+					Hammer(canvas).on
+					(
+						"pinch",
+						function(e)
+						{
+							if(e.gesture.eventType==Hammer.EVENT_START)
+							{
+								zoom_down=zoom;
+								scale_down=e.gesture.scale;
+							}
+
+							zoom=zoom_down+(scale_down-e.gesture.scale)*0.5;
+							e.preventDefault();
+						}
+					);
+
+					mouse_scroll_init("canvas");
+
+					canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
+					canvas.addEventListener('mousedown',mouse_down_callback,false);
+					canvas.addEventListener('mouseup',mouse_up_callback,false);
+					canvas.addEventListener('mousemove',mouse_move_callback,false);
+					canvas.addEventListener('mouseover',mouse_over_callback,false);
+
+					canvas.addEventListener('touchleave',touch_leave_window_callback,false);
+					canvas.addEventListener('touchstart',touch_down_callback,false);
+					canvas.addEventListener('touchend',touch_up_callback,false);
+					canvas.addEventListener('touchmove',touch_move_callback,false);
+					canvas.addEventListener('touchenter',touch_over_callback,false);
+
+					//Initialize Kp Shader Uniform
+					kp=new THREE.Vector2(0.0,0.0);
+
+					//Get Canvas Object
+					var canvas=document.getElementById('canvas');
+					canvas.innerHTML="";
+
+					//Create Renderer
+					renderer=new THREE.WebGLRenderer({preserveDrawingBuffer:true});
+					canvas.appendChild(renderer.domElement);
+
+					//Create Scene
+					scene=new THREE.Scene();
+
+					//Create Camera
+					camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
+					camera.position.x=0;
+					camera.position.y=0;
+					camera.position.z=5;
+
+					//Create Universe
+					universe=create_universe(scene,earth_radius,24);
+
+					//Setup Locations
+					setup_locations();
+
+					//Go to Default Location
+					if(locations.length>0)
+					{
+						view_latitude_to=locations[0].latitude;
+						view_longitude_to=locations[0].longitude;
+					}
+
+					//Resize Simulation
+					resize_function();
+
+					//Start Rendering
+					render();
+				}
+
+				//Use Fallback
+				else
+				{
+					//Setup Locations
+					setup_locations();
+
+					//Render Fallback
+					render_fallback();
+				}
 			}
 
 			//Render Function (Happens Every Frame Update)
@@ -290,6 +317,12 @@
 				//Render
 				requestAnimationFrame(render);
 				renderer.render(scene,camera);
+			}
+
+			//Render Fallback Function
+			function render_fallback()
+			{
+				var canvas=document.getElementById("canvas");
 			}
 
 			//Create Universe Function (Creates Earth Scene)
@@ -418,19 +451,25 @@
 			//Set Location
 			function set_location()
 			{
-				//Set "To" Location
-				view_latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
-				view_longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
+				if(!use_fallback)
+				{
+					//Set "To" Location
+					view_latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
+					view_longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
 
-				//Limit Longitude Wrap Around
-				while(view_longitude>180)
-					view_longitude-=360;
-				while(view_longitude<-180)
-					view_longitude+=360;
+					//Limit Longitude Wrap Around
+					while(view_longitude>180)
+						view_longitude-=360;
+					while(view_longitude<-180)
+						view_longitude+=360;
 
-				//Set Marker Location
-				universe.marker.latitude=view_latitude_to;
-				universe.marker.longitude=view_longitude_to;
+					//Set Marker Location
+					universe.marker.latitude=view_latitude_to;
+					universe.marker.longitude=view_longitude_to;
+				}
+				else
+				{
+				}
 			}
 
 			//TESTING
@@ -470,7 +509,8 @@
 				set_location();
 
 				//Get Current Location
-				navigator.geolocation.getCurrentPosition(get_current_location);
+				if(!use_fallback)
+					navigator.geolocation.getCurrentPosition(get_current_location);
 			}
 
 			//Get Current Location Callback
@@ -501,8 +541,17 @@
 				document.getElementById("locations").options.length=0;
 
 				//Add Locations
-				for(var ii=0;ii<locations.length;++ii)
-					document.getElementById("locations").options[ii]=new Option(locations[ii].name);
+				if(!use_fallback)
+				{
+					for(var ii=0;ii<locations.length;++ii)
+						document.getElementById("locations").options[ii]=new Option(locations[ii].name);
+				}
+				else
+				{
+					for(var ii=0;ii<fallback_locations.length;++ii)
+						document.getElementById("locations").options[ii]=new Option(fallback_locations[ii].name);
+
+				}
 			}
 
 			//Mouse Leave Window Callback
@@ -669,12 +718,13 @@
 
 				//Download North Pole Images
 				universe.marker.visible=false;
-				kp.x=0;
-				setTimeout(function(){render_2d_images("north_pole_");},1000);
+				fallback_locations_index=0;
+				kp.x=10;
+				setTimeout(render_2d_images,1000);
 			}
 
 			//Render 2D Images
-			function render_2d_images(file_prefix)
+			function render_2d_images()
 			{
 				//Shoot Kp 0-9
 				if(kp.x<10)
@@ -686,13 +736,29 @@
 					var data=renderer.domElement.toDataURL();
 
 					//Add File to Zip
-					zip.file(file_prefix+kp.x+".png",data.substr(data.indexOf(',')+1),{base64:true});
+					zip.file(fallback_locations[fallback_locations_index].name+" "+
+						kp.x+".png",data.substr(data.indexOf(',')+1),{base64:true});
 
 					//Increase Kp
 					kp.x=kp.x+1;
 
+					//Increase Location Index
+					if(kp.x>=10)
+						fallback_locations_index=fallback_locations_index+1;
+
 					//Give Some Time to Download
-					setTimeout(function(){render_2d_images(file_prefix);},1000);
+					setTimeout(render_2d_images,1000);
+				}
+
+				//Change Location
+				else if(fallback_locations_index<fallback_locations.length)
+				{
+					var ele=fallback_locations[fallback_locations_index];
+					view_latitude=view_latitude_to=ele.latitude;
+					view_longitude=view_longitude_to=ele.longitude;
+					zoom=ele.zoom;
+					kp.x=0;
+					setTimeout(render_2d_images,1000);
 				}
 
 				//Download Zip
@@ -837,7 +903,7 @@
 
 		<!--TESTING-->
 		<div style="position:absolute;bottom:16px;left:20px;">
-			<select id="locations" onclick="set_location();" onchange="set_location();"></select>     <input type="button" onclick="record_2d_images();" value="test"/>
+			<select id="locations" onclick="set_location();" onchange="set_location();"></select>    <input type="button" onclick="record_2d_images();" value="test"/>
 		</div>
 	</body>
 
