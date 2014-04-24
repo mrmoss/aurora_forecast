@@ -68,7 +68,7 @@
 
 			//Site Globals
 			var root="http://aurora.cs.uaf.edu/sites/simulation/";
-			root="";
+			//root="";
 			var width= 300;
 			var height= 300;
 			var earth_radius=0.5;
@@ -121,7 +121,11 @@
 			function resize_function(event)
 			{
 				var size=document.body.clientWidth;
-				renderer.setSize(size,size);
+
+				if(!use_fallback)
+					renderer.setSize(size,size);
+				else
+					document.getElementById("canvas").width=document.getElementById("canvas").height=size;
 
 				if(parent.document.getElementById("simulation"))
 					parent.document.getElementById("simulation").height=String(size);
@@ -130,6 +134,10 @@
 			//Setup Function (Happens Once)
 			function setup()
 			{
+				//Set Resize Callback
+				if(parent.window)
+					parent.window.addEventListener('resize',resize_function);
+
 				//Detect WebGL
 				if(!Detector.webgl)
 				{
@@ -140,12 +148,9 @@
 				//Use WebGL
 				if(!use_fallback)
 				{
-					//Set Resize Callback
-					if(parent.window)
-						parent.window.addEventListener('resize',resize_function);
-
-					//Setup Input Callbacks
+					//Get Canvas Div
 					var canvas=document.getElementById("canvas");
+					canvas.innerHTML="";
 
 					//Enable Mobile Zooming
 					Hammer(canvas).on
@@ -164,23 +169,18 @@
 						}
 					);
 
+					//Setup Input Callbacks
 					mouse_scroll_init("canvas");
-
 					canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
 					canvas.addEventListener('mousedown',mouse_down_callback,false);
 					canvas.addEventListener('mouseup',mouse_up_callback,false);
 					canvas.addEventListener('mousemove',mouse_move_callback,false);
 					canvas.addEventListener('mouseover',mouse_over_callback,false);
-
 					canvas.addEventListener('touchleave',touch_leave_window_callback,false);
 					canvas.addEventListener('touchstart',touch_down_callback,false);
 					canvas.addEventListener('touchend',touch_up_callback,false);
 					canvas.addEventListener('touchmove',touch_move_callback,false);
 					canvas.addEventListener('touchenter',touch_over_callback,false);
-
-					//Get Canvas Object
-					var canvas=document.getElementById('canvas');
-					canvas.innerHTML="";
 
 					//Create Renderer
 					renderer=new THREE.WebGLRenderer({preserveDrawingBuffer:true});
@@ -208,9 +208,6 @@
 						view_longitude_to=locations[0].longitude;
 					}
 
-					//Resize Simulation
-					resize_function();
-
 					//Start Rendering
 					render();
 				}
@@ -224,6 +221,9 @@
 					//Render Fallback
 					render_fallback();
 				}
+
+				//Resize Simulation
+				resize_function();
 			}
 
 			//Render Function (Happens Every Frame Update)
@@ -331,7 +331,7 @@
 
 				canvas.innerHTML="<img src='"+root+"images/fallback/"+
 					location_select.options[location_select.selectedIndex].value+" "+
-					Math.round(kp.x)+".png'/>";
+					Math.round(kp.x)+".png' width='100%' height='100%'/>";
 			}
 
 			//Create Universe Function (Creates Earth Scene)
