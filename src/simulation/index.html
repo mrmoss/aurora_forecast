@@ -1,7 +1,7 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/18/2014
+	#	Modified On:	04/24/2014
 
 
 	Works On:
@@ -68,13 +68,14 @@
 
 			//Site Globals
 			var root="http://aurora.cs.uaf.edu/sites/simulation/";
+			root="";
 			var width= 300;
 			var height= 300;
 			var earth_radius=0.5;
 			var locations=new Array();
 			var fallback_locations=new Array();
 			var fallback_locations_index=0;
-			var use_fallback=false;
+			var use_fallback=true;
 
 			//Create Locations
 			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
@@ -94,7 +95,7 @@
 			var universe;
 
 			//Simulation Globals
-			var kp=0;
+			var kp=new THREE.Vector2(0.0,0.0);
 			var view_latitude=0;
 			var view_longitude=0;
 			var view_latitude_to=0;
@@ -121,7 +122,9 @@
 			{
 				var size=document.body.clientWidth;
 				renderer.setSize(size,size);
-				parent.document.getElementById("simulation").height=String(size);
+
+				if(parent.document.getElementById("simulation"))
+					parent.document.getElementById("simulation").height=String(size);
 			}
 
 			//Setup Function (Happens Once)
@@ -138,7 +141,8 @@
 				if(!use_fallback)
 				{
 					//Set Resize Callback
-					parent.window.addEventListener('resize',resize_function);
+					if(parent.window)
+						parent.window.addEventListener('resize',resize_function);
 
 					//Setup Input Callbacks
 					var canvas=document.getElementById("canvas");
@@ -173,9 +177,6 @@
 					canvas.addEventListener('touchend',touch_up_callback,false);
 					canvas.addEventListener('touchmove',touch_move_callback,false);
 					canvas.addEventListener('touchenter',touch_over_callback,false);
-
-					//Initialize Kp Shader Uniform
-					kp=new THREE.Vector2(0.0,0.0);
 
 					//Get Canvas Object
 					var canvas=document.getElementById('canvas');
@@ -285,21 +286,21 @@
 				universe.aurora_south.rotation.y=universe.planet.rotation.y-0.11217274015818644;
 				universe.aurora_south.rotation.z=universe.planet.rotation.z+2.8051980031399686;
 
-				//Update Clouds
-				//universe.clouds.rotation.y+=0.0001;
-
 				//Update Sun
 				var time_obj=get_time();
 				var time_now=time_obj.hour*60*60+time_obj.minute*60+time_obj.second;
 				var time_max=24*60*60;
-				universe.sun.longitude=5+time_now/time_max*360-180;
+				var sun_offset=60;
+				universe.sun.longitude=sun_offset+time_now/time_max*360-180;
 				universe.sun.latitude=0;
 
+				//Limit Sun Position
 				while(universe.sun.longitude>180)
 					universe.sun.longitude-=360;
 				while(universe.sun.longitude<-180)
 					universe.sun.longitude+=360;
 
+				//Set Sun Position
 				var sun_radius=10;
 				var sun_x=Math.sin((90-universe.sun.latitude)/180*Math.PI)*Math.cos(Math.PI/2+
 					(270-universe.sun.longitude)/180*Math.PI)*sun_radius;
@@ -322,7 +323,15 @@
 			//Render Fallback Function
 			function render_fallback()
 			{
+				//Get Cavas Div
 				var canvas=document.getElementById("canvas");
+
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
+				canvas.innerHTML="<img src='"+root+"images/fallback/"+
+					location_select.options[location_select.selectedIndex].value+" "+
+					Math.round(kp.x)+".png'/>";
 			}
 
 			//Create Universe Function (Creates Earth Scene)
@@ -336,7 +345,7 @@
 					new THREE.SphereGeometry(90,segments,segments+1),
 					new THREE.MeshBasicMaterial
 					({
-						map:  THREE.ImageUtils.loadTexture(root+"images/galaxy_starfield.png"),
+						map:  THREE.ImageUtils.loadTexture(root+"images/simulation/galaxy_starfield.png"),
 						side: THREE.BackSide
 					})
 				);
@@ -349,28 +358,15 @@
 					new THREE.SphereGeometry(radius,segments,segments+1),
 					new THREE.MeshPhongMaterial
 					({
-						map:         THREE.ImageUtils.loadTexture(root+"images/2_no_clouds_4k.png"),
-						//bumpMap:     THREE.ImageUtils.loadTexture(root+"images/elev_bump_4k.png"),
+						map:         THREE.ImageUtils.loadTexture(root+"images/simulation/2_no_clouds_4k.png"),
+						//bumpMap:     THREE.ImageUtils.loadTexture(root+"images/simulation/elev_bump_4k.png"),
 						//bumpScale:   0.005,
-						specularMap: THREE.ImageUtils.loadTexture(root+"images/water_4k.png"),
+						specularMap: THREE.ImageUtils.loadTexture(root+"images/simulation/water_4k.png"),
 						specular:    new THREE.Color('grey')
 					})
 				);
 
 				scene.add(ret.planet);
-
-				//Create Cloud Layer
-				/*ret.clouds=new THREE.Mesh
-				(
-					new THREE.SphereGeometry(radius+0.003*2,segments,segments+1),
-					new THREE.MeshPhongMaterial
-					({
-						map:         THREE.ImageUtils.loadTexture(root+"images/fair_clouds_4k.png"),
-						transparent: true
-					})
-				);
-
-				scene.add(ret.clouds);*/
 
 				//Create Marker
 				var marker_radius=0.005;
@@ -451,11 +447,15 @@
 			//Set Location
 			function set_location()
 			{
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
+				//Simulation
 				if(!use_fallback)
 				{
 					//Set "To" Location
-					view_latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
-					view_longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
+					view_latitude_to=locations[location_select.selectedIndex].latitude;
+					view_longitude_to=locations[location_select.selectedIndex].longitude;
 
 					//Limit Longitude Wrap Around
 					while(view_longitude>180)
@@ -467,8 +467,11 @@
 					universe.marker.latitude=view_latitude_to;
 					universe.marker.longitude=view_longitude_to;
 				}
+
+				//2D Fallback
 				else
 				{
+					render_fallback();
 				}
 			}
 
@@ -526,10 +529,13 @@
 				//Update Location Options
 				update_location_options();
 
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
 				//Auto Set Location
-				if(document.getElementById("locations").length>0)
+				if(location_select.length>0)
 				{
-					document.getElementById("locations").selectedIndex=0;
+					location_select.selectedIndex=0;
 					set_location();
 				}
 			}
@@ -537,19 +543,22 @@
 			//Update Location Options Function
 			function update_location_options()
 			{
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
 				//Clear Out Old Options
-				document.getElementById("locations").options.length=0;
+				location_select.options.length=0;
 
 				//Add Locations
 				if(!use_fallback)
 				{
 					for(var ii=0;ii<locations.length;++ii)
-						document.getElementById("locations").options[ii]=new Option(locations[ii].name);
+						location_select.options[ii]=new Option(locations[ii].name);
 				}
 				else
 				{
 					for(var ii=0;ii<fallback_locations.length;++ii)
-						document.getElementById("locations").options[ii]=new Option(fallback_locations[ii].name);
+						location_select.options[ii]=new Option(fallback_locations[ii].name);
 
 				}
 			}
@@ -569,7 +578,7 @@
 			function mouse_scroll_init(div)
 			{
 				var elem=document.getElementById(div);
-				
+
 				if(elem.addEventListener)
 				{
 					elem.addEventListener("mousewheel",mouse_wheel_callback,false);
@@ -904,6 +913,7 @@
 		<!--TESTING-->
 		<div style="position:absolute;bottom:16px;left:20px;">
 			<select id="locations" onclick="set_location();" onchange="set_location();"></select>    <input type="button" onclick="record_2d_images();" value="test"/>
+			<input type="range" id="kp_scroll" min="0.0" max="9.0" step="0.1" onchange="kp.x=document.getElementById('kp_scroll').value;render_fallback();"/>
 		</div>
 	</body>
 
