@@ -1,31 +1,135 @@
 <!DOCTYPE HTML>
+<meta charset= "utf-8">
 <html>
 <head>
 <script type="text/javascript" src="canvas/canvasjs.min.js"></script>
-<script type="text/javascript">
-window.onload = function () {
-	var chart = new CanvasJS.Chart("chartContainer", {
-data: [
-{
-type: "line",
-dataPoints: [
-{ x: 10, y: 10 },
-{ x: 20, y: 15 },
-{ x: 30, y: 25 },
-{ x: 40, y: 30 },
-{ x: 50, y: 28 }
-]
-}
-]
-});
+<script type="text/javascript"> window.onload = function () {
+var forecast = new CanvasJS.Chart("chartContainer1"); 
 
-chart.render();
+forecast.options.title = { text: "Carrington Rotation #" };
+
+CanvasJS.addColorSet("customSet1",
+		["#4661EE", "#EC5657", "#1BCDD1", "#8FAABB", "#B08BEB",
+		"#3EA0DD", "#F5A52A", "#23BFAA", "#FAA586", "#EB8CC6", ]); 
+
+var d28_series = { 
+type: "line",
+		  name: "28-day forecast",
+		  showInLegend: true
+};
+
+var d3_series = {
+type: "column",
+		  name: "Max of 3-day forecast",
+		  showInLegend: true
+};
+
+forecast.options.data = [];
+forecast.options.data.push(d28_series);
+forecast.options.data.push(d3_series);
+
+d28_series.dataPoints = [
+{ label: "April 13", y: 3 },{ label: "", y: 3 },{ label: "", y: 3 },
+{ label: "", y: 3 },{ label: "", y: 3 },{ label: "", y: 3 },
+{ label: "", y: 3 },{ label: "", y: 3 },
+
+{ label: "April 14", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
+{ label: "", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
+{ label: "", y: 3 }, { label: "", y: 3 }, 
+
+{ label: "April 15", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 }, 
+{ label: "", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 }, 
+{ label: "", y: 4 }, { label: "", y: 4 }, 
+
+{ label: "April 16", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 },
+{ label: "", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 },
+{ label: "", y: 4 }, { label: "", y: 4 }, 
+
+{ label: "April 17", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
+{ label: "", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
+{ label: "", y: 3 }, { label: "", y: 3 }, 
+
+{ label: "April 18", y: 2 }, { label: "", y: 2 }, { label: "", y: 2 },
+{ label: "", y: 2 }, { label: "", y: 2 }, { label: "", y: 2 },
+{ label: "", y: 2 }, { label: "", y: 2 } 
+];
+
+d3_series.dataPoints = [
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 1 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 1 },
+{ label: "", y: 1 },
+{ label: "", y: 2 },
+{ label: "", y: 2 },
+{ label: "", y: 1 },
+{ label: "", y: 1 },
+{ label: "", y: 1 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 1 },
+{ label: "", y: 1 },
+{ label: "", y: 2 },
+{ label: "", y: 1 },
+{ label: "", y: 2 },
+{ label: "", y: 2 },
+{ label: "", y: 5 },
+{ label: "", y: 6 },
+{ label: "", y: 5 },
+{ label: "", y: 3 },
+{ label: "", y: 3 },
+{ label: "", y: 5 },
+{ label: "", y: 4 },
+{ label: "", y: 4 },
+{ label: "", y: 1 },
+{ label: "", y: 0 },
+{ label: "", y: 1 },
+{ label: "", y: 1 },
+{ label: "", y: 2 },
+{ label: "", y: 2 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 0 },
+{ label: "", y: 1 },
+{ label: "", y: 1 }
+];
+
+
+ 				var chart2 = new CanvasJS.Chart("chartContainer2", {
+ 				title: { text: "Other stuff"}, 
+ 				data: [ {
+ 				type: "line",
+ 				dataPoints: [
+ 					{ x: 1, y: 5 },
+ 					{ x: 2, y: 1 },
+ 					{ x: 3, y: 2 },
+ 					{ x: 4, y: 3 },
+ 					{ x: 5, y: 8 }
+ 					]
+ 					}
+ 				]
+ 				});
+ 
+forecast.render();
+chart2.render();
 }
 </script>
 </head>
 
 <body>
-<div id="chartContainer" style="height: 500px; width: 50%;"></div>
+<div id="chartContainer1" style="height: 350px; width: 100%;"></div>
+<div id="chartContainer2" style="height: 350px; width: 100%;"></div>
 </body>
 </html>
 
