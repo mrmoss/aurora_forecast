@@ -2,7 +2,7 @@
 
 #Database Utility Source
 #	Created By:		Ignacio Saez Lahidalga and Mike Moss and Caleb Hellickson
-#	Modified On:	04/12/2014
+#	Modified On:	04/19/2014
 
 import MySQLdb
 import sys
@@ -124,10 +124,10 @@ def retreive_from_database(json_object,host,username,password,database):
 			newCommand=get_json_date_from_database(ii["predicted_time"])[1]
 			
 			if newCommand:
-				sql_command = "Select kp from " +forecast+ " where (predicted_time between " +predicted_time+")"
+				sql_command = "Select predicted_time,kp from " +forecast+ " where (predicted_time between " +predicted_time+")"
 			else:
 				#build mysql command returning a kp
-				sql_command = "Select kp from " +forecast+ " where predicted_time="+predicted_time
+				sql_command = "Select predicted_time,kp from " +forecast+ " where predicted_time="+predicted_time
 
 			#connect to the MariaDB database
 			db = MySQLdb.connect(host,username,password,database)
@@ -142,26 +142,27 @@ def retreive_from_database(json_object,host,username,password,database):
 			
 			#disconnect from the server
 			db.close
-			
-			parsed_kp_array=[]
-			
-			#print datas
+			#check if there is data or not
+			if not datas:
+				return (False,"No Data For your query")
 			
 			auxillary = 0
 			
 			#iterate through datas tuple and get the kp value from our date string
 			#for x in range(0,len(datas)):
 			
+			return_json_object = '['
+			
 			for i in datas:
 				
-				#if i == len(datas) - 1:
-					
-				if(len(i)>0):
-					parsed_kp_array.append(i[0])
-						
-			return (True,parsed_kp_array)
+				#put the date and kp value to a tuple
+				temp = (str(i[0]),i[1])
+				#put tuple in json object
+				return_json_object += '{"predicted_time":'+temp[0]+'"kp":'+str(temp[1])+'},'
+			
+			return_json_object = return_json_object[0:-1]
+			return_json_object += ']'
+			return (True,return_json_object)
 	except MySQLdb.Error as e:
-		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".")		
-	
-#def get_date_range(date_string):
-	
+		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".")
+

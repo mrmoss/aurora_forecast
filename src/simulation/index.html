@@ -1,7 +1,7 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/18/2014
+	#	Modified On:	04/24/2014
 
 
 	Works On:
@@ -56,6 +56,9 @@
 		<!--Hammer.js Source-->
 		<script src="js/hammer.min.js"></script>
 
+		<!--JSZip Source-->
+		<script src="js/jszip.min.js"></script>
+
 		<!--Three.js Source-->
 		<script src="js/three.min.js"></script>
 		<script src="js/Detector.js"></script>
@@ -65,12 +68,25 @@
 
 			//Site Globals
 			var root="http://aurora.cs.uaf.edu/sites/simulation/";
+			//root="";
 			var width= 300;
 			var height= 300;
 			var earth_radius=0.5;
 			var locations=new Array();
+			var fallback_locations=new Array();
+			var fallback_locations_index=0;
+			var use_fallback=true;
+
+			//Create Locations
 			locations.push({name:"Fairbanks, AK",latitude:64.8436,longitude:-147.7231});
 			locations.push({name:"Adelaide",latitude:-34.9333300,longitude:138.6});
+
+			//2D Fallback Locations
+			fallback_locations.push({name:"Alaska",latitude:64.8436,longitude:-147.7231,zoom:0.84});
+			fallback_locations.push({name:"United States",latitude:37.28,longitude:-100.61,zoom:1.06});
+			fallback_locations.push({name:"Europe",latitude:50.41,longitude:10.03,zoom:1.06});
+			fallback_locations.push({name:"North Polar",latitude:65.41,longitude:-66.975,zoom:1.42});
+			fallback_locations.push({name:"South Polar",latitude:-83.02,longitude:108.81,zoom:1.3});
 
 			//Three.js Globals
 			var renderer;
@@ -79,7 +95,7 @@
 			var universe;
 
 			//Simulation Globals
-			var kp=0;
+			var kp=new THREE.Vector2(0.0,0.0);
 			var view_latitude=0;
 			var view_longitude=0;
 			var view_latitude_to=0;
@@ -93,101 +109,121 @@
 			var zoom_down=zoom;
 			var scale_down=0;
 
+			//Download Globals
+			var zip;
+
 			//Input Globals
 			var mouse_down=false;
 			var mouse_down_x=0.0;
 			var mouse_down_y=0.0;
 
+			//Window Resize Function
 			function resize_function(event)
 			{
 				var size=document.body.clientWidth;
-				renderer.setSize(size,size);
-				parent.document.getElementById("simulation").height=String(size);
+
+				if(!use_fallback)
+					renderer.setSize(size,size);
+				else
+					document.getElementById("canvas").width=document.getElementById("canvas").height=size;
+
+				if(parent.document.getElementById("simulation"))
+					parent.document.getElementById("simulation").height=String(size);
 			}
 
 			//Setup Function (Happens Once)
 			function setup()
 			{
 				//Set Resize Callback
-				parent.window.addEventListener('resize',resize_function);
+				if(parent.window)
+					parent.window.addEventListener('resize',resize_function);
 
 				//Detect WebGL
 				if(!Detector.webgl)
-					Detector.addGetWebGLMessage();
-
-				//Setup Input Callbacks
-				var canvas=document.getElementById("canvas");
-
-				//Enable Mobile Zooming
-				Hammer(canvas).on
-				(
-					"pinch",
-					function(e)
-					{
-						if(e.gesture.eventType==Hammer.EVENT_START)
-						{
-							zoom_down=zoom;
-							scale_down=e.gesture.scale;
-						}
-
-						zoom=zoom_down+(scale_down-e.gesture.scale)*0.5;
-						e.preventDefault();
-					}
-				);
-
-				mouse_scroll_init("canvas");
-
-				canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
-				canvas.addEventListener('mousedown',mouse_down_callback,false);
-				canvas.addEventListener('mouseup',mouse_up_callback,false);
-				canvas.addEventListener('mousemove',mouse_move_callback,false);
-				canvas.addEventListener('mouseover',mouse_over_callback,false);
-
-				canvas.addEventListener('touchleave',touch_leave_window_callback,false);
-				canvas.addEventListener('touchstart',touch_down_callback,false);
-				canvas.addEventListener('touchend',touch_up_callback,false);
-				canvas.addEventListener('touchmove',touch_move_callback,false);
-				canvas.addEventListener('touchenter',touch_over_callback,false);
-
-				//Initialize Kp Shader Uniform
-				kp=new THREE.Vector2(0.0,0.0);
-
-				//Get Canvas Object
-				var canvas=document.getElementById('canvas');
-				canvas.innerHTML="";
-
-				//Create Renderer
-				renderer=new THREE.WebGLRenderer({preserveDrawingBuffer:true});
-				//renderer.setSize(width,height);
-				canvas.appendChild(renderer.domElement);
-
-				//Create Scene
-				scene=new THREE.Scene();
-
-				//Create Camera
-				camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
-				camera.position.x=0;
-				camera.position.y=0;
-				camera.position.z=5;
-
-				//Create Universe
-				universe=create_universe(scene,earth_radius,24);
-
-				//Setup Locations
-				setup_locations();
-
-				//Go to Default Location
-				if(locations.length>0)
 				{
-					view_latitude_to=locations[0].latitude;
-					view_longitude_to=locations[0].longitude;
+					use_fallback=true;
+					//Detector.addGetWebGLMessage();
+				}
+
+				//Use WebGL
+				if(!use_fallback)
+				{
+					//Get Canvas Div
+					var canvas=document.getElementById("canvas");
+					canvas.innerHTML="";
+
+					//Enable Mobile Zooming
+					Hammer(canvas).on
+					(
+						"pinch",
+						function(e)
+						{
+							if(e.gesture.eventType==Hammer.EVENT_START)
+							{
+								zoom_down=zoom;
+								scale_down=e.gesture.scale;
+							}
+
+							zoom=zoom_down+(scale_down-e.gesture.scale)*0.5;
+							e.preventDefault();
+						}
+					);
+
+					//Setup Input Callbacks
+					mouse_scroll_init("canvas");
+					canvas.addEventListener('mouseout',mouse_leave_window_callback,false);
+					canvas.addEventListener('mousedown',mouse_down_callback,false);
+					canvas.addEventListener('mouseup',mouse_up_callback,false);
+					canvas.addEventListener('mousemove',mouse_move_callback,false);
+					canvas.addEventListener('mouseover',mouse_over_callback,false);
+					canvas.addEventListener('touchleave',touch_leave_window_callback,false);
+					canvas.addEventListener('touchstart',touch_down_callback,false);
+					canvas.addEventListener('touchend',touch_up_callback,false);
+					canvas.addEventListener('touchmove',touch_move_callback,false);
+					canvas.addEventListener('touchenter',touch_over_callback,false);
+
+					//Create Renderer
+					renderer=new THREE.WebGLRenderer({preserveDrawingBuffer:true});
+					canvas.appendChild(renderer.domElement);
+
+					//Create Scene
+					scene=new THREE.Scene();
+
+					//Create Camera
+					camera=new THREE.PerspectiveCamera(45,width/height,0.01,1000);
+					camera.position.x=0;
+					camera.position.y=0;
+					camera.position.z=5;
+
+					//Create Universe
+					universe=create_universe(scene,earth_radius,24);
+
+					//Setup Locations
+					setup_locations();
+
+					//Go to Default Location
+					if(locations.length>0)
+					{
+						view_latitude_to=locations[0].latitude;
+						view_longitude_to=locations[0].longitude;
+					}
+
+					//Start Rendering
+					render();
+				}
+
+				//Use Fallback
+				else
+				{
+					//Setup Locations
+					setup_locations();
+
+					//Render Fallback
+					render_fallback();
 				}
 
 				//Resize Simulation
 				resize_function();
-
-				//Start Rendering
-				render();
 			}
 
 			//Render Function (Happens Every Frame Update)
@@ -250,21 +286,21 @@
 				universe.aurora_south.rotation.y=universe.planet.rotation.y-0.11217274015818644;
 				universe.aurora_south.rotation.z=universe.planet.rotation.z+2.8051980031399686;
 
-				//Update Clouds
-				//universe.clouds.rotation.y+=0.0001;
-
 				//Update Sun
 				var time_obj=get_time();
 				var time_now=time_obj.hour*60*60+time_obj.minute*60+time_obj.second;
 				var time_max=24*60*60;
-				universe.sun.longitude=5+time_now/time_max*360-180;
+				var sun_offset=60;
+				universe.sun.longitude=sun_offset+time_now/time_max*360-180;
 				universe.sun.latitude=0;
 
+				//Limit Sun Position
 				while(universe.sun.longitude>180)
 					universe.sun.longitude-=360;
 				while(universe.sun.longitude<-180)
 					universe.sun.longitude+=360;
 
+				//Set Sun Position
 				var sun_radius=10;
 				var sun_x=Math.sin((90-universe.sun.latitude)/180*Math.PI)*Math.cos(Math.PI/2+
 					(270-universe.sun.longitude)/180*Math.PI)*sun_radius;
@@ -273,12 +309,29 @@
 					(270-universe.sun.longitude)/180*Math.PI)*sun_radius;
 				universe.sun.position.set(sun_x,sun_y,sun_z);
 
+				//Limit Kp
+				if(kp>9)
+					kp=9;
+				if(kp<0)
+					kp=0;
+
 				//Render
 				requestAnimationFrame(render);
 				renderer.render(scene,camera);
+			}
 
-				//TESTING
-				kp.x=parseFloat(document.getElementById("kp").value);
+			//Render Fallback Function
+			function render_fallback()
+			{
+				//Get Cavas Div
+				var canvas=document.getElementById("canvas");
+
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
+				canvas.innerHTML="<img src='"+root+"images/fallback/"+
+					location_select.options[location_select.selectedIndex].value+" "+
+					Math.round(kp.x)+".png' width='100%' height='100%'/>";
 			}
 
 			//Create Universe Function (Creates Earth Scene)
@@ -292,7 +345,7 @@
 					new THREE.SphereGeometry(90,segments,segments+1),
 					new THREE.MeshBasicMaterial
 					({
-						map:  THREE.ImageUtils.loadTexture(root+"images/galaxy_starfield.png"),
+						map:  THREE.ImageUtils.loadTexture(root+"images/simulation/galaxy_starfield.png"),
 						side: THREE.BackSide
 					})
 				);
@@ -305,37 +358,25 @@
 					new THREE.SphereGeometry(radius,segments,segments+1),
 					new THREE.MeshPhongMaterial
 					({
-						map:         THREE.ImageUtils.loadTexture(root+"images/2_no_clouds_4k.png"),
-						bumpMap:     THREE.ImageUtils.loadTexture(root+"images/elev_bump_4k.png"),
-						bumpScale:   0.005,
-						specularMap: THREE.ImageUtils.loadTexture(root+"images/water_4k.png"),
+						map:         THREE.ImageUtils.loadTexture(root+"images/simulation/2_no_clouds_4k.png"),
+						//bumpMap:     THREE.ImageUtils.loadTexture(root+"images/simulation/elev_bump_4k.png"),
+						//bumpScale:   0.005,
+						specularMap: THREE.ImageUtils.loadTexture(root+"images/simulation/water_4k.png"),
 						specular:    new THREE.Color('grey')
 					})
 				);
 
 				scene.add(ret.planet);
 
-				//Create Cloud Layer
-				/*ret.clouds=new THREE.Mesh
-				(
-					new THREE.SphereGeometry(radius+0.003*2,segments,segments+1),
-					new THREE.MeshPhongMaterial
-					({
-						map:         THREE.ImageUtils.loadTexture(root+"images/fair_clouds_4k.png"),
-						transparent: true
-					})
-				);
-
-				scene.add(ret.clouds);*/
-
 				//Create Marker
-				var marker_radius=0.008;
+				var marker_radius=0.005;
 				ret.marker=new THREE.Mesh
 				(
 					new THREE.SphereGeometry(marker_radius,segments,segments+1),
-					new THREE.MeshNormalMaterial
+					new THREE.ShaderMaterial
 					({
-						color:       new THREE.Color(0xffff00)
+						vertexShader: document.getElementById('marker_vertex_shader').textContent,
+						fragmentShader: document.getElementById('marker_fragment_shader').textContent
 					})
 				);
 
@@ -349,7 +390,7 @@
 				(
 					new THREE.SphereGeometry
 						(
-							radius+marker_radius+0.006,segments,segments+1,
+							radius+0.003,segments,segments+1,
 							0,Math.PI,0,Math.PI
 						),
 					new THREE.ShaderMaterial
@@ -359,8 +400,8 @@
 						{
 							kp:{type:"v2",value:kp}
 						},
-						vertexShader: document.getElementById('vertex_shader').textContent,
-						fragmentShader: document.getElementById('fragment_shader').textContent
+						vertexShader: document.getElementById('aurora_vertex_shader').textContent,
+						fragmentShader: document.getElementById('aurora_fragment_shader').textContent
 					})
 				);
 
@@ -371,7 +412,7 @@
 				(
 					new THREE.SphereGeometry
 					(
-						radius+marker_radius+0.006,segments,segments+1,
+						radius+0.003,segments,segments+1,
 						0,Math.PI,0,Math.PI
 					),
 					new THREE.ShaderMaterial
@@ -381,8 +422,8 @@
 						{
 							kp:{type:"v2",value:kp}
 						},
-						vertexShader: document.getElementById('vertex_shader').textContent,
-						fragmentShader: document.getElementById('fragment_shader').textContent
+						vertexShader: document.getElementById('aurora_vertex_shader').textContent,
+						fragmentShader: document.getElementById('aurora_fragment_shader').textContent
 					})
 				);
 
@@ -406,19 +447,32 @@
 			//Set Location
 			function set_location()
 			{
-				//Set "To" Location
-				view_latitude_to=locations[document.getElementById("locations").selectedIndex].latitude;
-				view_longitude_to=locations[document.getElementById("locations").selectedIndex].longitude;
+				//Get Location Select
+				var location_select=document.getElementById("locations");
 
-				//Limit Longitude Wrap Around
-				while(view_longitude>180)
-					view_longitude-=360;
-				while(view_longitude<-180)
-					view_longitude+=360;
+				//Simulation
+				if(!use_fallback)
+				{
+					//Set "To" Location
+					view_latitude_to=locations[location_select.selectedIndex].latitude;
+					view_longitude_to=locations[location_select.selectedIndex].longitude;
 
-				//Set Marker Location
-				universe.marker.latitude=view_latitude_to;
-				universe.marker.longitude=view_longitude_to;
+					//Limit Longitude Wrap Around
+					while(view_longitude>180)
+						view_longitude-=360;
+					while(view_longitude<-180)
+						view_longitude+=360;
+
+					//Set Marker Location
+					universe.marker.latitude=view_latitude_to;
+					universe.marker.longitude=view_longitude_to;
+				}
+
+				//2D Fallback
+				else
+				{
+					render_fallback();
+				}
 			}
 
 			//TESTING
@@ -458,29 +512,55 @@
 				set_location();
 
 				//Get Current Location
-				navigator.geolocation.getCurrentPosition(get_current_location);
+				if(!use_fallback)
+					navigator.geolocation.getCurrentPosition(get_current_location);
 			}
 
 			//Get Current Location Callback
 			function get_current_location(location)
 			{
-				//Add Current Location
-				locations.push({name:"My Location",latitude:location.coords.latitude,
-					longitude:location.coords.longitude});
+				//Get Current Location
+				var current_location={name:"My Location",latitude:location.coords.latitude,
+					longitude:location.coords.longitude};
+
+				//Insert Into Locations Array
+				locations.splice(0,0,current_location);
 
 				//Update Location Options
 				update_location_options();
+
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
+				//Auto Set Location
+				if(location_select.length>0)
+				{
+					location_select.selectedIndex=0;
+					set_location();
+				}
 			}
 
 			//Update Location Options Function
 			function update_location_options()
 			{
+				//Get Location Select
+				var location_select=document.getElementById("locations");
+
 				//Clear Out Old Options
-				document.getElementById("locations").options.length=0;
+				location_select.options.length=0;
 
 				//Add Locations
-				for(var ii=0;ii<locations.length;++ii)
-					document.getElementById("locations").options[ii]=new Option(locations[ii].name);
+				if(!use_fallback)
+				{
+					for(var ii=0;ii<locations.length;++ii)
+						location_select.options[ii]=new Option(locations[ii].name);
+				}
+				else
+				{
+					for(var ii=0;ii<fallback_locations.length;++ii)
+						location_select.options[ii]=new Option(fallback_locations[ii].name);
+
+				}
 			}
 
 			//Mouse Leave Window Callback
@@ -498,7 +578,7 @@
 			function mouse_scroll_init(div)
 			{
 				var elem=document.getElementById(div);
-				
+
 				if(elem.addEventListener)
 				{
 					elem.addEventListener("mousewheel",mouse_wheel_callback,false);
@@ -639,15 +719,69 @@
 					mouse_down=false;
 			}
 
-			function take_pic()
+			//Record 2D Images Function
+			function record_2d_images()
 			{
-				window.open(renderer.domElement.toDataURL());
+				//Create New Zip File
+				zip=new JSZip();
+
+				//Download North Pole Images
+				universe.marker.visible=false;
+				fallback_locations_index=0;
+				kp.x=10;
+				setTimeout(render_2d_images,1000);
+			}
+
+			//Render 2D Images
+			function render_2d_images()
+			{
+				//Shoot Kp 0-9
+				if(kp.x<10)
+				{
+					//Render Scene
+					renderer.render();
+
+					//Render Scene
+					var data=renderer.domElement.toDataURL();
+
+					//Add File to Zip
+					zip.file(fallback_locations[fallback_locations_index].name+" "+
+						kp.x+".png",data.substr(data.indexOf(',')+1),{base64:true});
+
+					//Increase Kp
+					kp.x=kp.x+1;
+
+					//Increase Location Index
+					if(kp.x>=10)
+						fallback_locations_index=fallback_locations_index+1;
+
+					//Give Some Time to Download
+					setTimeout(render_2d_images,1000);
+				}
+
+				//Change Location
+				else if(fallback_locations_index<fallback_locations.length)
+				{
+					var ele=fallback_locations[fallback_locations_index];
+					view_latitude=view_latitude_to=ele.latitude;
+					view_longitude=view_longitude_to=ele.longitude;
+					zoom=ele.zoom;
+					kp.x=0;
+					setTimeout(render_2d_images,1000);
+				}
+
+				//Download Zip
+				else
+				{
+					window.open(window.URL.createObjectURL(zip.generate({type:"blob"})));
+					universe.marker.visible=true;
+				}
 			}
 
 		</script>
 
-		<!--GLSL Vertex Shader Source-->
-		<script id="vertex_shader" type="x-shader/x-vertex">
+		<!--GLSL Aurora Vertex Shader Source-->
+		<script id="aurora_vertex_shader" type="x-shader/x-vertex">
 
 			//UV Coordinates
 			varying vec2 uv_coords;
@@ -664,14 +798,15 @@
 
 		</script>
 
-		<!--GLSL Fragment Shader Source-->
-		<script id="fragment_shader" type="x-shader/x-fragment">
+		<!--GLSL Aurora Fragment Shader Source-->
+		<script id="aurora_fragment_shader" type="x-shader/x-fragment">
 
 			//UV Coordinates
 			varying vec2 uv_coords;
 
 			//Uniforms
 			uniform vec2 kp;
+
 
 			//Map Function (Linear Interpolatation)
 			float map(float x,float in_min,float in_max,float out_min,float out_max)
@@ -730,7 +865,39 @@
 				gl_FragColor=mix(color_0*2.0,color_1*2.0,0.4);
 
 				//Determine Alpha
-				gl_FragColor.a=max(color_0.a,color_1.a);
+				gl_FragColor.a=max(color_0.a,color_1.a)*0.7;
+			}
+
+		</script>
+
+		<!--GLSL Marker Vertex Shader Source-->
+		<script id="marker_vertex_shader" type="x-shader/x-vertex">
+
+			//UV Coordinates
+			varying vec2 uv_coords;
+
+			//Main
+			void main()
+			{
+				//Pass UV Coordinates to Fragment Shader
+				uv_coords=uv;
+
+				//Calculate Position
+				gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+			}
+
+		</script>
+
+		<!--GLSL Marker Fragment Shader Source-->
+		<script id="marker_fragment_shader" type="x-shader/x-fragment">
+
+			//UV Coordinates
+			varying vec2 uv_coords;
+
+			//Main
+			void main()
+			{
+				gl_FragColor=vec4(1.0,0.0,1.0,1.0);
 			}
 
 		</script>
@@ -744,8 +911,10 @@
 		<div id="canvas"></div>
 
 		<!--TESTING-->
-		<div style="position:absolute;top:16px;left:16px;">
-			<select id="locations" onclick="set_location();" onchange="set_location();"></select>     <input type="range" id="kp" min="0" max="9" step="0.01" value="0"/>    <input type="button" onclick="take_pic();" value="test"/>
+		<div style="position:absolute;bottom:16px;left:20px;">
+			<select id="locations" onclick="set_location();" onchange="set_location();"></select>
+			<input type="button" onclick="record_2d_images();" value="test"/>
+			<input type="range" id="kp_scroll" min="0.0" max="9.0" step="0.1" onmousemove="kp.x=document.getElementById('kp_scroll').value;if(use_fallback){render_fallback();}" onchange="kp.x=document.getElementById('kp_scroll').value;if(use_fallback){render_fallback();}"/>
 		</div>
 	</body>
 
