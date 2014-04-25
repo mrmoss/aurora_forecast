@@ -2,10 +2,27 @@
 
 #Date Utiltiy Source
 #	Created By:		Mike Moss
-#	Modified On:	03/04/2014
+#	Modified On:	04/24/2014
 
 #Date/Time Module
 import datetime
+
+#Time Module
+import time
+
+#Returns a JSON string of a database date.
+def database_date_to_json_date(json_str):
+	time_obj=time.strptime(json_str,"%Y-%m-%d %H:%M:%S")
+
+        json_string='{'
+        json_string+=   '"year":'+str(time_obj.tm_year)+','
+       	json_string+=   '"month":'+str(time_obj.tm_mon)+','
+        json_string+=   '"day":'+str(time_obj.tm_mday)+','
+       	json_string+=   '"hour":'+str(time_obj.tm_hour)+','
+        json_string+=   '"minute":'+str(time_obj.tm_min)
+        json_string+="}"
+
+	return json_string
 
 #Takes first three letters of a month, returns an integer (1-12) on success, -1 on error.
 def month_to_int(month):

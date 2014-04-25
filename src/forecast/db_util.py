@@ -4,11 +4,17 @@
 #	Created By:		Ignacio Saez Lahidalga and Mike Moss and Caleb Hellickson
 #	Modified On:	04/19/2014
 
-import MySQLdb
-import sys
-
-#Date Data
+#Date Module
 import datetime
+
+#Date Utility Modile
+import date_util
+
+#MySQL Module
+import MySQLdb
+
+#System Module
+import sys
 
 #Convert JSON Date Object to String Date Function
 def convert_json_date_to_string_date_or_interval(json_date):
@@ -112,7 +118,7 @@ def get_json_date_from_database(json_object):
 	date_str = convert_json_date_to_string_date_or_interval(json_object)
 	return date_str
 	
-def retreive_from_database(json_object,host,username,password,database):
+def retrieve_forecast(json_object,host,username,password,database):
 	err_str = ""
 	try:
 		for ii in json_object:
@@ -151,18 +157,18 @@ def retreive_from_database(json_object,host,username,password,database):
 			#iterate through datas tuple and get the kp value from our date string
 			#for x in range(0,len(datas)):
 			
-			return_json_object = '['
+			return_json_object=""
 			
 			for i in datas:
-				
-				#put the date and kp value to a tuple
-				temp = (str(i[0]),i[1])
-				#put tuple in json object
-				return_json_object += '{"predicted_time":'+temp[0]+'"kp":'+str(temp[1])+'},'
-			
-			return_json_object = return_json_object[0:-1]
-			return_json_object += ']'
+				temp=(str(i[0]),str(i[1]))
+				date_json=date_util.database_date_to_json_date(temp[0])
+				return_json_object+='{"predicted_time":'+date_json+',"kp":'+temp[1]+'},'
+
+			return_json_object='{"values":['+return_json_object[0:-1]+']}'
 			return (True,return_json_object)
+
 	except MySQLdb.Error as e:
 		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".")
+	except:
+		return (False,"Unknown error.")
 

@@ -778,6 +778,32 @@
 				}
 			}
 
+		function request_test()
+		{
+			var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r=";
+			var request_obj={};
+			request_obj.predicted_time={year:2014,month:4,day:-1};
+			request_obj.forecast="d28";
+			url+=JSON.stringify(request_obj);
+
+			var xmlhttp=new XMLHttpRequest();
+			xmlhttp.open("GET",url,true);
+
+			xmlhttp.onreadystatechange=function()
+			{
+				if(xmlhttp.readyState==4&&xmlhttp.status==200)
+				{
+					var obj=JSON.parse(xmlhttp.responseText);
+					obj.values.length
+					obj.values[0].predicted_time.year
+					obj.values[0].kp
+					alert(xmlhttp.responseText);
+				}
+			}
+
+			xmlhttp.send(null);
+		}
+
 		</script>
 
 		<!--GLSL Aurora Vertex Shader Source-->
@@ -913,8 +939,9 @@
 		<!--TESTING-->
 		<div style="position:absolute;bottom:16px;left:20px;">
 			<select id="locations" onclick="set_location();" onchange="set_location();"></select>
-			<input type="button" onclick="record_2d_images();" value="test"/>
-			<input type="range" id="kp_scroll" min="0.0" max="9.0" step="0.1" onmousemove="kp.x=document.getElementById('kp_scroll').value;if(use_fallback){render_fallback();}" onchange="kp.x=document.getElementById('kp_scroll').value;if(use_fallback){render_fallback();}"/>
+			<!--<input type="button" onclick="record_2d_images();" value="test"/>-->
+			<input type="range" id="kp_scroll" min="0.0" max="9.0" step="0.1" onchange="kp.x=document.getElementById('kp_scroll').value;if(use_fallback){render_fallback();}"/>
+			<input type="button" value="test2" onclick="request_test();"/>
 		</div>
 	</body>
 
