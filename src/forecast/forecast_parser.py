@@ -75,6 +75,19 @@ def assemble_json_forecast(predicted_time,download_time,forecast,kp):
 
 	return json_string;
 
+#Assemble JSON Carrington Rotation Function, returns string, takes ((int)rotation index, (time dict)date).
+def assemble_carrington_rotation(rotation_index,date):
+
+	json_string="";
+	json_string+="\t{\n"
+	json_string+="\t\t\"date\":"
+	json_string+=assemble_json_forecast_date(date)
+	json_string+=",\n"
+	json_string+="\t\t\"rotation_index\":"+str(rotation_index)+"\n"
+	json_string+="\t}\n"
+
+	return json_string;
+
 #Now Parser (Parses the now forecast).
 def parse_now(lexemes):
 
@@ -360,6 +373,50 @@ def parse_d28(lexemes):
 				#Unknown Symbol
 				else:
 					return (False,"Unexpected symbol \""+str(lexemes[ii][0])+"\" on line "+str(ii+1)+".")
+
+		#No Data Means Error
+		if(found_data==False):
+			return (False,"Did not find any data.")
+
+		#Return Passed and the JSON Object
+		return (True,return_json[:-2]+"\n")
+
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".")
+
+#Carrington Rotation Parser (Parses carrington rotation data).
+def parse_carrington_rotation(lexemes):
+
+	try:
+		#Pass Variable
+		found_data=False
+
+		#JSON Return String
+		return_json=""
+
+		#Parse Lexemes
+		for ii in range(0,len(lexemes)):
+
+			#Ignore Comments
+			if(len(lexemes[ii])>3 and string_util.is_float(lexemes[ii][0])):
+
+				#Get Rotation Index
+				rotation_index=int(lexemes[ii][0])
+
+				#Extract Time
+				date={};
+				date["year"]=int(lexemes[ii][1])
+				date["month"]=int(lexemes[ii][2])
+				date["day"]=float(lexemes[ii][3])
+				date["hour"]=-1
+				date["minute"]=-1
+
+				#Add Data to JSON
+				return_json+=assemble_carrington_rotation(rotation_index,date);
+				return_json+="\t,\n"
+
+				#Good Data Found
+				found_data=True
 
 		#No Data Means Error
 		if(found_data==False):

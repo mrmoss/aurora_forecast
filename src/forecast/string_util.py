@@ -28,3 +28,12 @@ def is_int(string):
 
 	except ValueError:
 		return False
+
+#Is Float Function (Tests if a string is a float).
+def is_float(string):
+	try:
+		float(string)
+		return True
+
+	except ValueError:
+		return False
