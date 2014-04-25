@@ -49,7 +49,7 @@ def convert_json_date_to_string_date_or_interval(json_date):
 		return (date_str,True)
 		
 	date_str+=":"+str(json_date["minute"])
-	date_str+=":00"
+	date_str+=":00'"
 
 	#Return String Date
 	return (date_str,False)
@@ -150,7 +150,7 @@ def retrieve_forecast(json_object,host,username,password,database):
 			db.close
 			#check if there is data or not
 			if not datas:
-				return (False,"No Data For your query")
+				return (False,"No data exists.")
 			
 			auxillary = 0
 			
@@ -167,8 +167,6 @@ def retrieve_forecast(json_object,host,username,password,database):
 			return_json_object='{"values":['+return_json_object[0:-1]+']}'
 			return (True,return_json_object)
 
-	except MySQLdb.Error as e:
-		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".")
-	except:
-		return (False,"Unknown error.")
+	except Exception,e:
+		return (False,"Invalid request."+str(e))
 
