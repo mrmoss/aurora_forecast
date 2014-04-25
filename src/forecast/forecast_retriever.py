@@ -170,10 +170,10 @@ def get_forecast(link,parser,email_text):
 				#Insert Data
 				database_insertion=(False,"")
 
-				if(parser=="cr")
-					database_insertion=db_util.insert_carrington_rotation(json_object,"127.0.0.1","root","dont_put_in_git","forecast_db")
+				if(parser=="cr"):
+					database_insertion=db_util.insert_carrington_rotation(json_object,"127.0.0.1","root","NOPE","forecast_db")
 				else:
-					database_insertion=db_util.insert_forecast(json_object,"127.0.0.1","root","dont_put_in_git","forecast_db")
+					database_insertion=db_util.insert_forecast(json_object,"127.0.0.1","root","NOPE","forecast_db")
 
 				#Failed Insertion
 				if(database_insertion[0]==False):
@@ -295,7 +295,7 @@ if(__name__=="__main__"):
 		print("\t-h, --1-hour\t\t\tSpecify 1 hour cast retrieval.")
 		print("\t-d, --3-day\t\t\tSpecify 3 day cast retrieval.")
 		print("\t-m, --28-day\t\t\tSpecify 28 day cast retrieval.")
-		print("\t-c, --carrington\t\t\tSpecify carrington rotation retrieval.")
+		print("\t-c, --carrington\t\tSpecify carrington rotation retrieval.")
 		exit(0)
 
 	#Start Server
@@ -333,4 +333,6 @@ if(__name__=="__main__"):
 		error_message_end(get_forecast(d28_forecast_link,"d28","28 day")[0])
 	if(retrieve_cr==True):
 		error_message_start("\tRetrieving Carrington Rotation\t")
-		error_message_end(get_forecast(cr_link,"cr","carrington rotation")[0])
+		test=get_forecast(cr_link,"cr","carrington rotation")
+		error_message_end(test[0])
+		print(test[1])

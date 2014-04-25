@@ -2,6 +2,7 @@ drop table if exists now;
 drop table if exists h1;
 drop table if exists d3;
 drop table if exists d28;
+drop table if exists cr;
 
 create table now
 (
@@ -40,4 +41,13 @@ create table d28
 	kp float not null,
 	primary key (id)
 
+);
+
+create table cr
+(
+	rotation_index integer not null,
+	year integer not null,
+	month integer not null,
+	day float not null,
+	primary key (rotation_index)
 );

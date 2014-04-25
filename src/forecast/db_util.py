@@ -129,11 +129,13 @@ def insert_carrington_rotation(json_object,host,username,password,database):
 		for ii in json_object:
 
 			#Create Entry Values
-			date=convert_json_date_to_string_date(ii["date"])
-			kp=str(ii["rotation_index"])
+			year=str(ii["date"]["year"])
+			month=str(ii["date"]["month"])
+			day=str(ii["date"]["day"])
+			rotation_index=str(ii["rotation_index"])
 
 			#Create Insertion Execute String
-			execute_str="insert into cr (date,rotation_index) values (\""+date+"\",\""+rotation_index+")"
+			execute_str="insert ignore into cr (rotation_index,year,month,day) values (\""+rotation_index+"\",\""+year+"\",\""+month+"\",\""+day+"\")"
 
 			#Execute Insertion
 			cursor.execute(execute_str)

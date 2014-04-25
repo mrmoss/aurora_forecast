@@ -408,8 +408,8 @@ def parse_carrington_rotation(lexemes):
 				date["year"]=int(lexemes[ii][1])
 				date["month"]=int(lexemes[ii][2])
 				date["day"]=float(lexemes[ii][3])
-				date["hour"]=-1
-				date["minute"]=-1
+				date["hour"]=0
+				date["minute"]=0
 
 				#Add Data to JSON
 				return_json+=assemble_carrington_rotation(rotation_index,date);
