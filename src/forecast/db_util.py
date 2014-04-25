@@ -2,7 +2,7 @@
 
 #Database Utility Source
 #	Created By:		Ignacio Saez Lahidalga and Mike Moss and Caleb Hellickson
-#	Modified On:	04/19/2014
+#	Modified On:	04/24/2014
 
 #Date Module
 import datetime
@@ -18,36 +18,36 @@ import sys
 
 #Convert JSON Date Object to String Date Function
 def convert_json_date_to_string_date_or_interval(json_date):
-	
+
 	if json_date["year"] == -1:
 		date_str = "'1970-01-01 00:00:00' and '" + str(datetime.datetime.today().year) + "-12-31 23:59:00'"
 		return (date_str,True)
 
 	#Create String Date
 	date_str="'"+str(json_date["year"])
-	
+
 	if json_date["month"] == -1:
 		date_str += "-01-01 00:00:00' and " +date_str+ "-12-31 23:59:00'"
 		return (date_str,True)
-		
+
 	date_str+="-"+str(json_date["month"])
-	
+
 	if json_date["day"] == -1:
 		date_str += "-01 00:00:00' and " +date_str+ "-31 23:59:00'"
 		return (date_str,True)
-		
+
 	date_str+="-"+str(json_date["day"])
-	
+
 	if json_date["hour"] == -1:
 		date_str += " 00:00:00' and " + date_str+ " 23:59:00'"
 		return (date_str,True)
-		
+
 	date_str+=" "+str(json_date["hour"])
-	
+
 	if json_date["minute"] == -1:
 		date_str += ":00:00' and " + date_str + ":59:00'"
 		return (date_str,True)
-		
+
 	date_str+=":"+str(json_date["minute"])
 	date_str+=":00'"
 
@@ -112,12 +112,57 @@ def insert_forecast(json_object,host,username,password,database):
 	#Something Other Bad Thing Happened
 	except Exception as e:
 		return (False,str(e)[0:].capitalize()+".")
-		
+
+#Insert Carrington Rotation Function (Takes carrington rotation data and inserts it into a given MySQL database,
+#		returns tuple [0](bool)success and [1](string)error).
+def insert_carrington_rotation(json_object,host,username,password,database):
+
+	#Test for Errors
+	try:
+		#Connect to Database
+		database=MySQLdb.connect(host,username,password,database)
+
+		#Create cursor to use separate working environments for the same connection
+		cursor=database.cursor()
+
+		#Traverse JSON Object
+		for ii in json_object:
+
+			#Create Entry Values
+			date=convert_json_date_to_string_date(ii["date"])
+			kp=str(ii["rotation_index"])
+
+			#Create Insertion Execute String
+			execute_str="insert into cr (date,rotation_index) values (\""+date+"\",\""+rotation_index+")"
+
+			#Execute Insertion
+			cursor.execute(execute_str)
+
+			#Commit Changes
+			database.commit()
+
+		#Close Cursor
+		cursor.close()
+
+		#Close Database
+		database.close()
+
+		#Good Insertion
+		return(True,"")
+
+	#Bad Insertion
+	except MySQLdb.Error as e:
+		return (False,"MySQL error (\""+str(e[0])+"\") - "+e[1]+".")
+
+	#Something Other Bad Thing Happened
+	except Exception as e:
+		return (False,str(e)[0:].capitalize()+".")
+
 def get_json_date_from_database(json_object):
 	#call function to get date string
 	date_str = convert_json_date_to_string_date_or_interval(json_object)
 	return date_str
-	
+
 def retrieve_forecast(json_object,host,username,password,database):
 	err_str = ""
 	try:
@@ -125,10 +170,10 @@ def retrieve_forecast(json_object,host,username,password,database):
 
 			#Create Entry Values
 			forecast=ii["forecast"]
-			
+
 			predicted_time=get_json_date_from_database(ii["predicted_time"])[0]
 			newCommand=get_json_date_from_database(ii["predicted_time"])[1]
-			
+
 			if newCommand:
 				sql_command = "Select predicted_time,kp from " +forecast+ " where (predicted_time between " +predicted_time+")"
 			else:
@@ -139,26 +184,26 @@ def retrieve_forecast(json_object,host,username,password,database):
 			db = MySQLdb.connect(host,username,password,database)
 
 			cursor = db.cursor()
-			
+
 			#execute the MySQL command we built
 			cursor.execute(sql_command)
 
 			#datas is the tuple we got back from the database
 			datas = cursor.fetchall()
-			
+
 			#disconnect from the server
 			db.close
 			#check if there is data or not
 			if not datas:
 				return (False,"No data exists.")
-			
+
 			auxillary = 0
-			
+
 			#iterate through datas tuple and get the kp value from our date string
 			#for x in range(0,len(datas)):
-			
+
 			return_json_object=""
-			
+
 			for i in datas:
 				temp=(str(i[0]),str(i[1]))
 				date_json=date_util.database_date_to_json_date(temp[0])
