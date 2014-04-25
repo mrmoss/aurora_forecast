@@ -4,24 +4,27 @@
 <head>
 <script type="text/javascript" src="canvas/canvasjs.min.js"></script>
 <script type="text/javascript"> window.onload = function () {
-var forecast = new CanvasJS.Chart("chartContainer1"); 
+
+CanvasJS.addColorSet("colors",
+		[ "grey", "lime", "yellow", "red"]); 
+
+var forecast = new CanvasJS.Chart("chartContainer1", {colorSet: "colors" }); 
 
 forecast.options.title = { text: "Carrington Rotation #" };
-
-CanvasJS.addColorSet("customSet1",
-		["#4661EE", "#EC5657", "#1BCDD1", "#8FAABB", "#B08BEB",
-		"#3EA0DD", "#F5A52A", "#23BFAA", "#FAA586", "#EB8CC6", ]); 
+forecast.options.axisY = { gridColor: "lightgrey" };
+forecast.options.axisY = { title: "Estimated Kp Index" };
 
 var d28_series = { 
-type: "line",
+		  markerType: "none",
+		  type: "line",
 		  name: "28-day forecast",
 		  showInLegend: true
 };
 
 var d3_series = {
-type: "column",
+		  type: "column",
 		  name: "Max of 3-day forecast",
-		  showInLegend: true
+		  showInLegend: true,
 };
 
 forecast.options.data = [];
@@ -29,84 +32,44 @@ forecast.options.data.push(d28_series);
 forecast.options.data.push(d3_series);
 
 d28_series.dataPoints = [
-{ label: "April 13", y: 3 },{ label: "", y: 3 },{ label: "", y: 3 },
-{ label: "", y: 3 },{ label: "", y: 3 },{ label: "", y: 3 },
-{ label: "", y: 3 },{ label: "", y: 3 },
-
-{ label: "April 14", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
-{ label: "", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
-{ label: "", y: 3 }, { label: "", y: 3 }, 
-
-{ label: "April 15", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 }, 
-{ label: "", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 }, 
-{ label: "", y: 4 }, { label: "", y: 4 }, 
-
-{ label: "April 16", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 },
-{ label: "", y: 4 }, { label: "", y: 4 }, { label: "", y: 4 },
-{ label: "", y: 4 }, { label: "", y: 4 }, 
-
-{ label: "April 17", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
-{ label: "", y: 3 }, { label: "", y: 3 }, { label: "", y: 3 },
-{ label: "", y: 3 }, { label: "", y: 3 }, 
-
-{ label: "April 18", y: 2 }, { label: "", y: 2 }, { label: "", y: 2 },
-{ label: "", y: 2 }, { label: "", y: 2 }, { label: "", y: 2 },
-{ label: "", y: 2 }, { label: "", y: 2 } 
+{x: new Date(2014, 03, 00), y:3}, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, 
+{x: new Date(2014, 03, 01), y:3}, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, 
+{x: new Date(2014, 03, 02), y:4}, {y:4 }, {y:4 }, {y:4 }, {y:4 }, {y:4 }, {y:4 }, {y:4 }, 
+{x: new Date(2014, 03, 03), y:4}, {y:4 }, {y:4 }, {y:4 }, {y:4 }, {y:4 }, {y:4 }, {y:4 }, 
+{x: new Date(2014, 03, 04), y:3}, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, {y:3 }, 
+{x: new Date(2014, 03, 05), y:2}, {y:2 }, {y:2 }, {y:2 }, {y:2 }, {y:2 }, {y:2 }, {y:2 } 
 ];
 
 d3_series.dataPoints = [
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 1 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 1 },
-{ label: "", y: 1 },
-{ label: "", y: 2 },
-{ label: "", y: 2 },
-{ label: "", y: 1 },
-{ label: "", y: 1 },
-{ label: "", y: 1 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 1 },
-{ label: "", y: 1 },
-{ label: "", y: 2 },
-{ label: "", y: 1 },
-{ label: "", y: 2 },
-{ label: "", y: 2 },
-{ label: "", y: 5 },
-{ label: "", y: 6 },
-{ label: "", y: 5 },
-{ label: "", y: 3 },
-{ label: "", y: 3 },
-{ label: "", y: 5 },
-{ label: "", y: 4 },
-{ label: "", y: 4 },
-{ label: "", y: 1 },
-{ label: "", y: 0 },
-{ label: "", y: 1 },
-{ label: "", y: 1 },
-{ label: "", y: 2 },
-{ label: "", y: 2 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 0 },
-{ label: "", y: 1 },
-{ label: "", y: 1 }
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 00), y: 1 },
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 00), y: 0 },
+{x: new Date(2014, 03, 01), y: 0 },
+{x: new Date(2014, 03, 01), y: 0 },
+{x: new Date(2014, 03, 01), y: 0 },
+{x: new Date(2014, 03, 01), y: 1 },
+{x: new Date(2014, 03, 01), y: 1 },
+{x: new Date(2014, 03, 01), y: 2 },
+{x: new Date(2014, 03, 01), y: 2 },
+{x: new Date(2014, 03, 01), y: 1 },
+{x: new Date(2014, 03, 01), y: 1 },
+{x: new Date(2014, 03, 02), y: 1 },
+{x: new Date(2014, 03, 02), y: 0 },
+{x: new Date(2014, 03, 02), y: 0 },
+{x: new Date(2014, 03, 02), y: 0 },
+{x: new Date(2014, 03, 02), y: 0 },
+{x: new Date(2014, 03, 02), y: 1 },
+{x: new Date(2014, 03, 02), y: 1 },
 ];
 
 
  				var chart2 = new CanvasJS.Chart("chartContainer2", {
+				colorSet: "greens",
  				title: { text: "Other stuff"}, 
  				data: [ {
  				type: "line",
@@ -123,7 +86,34 @@ d3_series.dataPoints = [
  
 forecast.render();
 chart2.render();
+
+function request_kp()
+		{
+			var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r=";
+			var request_obj={};
+			request_obj.predicted_time={year:2014,month:4,day:-1};
+			request_obj.forecast="d28";
+			url+=JSON.stringify(request_obj);
+
+			var xmlhttp=new XMLHttpRequest();
+			xmlhttp.open("GET",url,true);
+
+			xmlhttp.onreadystatechange=function()
+			{
+				if(xmlhttp.readyState==4&&xmlhttp.status==200)
+				{
+					var obj=JSON.parse(xmlhttp.responseText);
+					obj.values.length
+					obj.values[0].predicted_time.year
+					obj.values[0].kp
+					alert(xmlhttp.responseText);
+				}
+			}
+
+			xmlhttp.send(null);
+		}
 }
+
 </script>
 </head>
 
