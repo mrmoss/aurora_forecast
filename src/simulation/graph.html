@@ -8,9 +8,15 @@
 CanvasJS.addColorSet("colors",
 		[ "grey", "lime", "yellow", "red"]); 
 
+var rotation = 1111;
+var kp = request_data("d28");
+
+var starting_date = new Date(); 
+starting_date.setDate(starting_date.getMonth() - 6 * 31); 
+
 var forecast = new CanvasJS.Chart("chartContainer1", {colorSet: "colors" }); 
 
-forecast.options.title = { text: "Carrington Rotation #" };
+forecast.options.title = { text: "Carrington Rotation #" + rotation };
 forecast.options.axisY = { gridColor: "lightgrey" };
 forecast.options.axisY = { title: "Estimated Kp Index" };
 forecast.options.axisX = { valueFormatString: "MMM DD", interval: 1, intervalType: "day"};
@@ -19,7 +25,7 @@ var d28_series = {
 		  markerType: "none",
 		  type: "line",
 		  name: "28-day forecast",
-		  showInLegend: true
+		  showInLegend: true,
 };
 
 var d3_series = {
@@ -134,12 +140,12 @@ d3_series.dataPoints = [
 forecast.render();
 chart2.render();
 
-function request_kp()
+function request_data(type)
 		{
 			var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r=";
 			var request_obj={};
 			request_obj.predicted_time={year:2014,month:4,day:-1};
-			request_obj.forecast="d28";
+			request_obj.forecast=type;
 			url+=JSON.stringify(request_obj);
 
 			var xmlhttp=new XMLHttpRequest();
@@ -147,6 +153,8 @@ function request_kp()
 
 			xmlhttp.onreadystatechange=function()
 			{
+				alert("readystate=" + xmlhttp.readyState);
+					alert("status=" + xmlhttp.status);
 				if(xmlhttp.readyState==4&&xmlhttp.status==200)
 				{
 					var obj=JSON.parse(xmlhttp.responseText);
