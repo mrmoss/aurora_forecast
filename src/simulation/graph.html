@@ -3,7 +3,99 @@
 <html>
 <head>
 <script type="text/javascript" src="canvas/canvasjs.min.js"></script>
-<script type="text/javascript"> window.onload = function () {
+<script type="text/javascript"> 
+
+
+
+function update_rotation (current_year_obj, next_year_obj)
+{
+	var rotation_index_ranges = {};
+	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
+	{
+		var startDate = {};
+		startDate.year = current_year_obj.values[ii].year;
+		startDate.month = current_year_obj.values[ii].month;
+		startDate.day = current_year_obj.values[ii].day;
+
+		var endDate = {};
+
+		if(ii == current_year_obj.values.length - 1)
+		{
+			alert("LOOP");
+			endDate.year = next_year_obj.values[0].year;
+			endDate.month = next_year_obj.values[0].month;
+			endDate.day = next_year_obj.values[0].day;
+		}
+		else
+		{	
+			endDate.year = current_year_obj.values[ii+1].year;
+			endDate.month = current_year_obj.values[ii+1].month;
+			endDate.day = current_year_obj.values[ii+1].day;
+		}
+		
+		var dateRange = {startDate: startDate, endDate: endDate};
+
+		var rotation_index = current_year_obj.values[ii].rotation_index;
+		rotation_index_ranges[rotation_index] = dateRange;
+	}
+	request_data(rotation_index_ranges);	
+}
+
+function update_last_month (current_year_obj)
+{
+	var next_year = new Date().getFullYear() + 1;
+	var request_obj = {year:next_year};
+	var rotation_index_ranges = {};
+	
+	var url="http://aurora.cs.uaf.edu/cgi-bin/cr_cgi.py?r="+JSON.stringify(request_obj);
+
+	var xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("GET",url,true);
+
+	xmlhttp.onreadystatechange=function()
+	{
+		if(xmlhttp.readyState==4&&xmlhttp.status==200)
+		{
+			try
+			{	
+				var obj = JSON.parse(xmlhttp.responseText);
+				update_rotation (current_year_obj, obj);			
+			}
+			catch(e)
+			{}
+		}
+	}
+	xmlhttp.send(null);
+
+}
+
+function update_chart ()
+{
+	var current_year = new Date().getFullYear();
+	var request_obj = {year:current_year};
+	var rotation_index_ranges = {};
+	
+	var url="http://aurora.cs.uaf.edu/cgi-bin/cr_cgi.py?r="+JSON.stringify(request_obj);
+
+	var xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("GET",url,true);
+	xmlhttp.onreadystatechange=function()
+	{
+		if(xmlhttp.readyState==4&&xmlhttp.status==200)
+		{
+			try
+			{
+				var obj = JSON.parse(xmlhttp.responseText);
+				update_last_month(obj);			
+			}
+			catch(e)
+			{}
+		}
+	}
+	xmlhttp.send(null);
+}
+
+function drawChart () {
 
 CanvasJS.addColorSet("colors",
 		[ "grey", "lime", "yellow", "red"]); 
@@ -168,6 +260,8 @@ function request_data(type)
 			xmlhttp.send(null);
 		}
 }
+
+window.onload = update_chart();
 
 </script>
 </head>
