@@ -272,7 +272,7 @@ def retrieve_carrington(json_object,host,username,password,database):
 				return_json_object+='{"rotation_index":'+str(i[0])+','
 				return_json_object+='"year":'+str(i[1])+','
 				return_json_object+='"month":'+str(i[2])+','
-				return_json_object+='"day":'+str(i[3])+'}'
+				return_json_object+='"day":'+str(i[3])+'},'
 
 			return_json_object='{"values":['+return_json_object[0:-1]+']}'
 			return (True,return_json_object)
