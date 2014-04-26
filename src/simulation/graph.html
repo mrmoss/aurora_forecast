@@ -140,11 +140,13 @@ d3_series.dataPoints = [
 forecast.render();
 chart2.render();
 
+
+
 function request_data(type)
 		{
 			var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r=";
 			var request_obj={};
-			request_obj.predicted_time={year:2014,month:4,day:-1};
+			request_obj.predicted_time={year:2014,month:4,day:1};
 			request_obj.forecast=type;
 			url+=JSON.stringify(request_obj);
 
@@ -153,8 +155,6 @@ function request_data(type)
 
 			xmlhttp.onreadystatechange=function()
 			{
-				alert("readystate=" + xmlhttp.readyState);
-					alert("status=" + xmlhttp.status);
 				if(xmlhttp.readyState==4&&xmlhttp.status==200)
 				{
 					var obj=JSON.parse(xmlhttp.responseText);
