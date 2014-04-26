@@ -176,9 +176,9 @@ def retrieve_forecast(json_object,host,username,password,database):
 			newCommand=get_json_date_from_database(ii["predicted_time"])[1]
 
 			if newCommand:
-				sql_command = "select predicted_time,kp from " +forecast+" where (predicted_time between " +predicted_time+")"
+				sql_command = "select download_time,predicted_time,kp from " +forecast+" where (predicted_time between " +predicted_time+")"
 			else:
-				sql_command = "select predicted_time,kp from " +forecast+" where predicted_time="+predicted_time
+				sql_command = "select download_time,predicted_time,kp from " +forecast+" where predicted_time="+predicted_time
 
 			#connect to the MariaDB database
 			db = MySQLdb.connect(host,username,password,database)
@@ -202,9 +202,11 @@ def retrieve_forecast(json_object,host,username,password,database):
 			return_json_object=""
 
 			for i in datas:
-				temp=(str(i[0]),str(i[1]))
-				date_json=date_util.database_date_to_json_date(temp[0])
-				return_json_object+='{"predicted_time":'+date_json+',"kp":'+temp[1]+'},'
+				download_date_json=date_util.database_date_to_json_date(str(i[0]))
+				predicted_date_json=date_util.database_date_to_json_date(str(i[1]))
+				return_json_object+='{"download_time":'+download_date_json+','
+				return_json_object+='"predicted_time":'+predicted_date_json+','
+				return_json_object+='"kp":'+str(i[2])+'},'
 
 			return_json_object='{"values":['+return_json_object[0:-1]+']}'
 			return (True,return_json_object)

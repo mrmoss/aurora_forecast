@@ -1,7 +1,7 @@
 <!--
 	#WebGl Based Aurora Simulation
 	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/24/2014
+	#	Modified On:	04/25/2014
 
 
 	Works On:
@@ -123,10 +123,12 @@
 			//Setup Function (Happens Once)
 			function setup()
 			{
-				update_kp("now",2014,4,24,19,45);
-
+				//Get Forecast
 				if(parent.forecast)
 					forecast=parent.forecast;
+
+				//Update Forecast
+				setInterval(update_kp,1000);
 
 				//Set Resize Callback
 				if(parent.window)
@@ -287,7 +289,7 @@
 					var time_obj=get_time();
 					var time_now=time_obj.hour*60*60+time_obj.minute*60+time_obj.second;
 					var time_max=24*60*60;
-					
+
 
 					//Set Sun Position
 					var sun_offset=60;
@@ -501,17 +503,21 @@
 				alert(methods.join(","));
 			}
 
-			//Get Time Function
-			function get_time()
+			//Get Time Function (Gives UTC by default.)
+			function get_time(offset)
 			{
 				var date=new Date();
+
+				if(offset)
+					date.setHours(date.getHours()+offset);
 
 				var ret={};
 				ret.second=date.getUTCSeconds();
 				ret.minute=date.getUTCMinutes();
 				ret.hour=date.getUTCHours();
-				ret.day=date.getUTCDay();
-				ret.year=date.getFullYear()
+				ret.day=date.getUTCDate();
+				ret.month=date.getMonth()+1;
+				ret.year=date.getFullYear();
 
 				return ret;
 			}
@@ -806,29 +812,59 @@
 				}
 			}
 
-		//Update Kp Function (Gets JSON object containing kp data.)
-		function update_kp(forecast,year,month,day,hour,minute)
-		{
-			var request_obj={};
-			request_obj.forecast=forecast;
-			request_obj.predicted_time={year:year,month:month,day:day,hour:hour,minute:minute};
-
-			var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r="+JSON.stringify(request_obj);
-
-			var xmlhttp=new XMLHttpRequest();
-			xmlhttp.open("GET",url,true);
-
-			xmlhttp.onreadystatechange=function()
+			function json_to_date(json)
 			{
-				if(xmlhttp.readyState==4&&xmlhttp.status==200)
-				{
-					//var obj=JSON.parse(xmlhttp.responseText);
-					alert(xmlhttp.responseText);
-				}
+				var date=new Date(parseInt(json.year),parseInt(json.month),parseInt(json.day),
+					parseInt(json.hour),parseInt(json.minute),0,0);
+
+				return date;
 			}
 
-			xmlhttp.send(null);
-		}
+			//Update Kp Function (Gets JSON object containing kp data.)
+			function update_kp()
+			{
+				if(forecast=="now")
+					update_nowcast();
+			}
+
+			function update_nowcast()
+			{
+				var time=get_time(-9);
+				time.minute=Math.floor(time.minute/15)*15;
+
+				var request_obj={};
+				request_obj.forecast=forecast;
+				request_obj.predicted_time={year:time.year,month:time.month,day:time.day,
+					hour:time.hour,minute:time.minute};
+
+				var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r="+JSON.stringify(request_obj);
+
+				var xmlhttp=new XMLHttpRequest();
+				xmlhttp.open("GET",url,true);
+
+				xmlhttp.onreadystatechange=function()
+				{
+					if(xmlhttp.readyState==4&&xmlhttp.status==200)
+					{
+						try
+						{
+							var obj=JSON.parse(xmlhttp.responseText);
+
+							if(obj.values.length>0)
+							{
+								kp.x=parseFloat(obj.values[obj.values.length-1].kp);
+
+								if(use_fallback)
+									render_fallback();
+							}
+						}
+						catch(e)
+						{}
+					}
+				}
+
+				xmlhttp.send(null);
+			}
 
 		</script>
 
@@ -962,12 +998,9 @@
 		<!--Simulation Canvas-->
 		<div id="canvas"></div>
 
-		<!--TESTING-->
+		<!--Locations Div-->
 		<div style="position:absolute;bottom:16px;left:20px;">
 			<select id="locations" onclick="set_location();" onchange="set_location();"></select>
-			<!--<input type="button" onclick="record_2d_images();" value="test"/>-->
-			<input type="range" id="kp_scroll" min="0.0" max="9.0" step="0.1" onchange="kp.x=document.getElementById('kp_scroll').value;if(use_fallback){render_fallback();}"/>
-			<input type="button" value="test2" onclick="request_test();"/>
 		</div>
 	</body>
 
