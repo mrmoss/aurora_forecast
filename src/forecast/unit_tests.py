@@ -17,7 +17,7 @@ class json_utility_test_suite(unittest.TestCase):
 	def runTest(self):
 		x=0
 		#json_util.test_square_brackets
-		self.assertEqual(json_util.test_square_brackets('')[0], True, "empty string should be true") 
+		self.assertEqual(json_util.test_square_brackets('')[0], True, "empty string should be true")
 		self.assertEqual(json_util.test_square_brackets('[')[0], False, "missing ending square bracket should be false")
 		self.assertEqual(json_util.test_square_brackets(']')[0], False, "missing starting square bracket should be false")
 		self.assertEqual(json_util.test_square_brackets('[]')[0], True, "first and last characters are square brackets, should be true")
@@ -29,7 +29,7 @@ class json_utility_test_suite(unittest.TestCase):
 		self.assertEqual(json_util.test_syntax('[]')[0], True, "valid json")
 		self.assertEqual(json_util.test_syntax('[{}]')[0], True, "valid json")
 		self.assertEqual(json_util.test_syntax('["key":7]')[0], False, "invalid json")
-		
+
 		json_string = '["time":12,"ts":{"key":"value", "kp":10}, "fc":"3-day"]'
 		self.assertEqual(json_util.test_syntax(json_string)[0], False, "invalid json")
 
@@ -56,11 +56,6 @@ class json_utility_test_suite(unittest.TestCase):
 			json_string += '"download_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
 			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "year = " + str(ii) + " should be false")
 
-		for ii in range (year+1, 3000):
-			json_string = '[{"predicted_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},'
-			json_string += '"download_time":{"year":' + str(ii) + ',"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "year = " + str(ii) + " should be false")
-
 		#assertions testing kp
 		for ii in range (-1, 9):
 			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
@@ -76,7 +71,7 @@ class json_utility_test_suite(unittest.TestCase):
 			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
 			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":' + str(ii) + ',"forecast":"now"}]'
 			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "kp = " + str(ii) + " should be false")
-	
+
 		#assertions testing month
 		for ii in range (1, 12):
 			json_string = '[{"predicted_time":{"year":1970,"month":' + str(ii) + ',"day":1,"hour":1,"minute":1},'
@@ -171,7 +166,7 @@ class json_utility_test_suite(unittest.TestCase):
 		for ii in range (60, 1000):
 			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},'
 			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":' + str(ii) + '},"kp":2,"forecast":"now"}]'
-			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "minute = " + str(ii) + " should be false")	
+			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "minute = " + str(ii) + " should be false")
 
 		#assertions testing forecast
 		forecast = ('"now"', '"h1"', '"d3"', '"d28"')
@@ -180,7 +175,7 @@ class json_utility_test_suite(unittest.TestCase):
 			json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
 			json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":' + ii + '}]'
 			self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "forecast " + ii + " should be true")
-	
+
 		#assertions testing downlaod_time and predicted_time
 		json_string = '["download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
 		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "missing predicted_time should be false")
@@ -191,14 +186,14 @@ class json_utility_test_suite(unittest.TestCase):
 		#json_util.test_all
 		self.assertEqual(json_util.test_all('[')[0], False, "missing ending square bracket should be false")
 		self.assertEqual(json_util.test_all('["key":7]')[0], False, "invalid json")
-		
+
 		json_string = '[{"predicted_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},'
 		json_string += '"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
 		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], True, "valid aurora syntax")
-		
+
 		json_string += '[{"download_time":{"year":1970,"month":1,"day":1,"hour":1,"minute":1},"kp":2,"forecast":"now"}]'
-		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "invalid aurora syntax")					
-		
+		self.assertEqual(json_util.test_aurora_syntax(json_string)[0], False, "invalid aurora syntax")
+
 
 #Kp Utility Tests
 class kp_utility_test_suite(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 #Database Utility Source
 #	Created By:		Ignacio Saez Lahidalga and Mike Moss and Caleb Hellickson
-#	Modified On:	04/24/2014
+#	Modified On:	04/25/2014
 
 #Date Module
 import datetime
@@ -166,7 +166,6 @@ def get_json_date_from_database(json_object):
 	return date_str
 
 def retrieve_forecast(json_object,host,username,password,database):
-	err_str = ""
 	try:
 		for ii in json_object:
 
@@ -177,10 +176,9 @@ def retrieve_forecast(json_object,host,username,password,database):
 			newCommand=get_json_date_from_database(ii["predicted_time"])[1]
 
 			if newCommand:
-				sql_command = "Select predicted_time,kp from " +forecast+ " where (predicted_time between " +predicted_time+")"
+				sql_command = "select predicted_time,kp from " +forecast+" where (predicted_time between " +predicted_time+")"
 			else:
-				#build mysql command returning a kp
-				sql_command = "Select predicted_time,kp from " +forecast+ " where predicted_time="+predicted_time
+				sql_command = "select predicted_time,kp from " +forecast+" where predicted_time="+predicted_time
 
 			#connect to the MariaDB database
 			db = MySQLdb.connect(host,username,password,database)
@@ -195,21 +193,86 @@ def retrieve_forecast(json_object,host,username,password,database):
 
 			#disconnect from the server
 			db.close
+
 			#check if there is data or not
 			if not datas:
 				return (False,"No data exists.")
 
-			auxillary = 0
-
 			#iterate through datas tuple and get the kp value from our date string
-			#for x in range(0,len(datas)):
-
 			return_json_object=""
 
 			for i in datas:
 				temp=(str(i[0]),str(i[1]))
 				date_json=date_util.database_date_to_json_date(temp[0])
 				return_json_object+='{"predicted_time":'+date_json+',"kp":'+temp[1]+'},'
+
+			return_json_object='{"values":['+return_json_object[0:-1]+']}'
+			return (True,return_json_object)
+
+	except Exception,e:
+		return (False,"Invalid request."+str(e))
+
+def retrieve_carrington(json_object,host,username,password,database):
+	try:
+		for ii in json_object:
+
+			#Create Entry Values
+			rotation_index=-1
+			year=-1
+
+			rotation_index=-1
+
+			try:
+				rotation_index=ii["rotation_index"]
+			except:
+				rotation_index=-1
+
+			year=-1
+
+			try:
+				year=ii["year"]
+			except:
+				year=-1
+
+			sql_command="select rotation_index,year,month,day from cr where "
+
+			if(not rotation_index==-1):
+				sql_command+="rotation_index="+str(rotation_index)
+
+			if(not rotation_index==-1 and not year==-1):
+				sql_command+=" and "
+
+			if(not year==-1):
+				sql_command+="year="+str(year)
+
+			sql_command+=";"
+
+			#connect to the MariaDB database
+			db = MySQLdb.connect(host,username,password,database)
+
+			cursor = db.cursor()
+
+			#execute the MySQL command we built
+			cursor.execute(sql_command)
+
+			#datas is the tuple we got back from the database
+			datas = cursor.fetchall()
+
+			#disconnect from the server
+			db.close
+
+			#check if there is data or not
+			if not datas:
+				return (False,"No data exists.")
+
+			#iterate through datas tuple
+			return_json_object=""
+
+			for i in datas:
+				return_json_object+='{"rotation_index":'+str(i[0])+','
+				return_json_object+='"year":'+str(i[1])+','
+				return_json_object+='"month":'+str(i[2])+','
+				return_json_object+='"day":'+str(i[3])+'}'
 
 			return_json_object='{"values":['+return_json_object[0:-1]+']}'
 			return (True,return_json_object)
