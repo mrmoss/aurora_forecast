@@ -26,7 +26,7 @@ var show_stars=false;
 var show_sun=false;
 
 //Setup Function (Happens Once)
-function setup()
+function aurora_setup()
 {
 	//Get Forecast
 	if(parent.forecast)
@@ -110,7 +110,7 @@ function setup()
 		}
 
 		//Start Rendering
-		render();
+		aurora_render();
 	}
 
 	//Use Fallback
@@ -120,7 +120,7 @@ function setup()
 		setup_locations();
 
 		//Render Fallback
-		render_fallback();
+		aurora_render_fallback();
 	}
 
 	//Resize Simulation
@@ -128,7 +128,7 @@ function setup()
 }
 
 //Render Function (Happens Every Frame Update)
-function render()
+function aurora_render()
 {
 	//Limit Number of Touches
 	if(touches>1&&mouse_down)
@@ -220,32 +220,54 @@ function render()
 	//Limit Kp
 	if(kp.x>=0&&kp.x<=9)
 	{
+		view_kp(true);
 		universe.aurora_north.visible=true;
 		universe.aurora_south.visible=true;
 	}
 	else
 	{
+		view_kp(false);
 		universe.aurora_north.visible=false;
 		universe.aurora_south.visible=false;
 	}
 
 	//Render
-	requestAnimationFrame(render);
+	requestAnimationFrame(aurora_render);
 	renderer.render(scene,camera);
 }
 
 //Render Fallback Function
-function render_fallback()
+function aurora_render_fallback()
 {
 	//Get Cavas Div
 	var canvas=document.getElementById("canvas");
+
+	//Limit Kp
+	if(kp.x>9)
+		kp.x=9;
+	if(kp.x<0)
+		kp.x=0;
+
+	//View Kp
+	view_kp(true);
 
 	//Get Location Select
 	var location_select=document.getElementById("locations");
 
 	canvas.innerHTML="<img src='"+root+"images/fallback/"+
 		location_select.options[location_select.selectedIndex].value+" "+
-		Math.round(kp.x)+".png' width='100%' height='100%'/>";
+		Math.round(index)+".png' width='100%' height='100%'/>";
+}
+
+//View Kp Function (Updates text in source file)
+function view_kp(show)
+{
+	if(show)
+	{
+		var date=new Date();
+		document.getElementById("view_date").textContent="Forecast for "+date.toDateString();
+		document.getElementById("view_kp").textContent="Kp "+kp.x;
+	}
 }
 
 //Create Universe Function (Creates Earth Scene)

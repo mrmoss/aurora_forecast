@@ -1,48 +1,3 @@
-<!--
-	#WebGl Based Aurora Simulation
-	#	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-	#	Modified On:	04/26/2014
-
-
-	Works On:
-		Windows:
-			Firefox
-			IE 9+
-			Chrome
-			Opera
-
-		Linux:
-			Firefox
-			Chrome
-
-		MacOs:
-			Firefox
-			Safari
-				Config
-					Preferences
-						Advanced
-							Show Develop menu in menu bar.
-					Show Menu Bar
-				Develop
-					Enable WebGl
-			Chrome
-
-		Android:
-			Firefox
-			Chrome
-				chrome://flags/#enable-webgl
-
-		IOS:
-
-	Doesn't Work On?:
-		Windows:
-			Safari
-			IE 6/7/8
-
-		Android:
-			Default Browser
--->
-
 <!doctype html>
 
 <html>
@@ -76,7 +31,23 @@
 		<!--Site Javascript Source-->
 		<script type="text/javascript">
 			var root="http://aurora.cs.uaf.edu/sites/simulation/";
-			var forecast="none";
+			var forecast="h1";
+
+			function setup()
+			{
+				//Setup Simulation
+				aurora_setup();
+
+				//Set Style to Parent
+				if(parent)
+				{
+					var head_object=document.getElementsByTagName("head")[0];
+					var styles=parent.document.getElementsByTagName("style");
+
+					for(var ii=0;ii<styles.length;++ii)
+						head_object.appendChild(styles[ii].cloneNode(true));
+				}
+			}
 		</script>
 
 		<!--GLSL Aurora Vertex Shader Source-->
@@ -199,6 +170,12 @@
 
 		<!--Simulation Canvas-->
 		<div id="canvas"></div>
+
+		<!--Status Div-->
+		<div style="position:absolute;top:16px;left:20px;">
+			<h1 class="page-title" style="color:white;" id="view_date"></h1>
+			<h1 class="page-title" style="color:white;" id="view_kp"></h1>
+		</div>
 
 		<!--Locations Div-->
 		<div style="position:absolute;bottom:16px;left:20px;">

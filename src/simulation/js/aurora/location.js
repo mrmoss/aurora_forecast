@@ -100,6 +100,6 @@ function set_location()
 	//2D Fallback
 	else
 	{
-		render_fallback();
+		aurora_render_fallback();
 	}
 }

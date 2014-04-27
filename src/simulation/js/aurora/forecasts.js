@@ -36,7 +36,7 @@ function update_nowcast()
 					kp.x=parseInt(obj.values[obj.values.length-1].kp);
 
 					if(use_fallback)
-						render_fallback();
+						aurora_render_fallback();
 				}
 			}
 			catch(e)
@@ -75,7 +75,7 @@ function update_h1cast()
 					kp.x=parseInt(obj.values[obj.values.length-1].kp);
 
 					if(use_fallback)
-						render_fallback();
+						aurora_render_fallback();
 				}
 			}
 			catch(e)
