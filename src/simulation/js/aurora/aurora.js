@@ -256,7 +256,7 @@ function aurora_render_fallback()
 
 	canvas.innerHTML="<img src='"+root+"images/fallback/"+
 		location_select.options[location_select.selectedIndex].value+" "+
-		Math.round(index)+".png' width='100%' height='100%'/>";
+		Math.round(kp.x)+".png' width='100%' height='100%'/>";
 }
 
 //View Kp Function (Updates text in source file)
