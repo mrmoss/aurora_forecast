@@ -195,8 +195,8 @@ def parse_h1(lexemes):
 						for kk in range(0,3):
 
 							#Extract Predicted Hour, Minute is -1
-							predicted_hour=jj*3+kk
-							predicted_minute=-1
+							predicted_time["hour"]=jj*3+kk
+							predicted_time["minute"]=0
 
 							#Extract Predicted Kp
 							kp=float(lexemes[ii][3+jj])
