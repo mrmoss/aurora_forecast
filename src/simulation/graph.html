@@ -6,7 +6,7 @@
 <script type="text/javascript" src="js/aurora/time.js"></script>
 <script type="text/javascript"> 
 
-function update_rotation (current_year_obj, next_year_obj)
+function get_cr_date_ranges (current_year_obj, next_year_obj)
 {
 	var rotation_index_ranges = {};
 	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
@@ -37,10 +37,10 @@ function update_rotation (current_year_obj, next_year_obj)
 		var rotation_index = current_year_obj.values[ii].rotation_index;
 		rotation_index_ranges[rotation_index] = dateRange;
 	}
-	request_data(rotation_index_ranges);	
+	return  rotation_index_ranges;	
 }
 
-function update_last_month (current_year_obj)
+function get_cr_next_year (current_year_obj)
 {
 	var next_year = new Date().getFullYear() + 1;
 	var request_obj = {year:next_year};
@@ -58,7 +58,11 @@ function update_last_month (current_year_obj)
 			try
 			{	
 				var obj = JSON.parse(xmlhttp.responseText);
-				update_rotation (current_year_obj, obj);			
+				var cr_date_ranges = get_cr_date_ranges (current_year_obj, obj);
+
+				get_3day_kp_data(cr_date_ranges);
+				get_28day_kp_data(cr_date_ranges);
+							
 			}
 			catch(e)
 			{}
@@ -67,7 +71,7 @@ function update_last_month (current_year_obj)
 	xmlhttp.send(null);
 }
 
-function update_chart ()
+function get_cr_current_year ()
 {
 	var current_year = new Date().getFullYear();
 	var request_obj = {year:current_year};
@@ -84,7 +88,7 @@ function update_chart ()
 			try
 			{
 				var obj = JSON.parse(xmlhttp.responseText);
-				update_last_month(obj);			
+				get_cr_next_year(obj);			
 			}
 			catch(e)
 			{}
@@ -245,7 +249,7 @@ type: "column",
 	forecast.render();
 }
 
-window.onload = update_chart();
+window.onload = get_cr_current_year();
 </script>
 </head>
 
