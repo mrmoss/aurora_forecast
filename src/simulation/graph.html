@@ -3,49 +3,42 @@
 <html>
 <head>
 <script type="text/javascript" src="canvas/canvasjs.min.js"></script>
-<script type="text/javascript" src="js/aurora/time.js"></script>
 <script type="text/javascript"> 
 
 function get_cr_month_range (current_year_obj, next_year_obj)
 {
-	var date = get_time(-9);
-	var month = date.month();
-	var day = date.day();
-	var rotation_index_ranges = {};
+	var date = new Date();
 
 	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
 	{
-		var start_date = {};
-		start_date.year = current_year_obj.values[ii].year;
-		start_date.month = current_year_obj.values[ii].month;
-		start_date.day = current_year_obj.values[ii].day;
+		var start_date = new Date(
+		current_year_obj.values[ii].year,
+		current_year_obj.values[ii].month - 1,
+		parseInt(current_year_obj.values[ii].day));
 
-		var end_date = {};
-
+		var end_date = {}; 
 		if(ii == current_year_obj.values.length - 1)
 		{
-			end_date.year = next_year_obj.values[0].year;
-			end_date.month = next_year_obj.values[0].month;
-			end_date.day = next_year_obj.values[0].day;
+			end_date = new Date(
+			next_year_obj.values[0].year,
+			next_year_obj.values[0].month - 1,
+			parseInt(next_year_obj.values[0].day));
 		}
 		else
 		{	
-			end_date.year = current_year_obj.values[ii+1].year;
-			end_date.month = current_year_obj.values[ii+1].month;
-			end_date.day = current_year_obj.values[ii+1].day;
+			end_date = new Date(
+			current_year_obj.values[ii+1].year,
+			current_year_obj.values[ii+1].month - 1,
+			parseInt(current_year_obj.values[ii+1].day));
 		}
 		
-		
-		if(start_date.month <= month && end_date.month >= month)
+		if(start_date <= date && end_date >= date)
 		{
-			if(start_date.day <= day && end_date.day >= day)
-			{
-				return {start_date: start_date, end_date: end_date, rotation_index: rotation_index};
-			}
-
+			var rotation_index = current_year_obj.values[ii].rotation_index;
+			return {start_date: start_date, end_date: end_date, rotation_index: rotation_index};
 		}
 	}
-	return  rotation_index_ranges;	
+	return  {};
 }
 
 function get_cr_next_year (current_year_obj)
@@ -66,8 +59,7 @@ function get_cr_next_year (current_year_obj)
 			try
 			{	
 				var obj = JSON.parse(xmlhttp.responseText);
-				var cr_date_ranges = get_cr_date_ranges (current_year_obj, obj);
-
+				var cr_date_ranges = get_cr_month_range (current_year_obj, obj);
 				get_3day_kp_data(cr_date_ranges);
 				get_28day_kp_data(cr_date_ranges);
 							
@@ -84,11 +76,12 @@ function get_cr_current_year ()
 	var current_year = new Date().getFullYear();
 	var request_obj = {year:current_year};
 	var rotation_index_ranges = {};
+	var pw = "NOPE";
 	
 	var url="http://aurora.cs.uaf.edu/cgi-bin/cr_cgi.py?r="+JSON.stringify(request_obj);
 
 	var xmlhttp=new XMLHttpRequest();
-	xmlhttp.open("GET",url,true);
+	xmlhttp.open("GET",url,true, pw);
 	xmlhttp.onreadystatechange=function()
 	{
 		if(xmlhttp.readyState==4&&xmlhttp.status==200)
@@ -99,25 +92,38 @@ function get_cr_current_year ()
 				get_cr_next_year(obj);			
 			}
 			catch(e)
-			{}
+			{ }
 		}
 	}
 	xmlhttp.send(null);
 }
 
+function get_3day_kp_data(cr_date_ranges)
+{
+	var kp_array = request_data("d3")
+}
+
+function get_28day_kp_data(cr_date_ranges)
+{
+	var kp_array = request_data("d28")
+}
+
 function request_data(type)
 {
 	var kp_array = new Array;
-	var time=get_time(-9);
+	var time = new Date();
+	var current_year = time.getFullYear();
+	var current_month = time.getMonth() + 1; // convert from 0-indexed
 	var request_obj={};
 	request_obj.forecast=type;
-	request_obj.predicted_time={year:time.year,month:time.month,day:-1,hour:-1,minute:-1};
+	request_obj.predicted_time={year:current_year,month:current_month,day:-1,hour:-1,minute:-1};
 
 	var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r=";
 	url+=JSON.stringify(request_obj);
 
 	var xmlhttp=new XMLHttpRequest();
-	xmlhttp.open("GET",url,true);
+	var pw = "NOPE";
+	xmlhttp.open("GET",url,true, pw);
 
 	xmlhttp.onreadystatechange=function()
 	{
@@ -126,10 +132,12 @@ function request_data(type)
 			try
 			{
 				var obj=JSON.parse(xmlhttp.responseText);
+				alert(xmlhttp.responseText);
 
 				if(obj.values.length>0)
 				{
 					kp_array[0]=parseInt(obj.values[obj.values.length-1].kp);
+					alert(JSON.stringify(kp_array));
 				}
 			}
 			catch(e)
