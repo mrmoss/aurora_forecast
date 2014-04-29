@@ -6,36 +6,44 @@
 <script type="text/javascript" src="js/aurora/time.js"></script>
 <script type="text/javascript"> 
 
-function get_cr_date_ranges (current_year_obj, next_year_obj)
+function get_cr_month_range (current_year_obj, next_year_obj)
 {
+	var date = get_time(-9);
+	var month = date.month();
+	var day = date.day();
 	var rotation_index_ranges = {};
+
 	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
 	{
-		var startDate = {};
-		startDate.year = current_year_obj.values[ii].year;
-		startDate.month = current_year_obj.values[ii].month;
-		startDate.day = current_year_obj.values[ii].day;
+		var start_date = {};
+		start_date.year = current_year_obj.values[ii].year;
+		start_date.month = current_year_obj.values[ii].month;
+		start_date.day = current_year_obj.values[ii].day;
 
-		var endDate = {};
+		var end_date = {};
 
 		if(ii == current_year_obj.values.length - 1)
 		{
-			alert("LOOP");
-			endDate.year = next_year_obj.values[0].year;
-			endDate.month = next_year_obj.values[0].month;
-			endDate.day = next_year_obj.values[0].day;
+			end_date.year = next_year_obj.values[0].year;
+			end_date.month = next_year_obj.values[0].month;
+			end_date.day = next_year_obj.values[0].day;
 		}
 		else
 		{	
-			endDate.year = current_year_obj.values[ii+1].year;
-			endDate.month = current_year_obj.values[ii+1].month;
-			endDate.day = current_year_obj.values[ii+1].day;
+			end_date.year = current_year_obj.values[ii+1].year;
+			end_date.month = current_year_obj.values[ii+1].month;
+			end_date.day = current_year_obj.values[ii+1].day;
 		}
 		
-		var dateRange = {startDate: startDate, endDate: endDate};
+		
+		if(start_date.month <= month && end_date.month >= month)
+		{
+			if(start_date.day <= day && end_date.day >= day)
+			{
+				return {start_date: start_date, end_date: end_date, rotation_index: rotation_index};
+			}
 
-		var rotation_index = current_year_obj.values[ii].rotation_index;
-		rotation_index_ranges[rotation_index] = dateRange;
+		}
 	}
 	return  rotation_index_ranges;	
 }
