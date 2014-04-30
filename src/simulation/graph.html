@@ -5,51 +5,11 @@
 <script type="text/javascript" src="canvas/canvasjs.min.js"></script>
 <script type="text/javascript"> 
 
-function get_cr_month_range (current_year_obj, next_year_obj)
+function xmlhttp_request(cgi, request, callback)
 {
-	var date = new Date();
-
-	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
-	{
-		var start_date = new Date(
-		current_year_obj.values[ii].year,
-		current_year_obj.values[ii].month - 1,
-		parseInt(current_year_obj.values[ii].day));
-
-		var end_date = {}; 
-		if(ii == current_year_obj.values.length - 1)
-		{
-			end_date = new Date(
-			next_year_obj.values[0].year,
-			next_year_obj.values[0].month - 1,
-			parseInt(next_year_obj.values[0].day));
-		}
-		else
-		{	
-			end_date = new Date(
-			current_year_obj.values[ii+1].year,
-			current_year_obj.values[ii+1].month - 1,
-			parseInt(current_year_obj.values[ii+1].day));
-		}
-		
-		if(start_date <= date && end_date >= date)
-		{
-			var rotation_index = current_year_obj.values[ii].rotation_index;
-			return {start_date: start_date, end_date: end_date, rotation_index: rotation_index};
-		}
-	}
-	return  {};
-}
-
-function get_cr_next_year (current_year_obj)
-{
-	var next_year = new Date().getFullYear() + 1;
-	var request_obj = {year:next_year};
-	var rotation_index_ranges = {};
-	
-	var url="http://aurora.cs.uaf.edu/cgi-bin/cr_cgi.py?r="+JSON.stringify(request_obj);
-
-	var xmlhttp=new XMLHttpRequest();
+	var url = "http://aurora.cs.uaf.edu/cgi-bin/" + cgi + "?r=" +JSON.stringify(request);
+	var xmlhttp = new XMLHttpRequest();
+	//var pw = "NOPE";
 	xmlhttp.open("GET",url,true);
 
 	xmlhttp.onreadystatechange=function()
@@ -57,13 +17,10 @@ function get_cr_next_year (current_year_obj)
 		if(xmlhttp.readyState==4&&xmlhttp.status==200)
 		{
 			try
-			{	
-				var obj = JSON.parse(xmlhttp.responseText);
-				var cr_date_ranges = get_cr_month_range (current_year_obj, obj);
-				get_3day_kp_data(cr_date_ranges);
-				get_28day_kp_data(cr_date_ranges);
-							
+			{
+				callback(JSON.parse(xmlhttp.responseText));
 			}
+
 			catch(e)
 			{}
 		}
@@ -76,193 +33,183 @@ function get_cr_current_year ()
 	var current_year = new Date().getFullYear();
 	var request_obj = {year:current_year};
 	var rotation_index_ranges = {};
-	var pw = "NOPE";
-	
-	var url="http://aurora.cs.uaf.edu/cgi-bin/cr_cgi.py?r="+JSON.stringify(request_obj);
 
-	var xmlhttp=new XMLHttpRequest();
-	xmlhttp.open("GET",url,true, pw);
-	xmlhttp.onreadystatechange=function()
+	xmlhttp_request("cr_cgi.py", request_obj, function(obj) {
+	get_cr_next_year(obj);			
+	});
+}
+
+function get_cr_next_year (current_year_obj)
+{
+	var next_year = new Date().getFullYear() + 1;
+	var request_obj = {year:next_year};
+	var rotation_index_ranges = {};
+
+	xmlhttp_request("cr_cgi.py", request_obj, function(obj){
+	var cr_date_ranges = get_cr_month_range (current_year_obj, obj);
+	
+	get_kp_data("d3", cr_date_ranges);
+	get_kp_data("d28", cr_date_ranges);
+	});
+}
+
+function get_cr_month_range (current_year_obj, next_year_obj)
+{
+	var date = new Date();
+
+	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
 	{
-		if(xmlhttp.readyState==4&&xmlhttp.status==200)
+		var start= new Date(
+		current_year_obj.values[ii].year,
+		current_year_obj.values[ii].month - 1, // from 0-indexed to 1-indexed
+		parseInt(current_year_obj.values[ii].day));
+
+		var end = {}; 
+		if(ii == current_year_obj.values.length - 1)
 		{
-			try
-			{
-				var obj = JSON.parse(xmlhttp.responseText);
-				get_cr_next_year(obj);			
-			}
-			catch(e)
-			{ }
+			end = new Date(
+			next_year_obj.values[0].year,
+			next_year_obj.values[0].month - 1,
+			parseInt(next_year_obj.values[0].day));
+		}
+		else
+		{	
+			end = new Date(
+			current_year_obj.values[ii+1].year,
+			current_year_obj.values[ii+1].month - 1,
+			parseInt(current_year_obj.values[ii+1].day));
+		}
+		
+		if(start <= date && end >= date)
+		{
+			var cr_index = current_year_obj.values[ii].rotation_index;
+			return {start_date: start, end_date: end, rotation_index: cr_index};
 		}
 	}
-	xmlhttp.send(null);
+	return  {};
 }
 
-function get_3day_kp_data(cr_date_ranges)
+function get_kp_data(forecast, cr_date_ranges)
 {
-	var kp_array = request_data("d3")
+	var year = cr_date_ranges.start_date.getFullYear();
+	request_data(forecast, cr_date_ranges, year); 
+
+	var end_month = cr_date_ranges.end_date.getMonth();
+	if (end_month == 0)
+	{
+		request_data(forecast, cr_date_ranges, year + 1);
+	}
 }
 
-function get_28day_kp_data(cr_date_ranges)
-{
-	var kp_array = request_data("d28")
-}
-
-function request_data(type)
+function request_data(type, cr_date_ranges, year)
 {
 	var kp_array = new Array;
 	var time = new Date();
-	var current_year = time.getFullYear();
 	var current_month = time.getMonth() + 1; // convert from 0-indexed
+
 	var request_obj={};
 	request_obj.forecast=type;
-	request_obj.predicted_time={year:current_year,month:current_month,day:-1,hour:-1,minute:-1};
+	request_obj.predicted_time={year:year,month:current_month,day:-1,hour:-1,minute:-1};
 
-	var url="http://aurora.cs.uaf.edu/cgi-bin/kp_cgi.py?r=";
-	url+=JSON.stringify(request_obj);
-
-	var xmlhttp=new XMLHttpRequest();
-	var pw = "NOPE";
-	xmlhttp.open("GET",url,true, pw);
-
-	xmlhttp.onreadystatechange=function()
+	xmlhttp_request("kp_cgi.py", request_obj, function(obj){
+	if(obj.values.length>0)
 	{
-		if(xmlhttp.readyState==4&&xmlhttp.status==200)
+		for (var i=0, len = obj.values.length; i < len; i++)
 		{
-			try
-			{
-				var obj=JSON.parse(xmlhttp.responseText);
-				alert(xmlhttp.responseText);
-
-				if(obj.values.length>0)
-				{
-					kp_array[0]=parseInt(obj.values[obj.values.length-1].kp);
-					alert(JSON.stringify(kp_array));
-				}
-			}
-			catch(e)
-			{}
+			kp_array.push(obj.values[i].predicted_time, obj.values[i].kp);
 		}
 	}
-	xmlhttp.send(null);
-	return kp_array;
+	draw_charts(type, kp_array, cr_date_ranges);
+	});
 }
 
-function draw_charts() 
+function format_date(obj, callback)
+{
+	// Apparently there's no good way to get abbreviated date month name from Date.
+	Date.prototype.monthName = function() {
+		return this.toUTCString().split(' ')[2]
+	};
+
+	callback(obj.monthName() + ". " + obj.getDate() + ", " + obj.getFullYear());
+}
+
+function draw_charts(type, kp_array, cr_date_ranges) 
 { 
-	CanvasJS.addColorSet("colors", 
-			[ "grey", "lime", "yellow", "red"]);  
+	CanvasJS.addColorSet("colors", ["grey", "lime", "yellow", "red"]);  
 	var forecast = new CanvasJS.Chart("chartContainer1", {colorSet: "colors" });  
 
-	var rotation = 1111; 
-	var kp_values = request_data("d28"); 
+	var rotation = cr_date_ranges.rotation_index;
 
-	forecast.options.title = { text: "Carrington Rotation #" + rotation }; 
+	var the_date = new Date(cr_date_ranges.start_date);
+	format_date(the_date, function(start_date){
+
+	the_date = new Date(cr_date_ranges.end_date);
+	format_date(the_date, function(end_date){
+	
+	forecast.options.title = { text: "Carrington Rotation #" + rotation 
+		+ ": " + start_date + " - " + end_date}; 
 	forecast.options.axisY = { title: "Estimated Kp Index", gridColor: "lightgrey" }; 
 	forecast.options.axisX = { valueFormatString: "MMM DD", interval: 1, intervalType: "day"}; 
 
 	var d28_series = {  
-markerType: "none", 
-			type: "line", 
-			name: "28-day forecast", 
-			showInLegend: true, 
+		markerType: "none", 
+		type: "line", 
+		name: "28-day forecast", 
+		showInLegend: true, 
 	}; 
 
 	var d3_series = { 
-type: "column", 
-	  name: "3-day forecast", 
-	  showInLegend: true, 
+		type: "column", 
+		name: "3-day forecast", 
+		showInLegend: true, 
 	}; 
 
 	forecast.options.data = []; 
 	forecast.options.data.push(d28_series); 
 	forecast.options.data.push(d3_series); 
 
-	var poop = new Date(2014, 3, 0); 
-	var cicle = 3; 
-
-	d28_series.dataPoints = [ 
-	{x:  poop, y:cicle}, {x: new Date(2014, 3, 0), y:3},  
-	{x: new Date(2014, 3, 0), y:3}, {x: new Date(2014, 3, 0), y:3},  
-	{x: new Date(2014, 3, 0), y:3}, {x: new Date(2014, 3, 0), y:3},  
-	{x: new Date(2014, 3, 0), y:3}, {x: new Date(2014, 3, 0), y:3},  
-
-	{x: new Date(2014, 3, 1), y:3}, {x: new Date(2014, 3, 1), y:3},  
-	{x: new Date(2014, 3, 1), y:3}, {x: new Date(2014, 3, 1), y:3},  
-	{x: new Date(2014, 3, 1), y:3}, {x: new Date(2014, 3, 1), y:3},  
-	{x: new Date(2014, 3, 1), y:3}, {x: new Date(2014, 3, 1), y:3},  
-
-	{x: new Date(2014, 3, 2), y:4}, {x: new Date(2014, 3, 2), y:4},  
-	{x: new Date(2014, 3, 2), y:4}, {x: new Date(2014, 3, 2), y:4},  
-	{x: new Date(2014, 3, 2), y:4}, {x: new Date(2014, 3, 2), y:4},  
-	{x: new Date(2014, 3, 2), y:4}, {x: new Date(2014, 3, 2), y:4}, 
-
-	{x: new Date(2014, 3, 3), y:4}, {x: new Date(2014, 3, 3), y:4}, 
-	{x: new Date(2014, 3, 3), y:4}, {x: new Date(2014, 3, 3), y:4}, 
-	{x: new Date(2014, 3, 3), y:4}, {x: new Date(2014, 3, 3), y:4}, 
-	{x: new Date(2014, 3, 3), y:4}, {x: new Date(2014, 3, 3), y:4}, 
-
-	{x: new Date(2014, 3, 4), y:3}, {x: new Date(2014, 3, 4), y:3},
-	{x: new Date(2014, 3, 4), y:3}, {x: new Date(2014, 3, 4), y:3},
-	{x: new Date(2014, 3, 4), y:3}, {x: new Date(2014, 3, 4), y:3},
-	{x: new Date(2014, 3, 4), y:3}, {x: new Date(2014, 3, 4), y:3},
-
-	{x: new Date(2014, 3, 5), y:2}, {x: new Date(2014, 3, 5), y:2},
-	{x: new Date(2014, 3, 5), y:2}, {x: new Date(2014, 3, 5), y:2},
-	{x: new Date(2014, 3, 5), y:2}, {x: new Date(2014, 3, 5), y:2},
-	{x: new Date(2014, 3, 5), y:2}, {x: new Date(2014, 3, 5), y:2}
-	];
-
-	d3_series.dataPoints = [
-	{x: new Date(2014, 3, 0, 0, 0), y: 1 },
-	{x: new Date(2014, 3, 0, 3, 0), y: 2 },
-	{x: new Date(2014, 3, 0, 6, 0), y: 3 },
-	{x: new Date(2014, 3, 0, 9, 0), y: 1 },
-	{x: new Date(2014, 3, 0, 12, 0), y: 2 },
-	{x: new Date(2014, 3, 0, 15, 0), y: 1 },
-	{x: new Date(2014, 3, 0, 18, 0), y: 3 },
-	{x: new Date(2014, 3, 0, 21, 0), y: 4, color: "yellow"},
-	{x: new Date(2014, 3, 1, 0, 0), y: 0 },
-	{x: new Date(2014, 3, 1, 3, 0), y: 1 },
-	{x: new Date(2014, 3, 1, 6, 0), y: 2 },
-	{x: new Date(2014, 3, 1, 9, 0), y: 2 },
-	{x: new Date(2014, 3, 1, 12, 0), y: 3 },
-	{x: new Date(2014, 3, 1, 15, 0), y: 3 },
-	{x: new Date(2014, 3, 1, 18, 0), y: 2 },
-	{x: new Date(2014, 3, 1, 21, 0), y: 2 },
-	{x: new Date(2014, 3, 2, 3, 0), y: 2 },
-	{x: new Date(2014, 3, 2, 6, 0), y: 1 },
-	{x: new Date(2014, 3, 2, 9, 0), y: 1 },
-	{x: new Date(2014, 3, 2, 12, 0), y: 1 },
-	{x: new Date(2014, 3, 2, 15, 0), y: 1 },
-	{x: new Date(2014, 3, 2, 18, 0), y: 2 },
-	{x: new Date(2014, 3, 2, 21, 0), y: 2 },
-	{x: new Date(2014, 3, 3, 0, 0), y: 1 },
-	{x: new Date(2014, 3, 3, 3, 0), y: 1 },
-	{x: new Date(2014, 3, 3, 6, 0), y: 1 },
-	{x: new Date(2014, 3, 3, 9, 0), y: 1 },
-	{x: new Date(2014, 3, 3, 12, 0), y: 2 },
-	{x: new Date(2014, 3, 3, 15, 0), y: 1 },
-	{x: new Date(2014, 3, 3, 18, 0), y: 0 },
-	{x: new Date(2014, 3, 3, 21, 0), y: 0 },
-	{x: new Date(2014, 3, 4, 0, 0), y: 0 },
-	{x: new Date(2014, 3, 4, 3, 0), y: 1 },
-	{x: new Date(2014, 3, 4, 6, 0), y: 2 },
-	{x: new Date(2014, 3, 4, 9, 0), y: 2 },
-	{x: new Date(2014, 3, 4, 12, 0), y: 3 },
-	{x: new Date(2014, 3, 4, 15, 0), y: 3 },
-	{x: new Date(2014, 3, 4, 18, 0), y: 2 },
-	{x: new Date(2014, 3, 4, 21, 0), y: 6, color: "red"},
-	{x: new Date(2014, 3, 5, 0, 0), y: 2 },
-	{x: new Date(2014, 3, 5, 3, 0), y: 2 },
-	{x: new Date(2014, 3, 5, 6, 0), y: 1 },
-	{x: new Date(2014, 3, 5, 9, 0), y: 1 },
-	{x: new Date(2014, 3, 5, 12, 0), y: 1 },
-	{x: new Date(2014, 3, 5, 15, 0), y: 1 },
-	{x: new Date(2014, 3, 5, 18, 0), y: 2 },
-	{x: new Date(2014, 3, 5, 21, 0), y: 2 },
-	];
+	d28_series.dataPoints = [];
+	d3_series.dataPoints = [];
+	
+	//alert(JSON.stringify(kp_array));
+	if (type == "d28") {
+		for (var i=0; i < kp_array.length; ++i)
+		{
+			var begin_day = new Date(kp_array[i].predicted_time.year, 
+					kp_array[i].predicted_time.month,
+					kp_array[i].predicted_time.day,
+					0, 0);
+			var end_day = new Date(kp_array[i].predicted_time.year, 
+					kp_array[i].predicted_time.month,
+					kp_array[i].predicted_time.day,
+					23, 59);
+			d28_series.dataPoints.push({x:begin_day, y: kp_array[i].kp});
+			d28_series.dataPoints.push({x:end_day, y: kp_array[i].kp});
+		}
+	}
+	else if (type == "d3") {
+		var inc = 3;
+		for (var i=0; i < kp_array.length; ++i) 
+		{
+			var date_entry = new Date(kp_array[i].predicted_time.year,
+					kp_array[i].predicted_time.month,
+					kp_array[i].predicted_time.day,
+					kp_array[i].predicted_time.hour / 3 );
+			var color = "green";
+			if (kp_array[i].kp >= 3)
+			{
+				color = "yellow";
+			}
+			if (kp_array[i].kp > 4)
+			{
+				color = "red";
+			}
+			d3_series.dataPoints.push({ x:date_entry, y: kp_array[i].kp, color:color});
+		}
+	}
 	forecast.render();
+	}); 
+	});
 }
 
 window.onload = get_cr_current_year();
