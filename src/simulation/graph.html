@@ -171,7 +171,7 @@ function draw_charts(d3arr, d28arr_unfiltered, cr_date_ranges, chart_id)
 	{
 		var date_a = new Date(a.date_obj.year, a.date_obj.month, a.date_obj.day);
 		var date_b = new Date(b.date_obj.year, b.date_obj.month, b.date_obj.day);
-		return (date_a.getTime() - date_b);
+		return (date_a.getTime() - date_b.getTime());
 	});
  	
 	var d28arr = [];
