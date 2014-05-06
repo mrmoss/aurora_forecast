@@ -2,14 +2,15 @@
 <meta charset= "utf-8">
 <html>
 <head>
-<script type="text/javascript" src="canvas/canvasjs.min.js"></script>
+<script type="text/javascript" src="canvas/canvasjs_modified.min.js"></script>
 <script type="text/javascript"> 
+
+
 
 function xmlhttp_request(cgi, request, callback)
 {
 	var url = "http://aurora.cs.uaf.edu/cgi-bin/" + cgi + "?r=" +JSON.stringify(request);
 	var xmlhttp = new XMLHttpRequest();
-	//var pw = "NOPE";
 	xmlhttp.open("GET",url,true);
 
 	xmlhttp.onreadystatechange=function()
@@ -30,6 +31,7 @@ function xmlhttp_request(cgi, request, callback)
 
 function get_cr_current_year ()
 {
+
 	var current_year = new Date().getFullYear();
 	var request_obj = {year:current_year};
 	var rotation_index_ranges = {};
@@ -41,6 +43,7 @@ function get_cr_current_year ()
 
 function get_cr_next_year (current_year_obj)
 {
+	
 	var next_year = new Date().getFullYear() + 1;
 	var request_obj = {year:next_year};
 	var rotation_index_ranges = {};
@@ -49,7 +52,10 @@ function get_cr_next_year (current_year_obj)
 	var cr_date_ranges = get_cr_month_range (current_year_obj, obj);
 	get_kp_data("d3", cr_date_ranges, function(d3obj){
 	get_kp_data("d28", cr_date_ranges, function(d28obj){
-	draw_charts(d3obj, d28obj, cr_date_ranges);
+	for(var ii = 0; ii < cr_date_ranges.length; ++ii)
+	{
+		draw_charts(d3obj, d28obj, cr_date_ranges[ii], "chart_" + ii);
+	}
 	});
 	});
 	});
@@ -58,6 +64,8 @@ function get_cr_next_year (current_year_obj)
 function get_cr_month_range (current_year_obj, next_year_obj)
 {
 	var date = new Date();
+	var previous_carrington_rotation = {};
+
 	for (var ii = 0; ii < current_year_obj.values.length; ii ++)
 	{
 		var start= new Date(
@@ -80,20 +88,27 @@ function get_cr_month_range (current_year_obj, next_year_obj)
 			current_year_obj.values[ii+1].month - 1,
 			parseInt(current_year_obj.values[ii+1].day));
 		}
-		
+
+		var cr_index = current_year_obj.values[ii].rotation_index;
+
 		if(start <= date && end >= date)
 		{
-			var cr_index = current_year_obj.values[ii].rotation_index;
-			return {start_date: start, end_date: end, rotation_index: cr_index};
+			if(ii == 0)
+			{
+				// There is no previous carrington rotation from the data that we requested
+				return {start_date: start, end_date: end, rotation_index: cr_index};
+			}
+			return [{start_date: start, end_date: end, rotation_index: cr_index}, previous_carrington_rotation];
 		}
+		previous_carrington_rotation = {start_date: start, end_date: end, rotation_index: cr_index};	
 	}
 	return  {};
 }
 
 function get_kp_data(forecast, cr_date_ranges, callback)
 {
-	var year = cr_date_ranges.start_date.getFullYear();
 
+	var year = cr_date_ranges[0].start_date.getFullYear();
 	request_data(forecast, cr_date_ranges, year, function(kp){
 		callback(kp);
 	});
@@ -131,16 +146,52 @@ function format_date(obj, callback)
 	callback(obj.monthName() + ". " + obj.getDate() + ", " + obj.getFullYear());
 }
 
-function draw_charts(d3arr, d28arr, cr_date_ranges) 
+function draw_charts(d3arr, d28arr_unfiltered, cr_date_ranges, chart_id) 
 { 
+	// Create Div with unique id
+	var div = document.createElement('div');
+	div.style.width = "100%";
+	div.style.height = "350px";
+	div.style.margin = "0px 0px 50px 0px";
+	div.id = chart_id;
+	document.body.appendChild(div);
+	
+	
 	d3arr.sort(function (a, b)
 	{
 		return (a.kp_val - b.kp_val);
 	});
 	
-	CanvasJS.addColorSet("colors", ["grey", "green", "yellow", "red"]);  
-	var forecast = new CanvasJS.Chart("chartContainer1", {colorSet: "colors", zoomEnabled: true });  
+ 	d28arr_unfiltered.sort(function(a, b)
+ 	{
+ 		return (b.kp_val - a.kp_val);
+ 	});
 
+	d28arr_unfiltered.sort(function(a, b)
+	{
+		var date_a = new Date(a.date_obj.year, a.date_obj.month, a.date_obj.day);
+		var date_b = new Date(b.date_obj.year, b.date_obj.month, b.date_obj.day);
+		return (date_a.getTime() - date_b);
+	});
+ 	
+	var d28arr = [];
+	d28arr.push(d28arr_unfiltered[0]);
+	for (var i=0; i < d28arr_unfiltered.length; i++)
+	{
+		var a = d28arr[d28arr.length - 1];
+		var b = d28arr_unfiltered[i];
+		var date_a = new Date(a.date_obj.year, a.date_obj.month, a.date_obj.day);
+		var date_b = new Date(b.date_obj.year, b.date_obj.month, b.date_obj.day);
+		if (date_a.getTime() != date_b.getTime())
+		{
+			d28arr.push(d28arr_unfiltered[i]);
+		}
+		
+	};
+	console.log(JSON.stringify(d28arr));
+	
+	CanvasJS.addColorSet("colors", ["grey", "green", "yellow", "red"]);  
+	var forecast = new CanvasJS.Chart(chart_id, {colorSet: "colors", zoomEnabled: true, theme: "theme1" });  
 	var rotation = cr_date_ranges.rotation_index;
 
 	var cr_start_date = new Date(cr_date_ranges.start_date);
@@ -150,9 +201,10 @@ function draw_charts(d3arr, d28arr, cr_date_ranges)
 	format_date(cr_end_date, function(end_date){
 	
 	forecast.options.title = { text: "Carrington Rotation #" + rotation 
-		+ ": " + start_date + " - " + end_date}; 
-	forecast.options.axisY = { title: "Estimated Kp Index", gridColor: "lightgrey" }; 
-	forecast.options.axisX = { valueFormatString: "MMM DD", interval: 3, intervalType: "day", labelAngle: -45}; 
+		+ ": " + start_date + " - " + end_date, fontSize: 20, fontColor: "grey"}; 
+	forecast.options.axisY = { title: "Estimated Kp Index", gridColor: "lightgrey", titleFontSize: 15 }; 
+	forecast.options.axisX = { valueFormatString: "MMM DD", interval: 3, intervalType: "day",
+				   labelAngle: -45, labelFontSize: 12}; 
 
 	
 
@@ -169,19 +221,35 @@ function draw_charts(d3arr, d28arr, cr_date_ranges)
 		name: "3-day forecast", 
 		showInLegend: true, 
 	}; 
-
+	
+	
 	forecast.options.data = []; 
 	forecast.options.data.push(d3_series); 
 	forecast.options.data.push(d28_series); 
 
 	d28_series.dataPoints = [];
 	d3_series.dataPoints = [];
+
+	for (var d = new Date(cr_start_date); d <= cr_end_date; d.setHours(d.getHours() + 3))
+	{
+		var moon_phase_marker_type = moon_phase(d);
+	  //      var previous_moon_phase = moon_phase (new Date(begin_day.getFullYear()				,begin_day.getMonth(), begin_day.getDate(), begin_day.getHours() - 3));
+		// If moon phase is the same as the previous moon phase then 
+		// don't graph it
+	//	if(previous_moon_phase == moon_phase_marker_type) {continue;}
 	
+		var moon_phase_data = {
+			type: "scatter",
+			markerType: moon_phase_marker_type,
+			color: "black",
+			markerSize: 20,
+			dataPoints: [{x:d, y:9}]
+		};
+		forecast.options.data.push(moon_phase_data);
+	}	
 		
 	for (var i=0; i < d28arr.length; ++i)
 	{
-	
-		 
 		var begin_day = new Date(d28arr[i].date_obj.year,
 				d28arr[i].date_obj.month - 1,
 				d28arr[i].date_obj.day,
@@ -190,11 +258,12 @@ function draw_charts(d3arr, d28arr, cr_date_ranges)
 				d28arr[i].date_obj.month - 1,
 				d28arr[i].date_obj.day,
 				23, 59);
+		
 		if (begin_day < cr_start_date) { continue;};
 		if (end_day > cr_end_date) { continue;};
-
+		
 		d28_series.dataPoints.push({x:begin_day, y: d28arr[i].kp_val});
-		d28_series.dataPoints.push({x:end_day, y: d28arr[i].kp_val});
+		//d28_series.dataPoints.push({x:end_day, y: d28arr[i].kp_val});
 		++i;
 	}
 
@@ -217,6 +286,7 @@ function draw_charts(d3arr, d28arr, cr_date_ranges)
 			color = "red";
 		}
 		d3_series.dataPoints.push({ x:date_entry, y: d3arr[i].kp_val, color:color});
+
 	}
 
 	forecast.render();
@@ -224,13 +294,46 @@ function draw_charts(d3arr, d28arr, cr_date_ranges)
 	});
 }
 
+function moon_phase(today_date)
+{
+
+	var Y = today_date.getFullYear();
+	var M = today_date.getMonth();
+	var D = today_date.getDate();
+
+	var c,e;
+	var jd;
+	var b;
+
+	var phase = "";
+
+	if (M < 3) {
+		Y--;
+		M += 12;
+	}
+	++M;
+	c = 365.25*Y;
+	e = 30.6*M;
+	jd = c+e+D-694039.09;  /* jd is total days elapsed */
+	jd = jd / 29.53;           /* divide by the moon cycle (29.53 days) */
+	b = parseInt(jd);		   /* int(jd) -> b, take integer part of jd */
+	jd -= b;	/* subtract integer part to leave fractional part of original jd */
+	b = Math.round(jd*8) % 8;	   /* scale fraction from 0-8 and round by adding 0.5 */
+
+	if( b == 2) phase = "leftFilledCircle";	// First quarter
+	else if( b == 4) phase = "circle";	// FULL
+	else if( b == 6) phase = "rightFilledCircle";	// Last quarter
+	else phase = "notFilledCircle";		// NEW
+	
+	return phase;
+
+}
+
 window.onload = get_cr_current_year();
 </script>
 </head>
 
 <body>
-<div id="chartContainer1" style="height: 350px; width: 100%;"></div>
-<div id="chartContainer2" style="height: 350px; width: 100%;"></div>
 </body>
 </html>
 
