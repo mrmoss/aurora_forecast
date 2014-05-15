@@ -172,13 +172,26 @@ def retrieve_forecast(json_object,host,username,password,database):
 			#Create Entry Values
 			forecast=ii["forecast"]
 
+			newest=False
+
+			try:
+				newest=ii["newest"]
+			except:
+				newest=False
+
 			predicted_time=get_json_date_from_database(ii["predicted_time"])[0]
 			newCommand=get_json_date_from_database(ii["predicted_time"])[1]
 
-			if newCommand:
-				sql_command = "select download_time,predicted_time,kp from " +forecast+" where (predicted_time between " +predicted_time+")"
+			if newest:
+				if newCommand:
+					sql_command = "select distinct download_time,predicted_time,kp from "+forecast+" where (predicted_time between " +predicted_time+")"
+				else:
+					sql_command = "select distinct download_time,predicted_time,kp from "+forecast+" where predicted_time="+predicted_time
 			else:
-				sql_command = "select download_time,predicted_time,kp from " +forecast+" where predicted_time="+predicted_time
+				if newCommand:
+					sql_command = "select download_time,predicted_time,kp from "+forecast+" where (predicted_time between " +predicted_time+")"
+				else:
+					sql_command = "select download_time,predicted_time,kp from "+forecast+" where predicted_time="+predicted_time
 
 			#connect to the MariaDB database
 			db = MySQLdb.connect(host,username,password,database)

@@ -2,9 +2,9 @@
 
 #Forecast Retriever Source
 #	Created By:		Paul Gentemann, Caleb Hellickson, Ruslan Kolesnik, Ignacio Saez Lahidalga, and Mike Moss
-#	Modified On:	03/03/2014
+#	Modified On:	05/04/2014
 
-import ConfigParser
+import config_util
 import db_util
 import emailer
 import file_util
@@ -20,84 +20,6 @@ import url_util
 #Abort Signal Handler Function (Kills program.)
 def abort_signal_handler(signal,frame):
 	sys.exit(0)
-
-#Globals
-server_email="Soothsayer <soothsayer@soothsayer.com>"
-receiver_email="Administrator Bob <admin.bob@gmail.com>"
-now_forecast_link="http://www.example.com/now.txt"
-h1_forecast_link="http://www.example.com/1hour.txt"
-d3_forecast_link="http://www.example.com/3day.txt"
-d28_forecast_link="http://www.example.com/28day.txt"
-cr_link="http://www.example.com/cr.txt"
-
-#Read Configuration File Function
-def read_config(filename):
-
-	try:
-		#Create Parser
-		config_parser=ConfigParser.RawConfigParser()
-
-		#Open File for Parsing
-		config_parser.read(filename)
-
-		#Read Data Values
-		receiver_email_temp=config_parser.get("Contact Info","receiver_email")
-		now_forecast_link_temp=config_parser.get("Data Resources","now_forecast_link")
-		h1_forecast_link_temp=config_parser.get("Data Resources","h1_forecast_link")
-		d3_forecast_link_temp=config_parser.get("Data Resources","d3_forecast_link")
-		d28_forecast_link_temp=config_parser.get("Data Resources","d28_forecast_link")
-		cr_link_temp=config_parser.get("Data Resources","cr_link")
-
-		#Get Global Variables
-		global receiver_email
-		global now_forecast_link
-		global h1_forecast_link
-		global d3_forecast_link
-		global d28_forecast_link
-		global cr_link
-
-		#Assign Global Variables
-		receiver_email=receiver_email_temp
-		now_forecast_link=now_forecast_link_temp
-		h1_forecast_link=h1_forecast_link_temp
-		d3_forecast_link=d3_forecast_link_temp
-		d28_forecast_link=d28_forecast_link_temp
-		cr_link=cr_link_temp
-
-		#Success
-		return True
-
-	except:
-		#Failure
-		return False
-
-#Write Configuration File Function
-def write_config(filename):
-
-	try:
-		#Create Parser
-		config_parser=ConfigParser.RawConfigParser()
-
-		#Add Section and Write Data Values
-		config_parser.add_section("Contact Info")
-		config_parser.set("Contact Info","receiver_email",receiver_email)
-		config_parser.add_section("Data Resources")
-		config_parser.set("Data Resources","now_forecast_link",now_forecast_link)
-		config_parser.set("Data Resources","h1_forecast_link",h1_forecast_link)
-		config_parser.set("Data Resources","d3_forecast_link",d3_forecast_link)
-		config_parser.set("Data Resources","d28_forecast_link",d28_forecast_link)
-		config_parser.set("Data Resources","cr_link",cr_link)
-
-		#Write File With Parser
-		with open(filename,"wb") as config_file:
-			config_parser.write(config_file)
-
-		#Success
-		return True
-
-	except:
-		#Failure
-		return False
 
 #Error Check Prompt Functions
 def error_message_start(message):
@@ -171,9 +93,9 @@ def get_forecast(link,parser,email_text):
 				database_insertion=(False,"")
 
 				if(parser=="cr"):
-					database_insertion=db_util.insert_carrington_rotation(json_object,"127.0.0.1","root","NOPE","forecast_db")
+					database_insertion=db_util.insert_carrington_rotation(json_object,"127.0.0.1",config_util.user,config_util.password,config_util.database)
 				else:
-					database_insertion=db_util.insert_forecast(json_object,"127.0.0.1","root","NOPE","forecast_db")
+					database_insertion=db_util.insert_forecast(json_object,"127.0.0.1",config_util.user,config_util.password,config_util.database)
 
 				#Failed Insertion
 				if(database_insertion[0]==False):
@@ -304,35 +226,27 @@ if(__name__=="__main__"):
 	#Read Configuration File (On failure, write a default configuration file.)
 	error_message_start("\tLoading Configuration File\t")
 
-	if(read_config("forecast_retriever.cfg")==False):
+	if(config_util.read_config("forecast_retriever.cfg")==False):
 		error_message_end(False)
-		error_message_start("\tCreating Configuration File\t")
-
-		#Write Configuration on Read Fail
-		if(write_config("forecast_retriever.cfg")):
-			error_message_end(True)
-		else:
-			error_message_end(False)
-			error_message_fatal_error()
-
+		exit(0)
 	else:
 		error_message_end(True)
 
 	#Get Forecasts
 	if(retrieve_now_cast==True):
 		error_message_start("\tRetrieving Now Cast\t\t")
-		error_message_end(get_forecast(now_forecast_link,"now","now")[0])
+		error_message_end(get_forecast(config_util.now_forecast_link,"now","now")[0])
 	if(retrieve_h1_cast==True):
 		error_message_start("\tRetrieving 1 Hour Cast\t\t")
-		error_message_end(get_forecast(h1_forecast_link,"h1","1 hour")[0])
+		error_message_end(get_forecast(config_util.h1_forecast_link,"h1","1 hour")[0])
 	if(retrieve_d3_cast==True):
 		error_message_start("\tRetrieving 3 Day Cast\t\t")
-		error_message_end(get_forecast(d3_forecast_link,"d3","3 day")[0])
+		error_message_end(get_forecast(config_util.d3_forecast_link,"d3","3 day")[0])
 	if(retrieve_d28_cast==True):
 		error_message_start("\tRetrieving 28 Day Cast\t\t")
-		error_message_end(get_forecast(d28_forecast_link,"d28","28 day")[0])
+		error_message_end(get_forecast(config_util.d28_forecast_link,"d28","28 day")[0])
 	if(retrieve_cr==True):
 		error_message_start("\tRetrieving Carrington Rotation\t")
-		test=get_forecast(cr_link,"cr","carrington rotation")
+		test=get_forecast(config_util.cr_link,"cr","carrington rotation")
 		error_message_end(test[0])
 		print(test[1])

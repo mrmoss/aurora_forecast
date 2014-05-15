@@ -268,38 +268,34 @@ def parse_d3(lexemes):
 						#3 Days Per Row
 						for jj in range(0,3):
 
+							#Extract Predicted Time, Minute is -1
+							predicted_time={};
+							predicted_time["year"]=download_time["year"]
+							predicted_time["month"]=date_util.month_to_int(date[jj*2])
+							predicted_time["day"]=int(date[jj*2+1])
+							predicted_time["hour"]=hours[0]
+							predicted_time["minute"]=-1
 
-							#3 Hours Per Segment
-							for kk in range(0,3):
+							#Extract Predicted Kp
+							kp=float(lexemes[ii][1+jj])
 
-								#Extract Predicted Time, Minute is -1
-								predicted_time={};
-								predicted_time["year"]=download_time["year"]
-								predicted_time["month"]=date_util.month_to_int(date[jj*2])
-								predicted_time["day"]=int(date[jj*2+1])
-								predicted_time["hour"]=hours[0]+kk
-								predicted_time["minute"]=-1
+							#Test Predicted Date
+							date_test=date_util.valid_date(predicted_time,ii+1)
 
-								#Extract Predicted Kp
-								kp=float(lexemes[ii][1+jj])
+							if(date_test[0]==False):
+								return date_test
 
-								#Test Predicted Date
-								date_test=date_util.valid_date(predicted_time,ii+1)
+							#Invalid Kp
+							kp_test=kp_util.valid_kp(kp,ii+1)
 
-								if(date_test[0]==False):
-									return date_test
+							if(kp_test[0]==False):
+								return kp_test
 
-								#Invalid Kp
-								kp_test=kp_util.valid_kp(kp,ii+1)
-
-								if(kp_test[0]==False):
-									return kp_test
-
-								#Only Add Good Data
-								if(kp>=0):
-									return_json+=assemble_json_forecast(predicted_time,download_time,"d3",kp);
-									return_json+="\t,\n"
-									found_data=True
+							#Only Add Good Data
+							if(kp>=0):
+								return_json+=assemble_json_forecast(predicted_time,download_time,"d3",kp);
+								return_json+="\t,\n"
+								found_data=True
 
 		#No Data Means Error
 		if(found_data==False):

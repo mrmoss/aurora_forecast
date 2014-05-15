@@ -3,7 +3,6 @@ drop table if exists h1;
 drop table if exists d3;
 drop table if exists d28;
 drop table if exists cr;
-drop table if exists carrington_event_lookup;
 
 create table now
 (
@@ -51,14 +50,4 @@ create table cr
 	month integer not null,
 	day float not null,
 	primary key (rotation_index)
-);
-
-create table Carrington_event_lookup
-(
-	id integer auto_increment not null,
-	predicted_date datetime not null,
-	fixed_date datetime not null,
-	carrington_rotation integer not null,
-	kp_index float not null,
-	forecast_type enum('now', 'h1', 'd3', 'd28')
 );
