@@ -41,7 +41,7 @@ def get_forecast(link,parser,email_text):
 
 	#Failed Data Download
 	if(data_download==""):
-		emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast failed to download!\r\n\r\nDownload Link:\r\n"+time.strftime(link)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email)
+		emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast failed to download!\r\n\r\nDownload Link:\r\n"+time.strftime(link)+"\r\n\r\nAurora Forecaster\r\n\r\n",config_util.server_email,config_util.receiver_email)
 		return (False,"Could not download resource.")
 
 	#Successful Data Download
@@ -62,7 +62,7 @@ def get_forecast(link,parser,email_text):
 
 		#Failed Conversion
 		if(data_conversion[0]==False):
-			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+string_util.line_numbered(data_download)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email)
+			emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast "+parser+" converter reported an error!\r\n\r\nError Message:\r\n"+data_conversion[1]+"\r\n\r\nDownload Data:\r\n"+string_util.line_numbered(data_download)+"\r\n\r\nAurora Forecaster\r\n\r\n",config_util.server_email,config_util.receiver_email)
 			return data_conversion
 
 		#Successful Conversion
@@ -80,7 +80,7 @@ def get_forecast(link,parser,email_text):
 
 			#Failed Parse
 			if(data_json[0]==False):
-				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+string_util.line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email)
+				emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast parser reported an error!\r\n\r\nError Message:\r\n"+data_json[1]+"\r\n\r\nParse Data:\r\n"+string_util.line_numbered(json_string)+"\r\n\r\nAurora Forecaster\r\n\r\n",config_util.server_email,config_util.receiver_email)
 				return data_json
 
 			#Successful Parse
@@ -99,7 +99,7 @@ def get_forecast(link,parser,email_text):
 
 				#Failed Insertion
 				if(database_insertion[0]==False):
-					emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast database reported an error!\r\n\r\nError Message:\r\n"+database_insertion[1]+"\r\n\r\nAurora Forecaster\r\n\r\n",server_email,receiver_email)
+					emailer.send_email_threaded("Aurora Forecaster Error!!!","The "+email_text+" forecast database reported an error!\r\n\r\nError Message:\r\n"+database_insertion[1]+"\r\n\r\nAurora Forecaster\r\n\r\n",config_util.server_email,config_util.receiver_email)
 
 				#Return Result
 				return database_insertion
