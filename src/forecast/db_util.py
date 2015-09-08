@@ -245,7 +245,7 @@ def retrieve_carrington(json_object,host,username,password,database):
 			except:
 				rotation_index=-1
 
-			if not isinstance(rotation_index,int) or rotation_index<-1 or rotation_index>9:
+			if(not isinstance(rotation_index,int) or rotation_index<-1 or rotation_index>9):
 				return (False,"Invalid request."+str(e))
 
 			year=-1
