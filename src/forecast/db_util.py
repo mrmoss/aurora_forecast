@@ -172,6 +172,9 @@ def retrieve_forecast(json_object,host,username,password,database):
 			#Create Entry Values
 			forecast=ii["forecast"]
 
+			if(forecast!="now" and forecast!="h1" and forecast!="d3" and forecast!="d28"):
+				return (False,"Invalid request."+str(e))
+
 			newest=False
 
 			try:
@@ -241,6 +244,9 @@ def retrieve_carrington(json_object,host,username,password,database):
 				rotation_index=ii["rotation_index"]
 			except:
 				rotation_index=-1
+
+			if not isinstance(rotation_index,int) or rotation_index<-1 or rotation_index>9:
+				return (False,"Invalid request."+str(e))
 
 			year=-1
 
