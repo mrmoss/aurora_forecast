@@ -106,7 +106,7 @@ def parse_now(lexemes):
 			if(len(lexemes[ii])>0 and lexemes[ii][0].startswith("#")==False and lexemes[ii][0].startswith(":")==False):
 
 				#Valid Time Row
-				if(len(lexemes[ii])==18):
+				if(len(lexemes[ii])==15):
 
 					#Extract Predicted Time
 					predicted_time={};
@@ -117,7 +117,7 @@ def parse_now(lexemes):
 					predicted_time["minute"]=date_util.hhmm_to_min(lexemes[ii][3])
 
 					#Extract Predicted Kp
-					kp=float(lexemes[ii][17])
+					kp=float(lexemes[ii][8])
 
 					#Test Predicted Date
 					date_test=date_util.valid_date(predicted_time,ii+1)
