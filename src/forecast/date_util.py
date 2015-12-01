@@ -28,7 +28,7 @@ def database_date_to_json_date(json_str):
 def month_to_int(month):
 	months=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
 
-	for ii in range(0,11):
+	for ii in range(0,12):
 		if(month.lower()==months[ii]):
 			return ii+1
 

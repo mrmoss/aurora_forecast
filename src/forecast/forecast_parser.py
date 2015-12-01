@@ -173,7 +173,6 @@ def parse_h1(lexemes):
 
 				#Valid YMD Row
 				if(len(lexemes[ii])==3 and string_util.is_int(lexemes[ii][0])):
-
 					#Found a Date
 					found_date=True
 
